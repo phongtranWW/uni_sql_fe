@@ -1,7 +1,7 @@
 import { Layout } from "antd";
-import AppHeader from "@/components/ui/AppHeader";
+import AppHeader from "@/components/AppHeader";
 import { Outlet } from "react-router";
-import AppFooter from "@/components/ui/AppFooter";
+import AppFooter from "@/components/AppFooter";
 
 export default function AppLayout() {
   return (
