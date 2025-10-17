@@ -8,14 +8,27 @@ import { Tabs, type TabsProps } from "antd";
 
 import { useAppSelector } from "@/app/hooks";
 import ResizableSider from "@/components/ResizableSider";
+import TablesTabs from "./Tabs/TablesTab/TablesTabs";
 
 export default function EditorSider() {
   const showSider = useAppSelector((state) => state.view.showSider);
 
   const items: TabsProps["items"] = [
-    { key: "1", label: <TableOutlined />, children: <div>Content 1</div> },
-    { key: "2", label: <SwapOutlined />, children: <CheckOutlined /> },
-    { key: "3", label: <NotificationFilled />, children: <CheckOutlined /> },
+    {
+      key: "1",
+      label: <TableOutlined className="!text-2xl" />,
+      children: <TablesTabs />,
+    },
+    {
+      key: "2",
+      label: <SwapOutlined className="!text-2xl" />,
+      children: <CheckOutlined />,
+    },
+    {
+      key: "3",
+      label: <NotificationFilled className="!text-2xl" />,
+      children: <CheckOutlined />,
+    },
   ];
 
   return (
