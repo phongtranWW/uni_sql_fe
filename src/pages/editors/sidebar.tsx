@@ -1,35 +1,31 @@
-import {
-  Sidebar as ShadcnSidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SidebarTabTable from "./sidebar-tab-table";
 import SidebarTabRef from "./sidebar-tab-ref";
+import { Link, Table } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 const Sidebar = () => {
   return (
-    <ShadcnSidebar className="min-w-100">
+    <div className="h-full flex flex-col">
       <Tabs defaultValue="tables">
-        <SidebarHeader>
-          <TabsList variant="line">
-            <TabsTrigger value="tables">Tables</TabsTrigger>
-            <TabsTrigger value="references">References</TabsTrigger>
-          </TabsList>
-        </SidebarHeader>
-        <SidebarGroup>
-          <SidebarContent>
-            <TabsContent value="tables">
-              <SidebarTabTable />
-            </TabsContent>
-            <TabsContent value="references">
-              <SidebarTabRef />
-            </TabsContent>
-          </SidebarContent>
-        </SidebarGroup>
+        <TabsList variant="line">
+          <TabsTrigger value="tables">
+            <Table />
+            <Label>Tables</Label>
+          </TabsTrigger>
+          <TabsTrigger value="references">
+            <Link />
+            <Label>References</Label>
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="tables">
+          <SidebarTabTable />
+        </TabsContent>
+        <TabsContent value="references">
+          <SidebarTabRef />
+        </TabsContent>
       </Tabs>
-    </ShadcnSidebar>
+    </div>
   );
 };
 
