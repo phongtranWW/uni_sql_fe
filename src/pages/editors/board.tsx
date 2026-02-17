@@ -46,9 +46,9 @@ const Board = () => {
         ({
           id: ref.id,
           source: ref.endpoints[0].tableId,
-          sourceHandle: ref.endpoints[0].fieldIds[0],
+          sourceHandle: ref.endpoints[0].fieldId,
           target: ref.endpoints[1].tableId,
-          targetHandle: ref.endpoints[1].fieldIds[0],
+          targetHandle: ref.endpoints[1].fieldId,
           type: "refEdge",
           label: ref.name,
           data: {

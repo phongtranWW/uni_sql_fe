@@ -136,13 +136,13 @@ const users_post: Ref = {
     {
       id: nanoid(6),
       tableId: users.id,
-      fieldIds: [users.fields[0].id],
+      fieldId: users.fields[0].id,
       relation: "1",
     },
     {
       id: nanoid(6),
       tableId: posts.id,
-      fieldIds: [posts.fields[1].id],
+      fieldId: posts.fields[1].id,
       relation: "*",
     },
   ],
@@ -155,13 +155,13 @@ const posts_comments: Ref = {
     {
       id: nanoid(6),
       tableId: posts.id,
-      fieldIds: [posts.fields[0].id],
+      fieldId: posts.fields[0].id,
       relation: "1",
     },
     {
       id: nanoid(6),
       tableId: comments.id,
-      fieldIds: [comments.fields[1].id],
+      fieldId: comments.fields[1].id,
       relation: "*",
     },
   ],

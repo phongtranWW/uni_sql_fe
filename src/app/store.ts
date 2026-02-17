@@ -1,6 +1,6 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit";
 import { configureStore } from "@reduxjs/toolkit";
-import databaseReducer from "@/features/database/databaseSlice";
+import databaseReducer from "@/features/database/slice";
 
 export const store = configureStore({
   reducer: {

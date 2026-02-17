@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SidebarTabTable from "./sidebar-tab-table";
+import SidebarTabRef from "./sidebar-tab-ref";
 
 const Sidebar = () => {
   return (
@@ -23,7 +24,7 @@ const Sidebar = () => {
               <SidebarTabTable />
             </TabsContent>
             <TabsContent value="references">
-              Change your password here.
+              <SidebarTabRef />
             </TabsContent>
           </SidebarContent>
         </SidebarGroup>
