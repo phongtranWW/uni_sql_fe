@@ -5,7 +5,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Ref } from "@/features/database/schemas/ref";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, MoreHorizontal } from "lucide-react";
 import SidebarEndpoint from "./sidebar-endpoint";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,6 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 
 interface SidebarRefProps {
   reference: Ref;
@@ -24,16 +34,51 @@ interface SidebarRefProps {
 const SidebarRef = ({ reference }: SidebarRefProps) => {
   return (
     <Collapsible key={reference.id}>
-      <CollapsibleTrigger asChild className="rounded-xs">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-base group hover:bg-accent hover:text-accent-foreground w-full justify-start transition-none"
-        >
-          <ChevronRightIcon className="transition-transform group-data-[state=open]:rotate-90" />
-          {reference.name}
-        </Button>
-      </CollapsibleTrigger>
+      <div className="group flex items-center justify-between rounded-none hover:bg-accent px-2">
+        <CollapsibleTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex-1 justify-start text-base transition-none"
+          >
+            <ChevronRightIcon className="mr-2 transition-transform group-data-[state=open]:rotate-90" />
+            {reference.name}
+          </Button>
+        </CollapsibleTrigger>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => e.stopPropagation()}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <MoreHorizontal />
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent>
+            <FieldSet>
+              <FieldLegend>Reference Details</FieldLegend>
+              <FieldDescription>
+                All changes will be applied immediately.
+              </FieldDescription>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="name">Name</FieldLabel>
+                  <Input
+                    id="name"
+                    autoComplete="off"
+                    placeholder="Name"
+                    value={reference.name}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+          </DialogContent>
+        </Dialog>
+      </div>
       <CollapsibleContent className="ml-6">
         <div className="flex flex-col divide-y divide-border p-2">
           <SidebarEndpoint label="Primary:" endpoint={reference.endpoints[0]} />
