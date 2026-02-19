@@ -5,7 +5,6 @@ import { Key, Lock } from "lucide-react";
 
 type TableNode = Node<
   {
-    id: string;
     name: string;
     fields: Field[];
     alias: string | null;
@@ -27,13 +26,13 @@ export default function TableNode({ data }: NodeProps<TableNode>) {
       <div className="flex flex-col divide-y divide-border">
         {data.fields.map((field) => (
           <div
-            key={field.id}
+            key={field.name}
             className="relative px-4 py-2 hover:bg-muted/50 transition-colors"
           >
             <Handle
               position={Position.Left}
               type="source"
-              id={field.id}
+              id={field.name}
               className="absolute! w-full! h-full! top-0! left-0! rounded-none! transform-none! border-none! bg-transparent!"
             />
             <div className="flex items-center justify-between gap-2">

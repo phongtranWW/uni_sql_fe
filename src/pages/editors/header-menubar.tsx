@@ -1,5 +1,3 @@
-import { useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import {
   Menubar,
   MenubarContent,
@@ -12,14 +10,8 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { Database, Field, Table } from "@dbml/core";
 
 const HeaderMenubar = () => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
-  const refs = useAppSelector((state: RootState) => state.database.refs);
-
-  const handleExport = (type: string) => {};
-
   return (
     <Menubar className="border-0 shadow-none bg-transparent p-0">
       <MenubarMenu>
@@ -31,7 +23,7 @@ const HeaderMenubar = () => {
           <MenubarSub>
             <MenubarSubTrigger>Export to</MenubarSubTrigger>
             <MenubarSubContent>
-              <MenubarItem onClick={}>DBML</MenubarItem>
+              <MenubarItem>DBML</MenubarItem>
               <MenubarItem>JSON</MenubarItem>
               <MenubarItem>Postgres</MenubarItem>
             </MenubarSubContent>
