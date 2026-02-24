@@ -5,84 +5,87 @@ import {
   MenubarContent,
   MenubarItem,
   MenubarMenu,
-  MenubarSeparator,
-  MenubarShortcut,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { Exportor } from "@/utils/exporter";
+import { useState } from "react";
+import CodePreview from "./code-preview";
+import { type CodeFormat } from "@/types/format";
+import { CODE_FORMATS } from "@/constants/code-formats";
 
 const HeaderMenubar = () => {
   const database = useAppSelector((state: RootState) => state.database);
 
+  const [showCodePreview, setShowCodePreview] = useState(false);
+  const [code, setCode] = useState("");
+  const [previewType, setPreviewType] = useState<CodeFormat>(CODE_FORMATS.JSON);
+
+  const handleExport = (type: "dbml" | "json" | "psql" | "mysql") => {
+    const exporter = Exportor.fromDatabase(database);
+
+    let result = "";
+
+    switch (type) {
+      case "dbml":
+        result = exporter.toDbml();
+        break;
+      case "json":
+        result = exporter.toJson();
+        break;
+      case "psql":
+        result = exporter.toPsql();
+        break;
+      case "mysql":
+        result = exporter.toMysql();
+        break;
+    }
+
+    setPreviewType(type);
+    setCode(result);
+    setShowCodePreview(true);
+  };
+
   return (
-    <Menubar className="border-0 shadow-none bg-transparent p-0">
-      <MenubarMenu>
-        <MenubarTrigger className="bg-transparent hover:bg-accent data-[state=open]:bg-accent">
-          File
-        </MenubarTrigger>
-        <MenubarContent>
-          <MenubarItem>Import from</MenubarItem>
-          <MenubarSub>
-            <MenubarSubTrigger>Export to</MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem
-                onClick={() => {
-                  const exporter = Exportor.fromDatabase(database);
-                  console.log(exporter.toDbml());
-                }}
-              >
-                DBML
-              </MenubarItem>
-              <MenubarItem
-                onClick={() => {
-                  const exporter = Exportor.fromDatabase(database);
-                  console.log(exporter.toJson());
-                }}
-              >
-                JSON
-              </MenubarItem>
-              <MenubarItem
-                onClick={() => {
-                  const exporter = Exportor.fromDatabase(database);
-                  console.log(exporter.toPsql());
-                }}
-              >
-                Postgres
-              </MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-        </MenubarContent>
-      </MenubarMenu>
-      <MenubarMenu>
-        <MenubarTrigger className="bg-transparent hover:bg-accent data-[state=open]:bg-accent">
-          Edit
-        </MenubarTrigger>
-        <MenubarContent>
-          <MenubarItem>
-            Undo <MenubarShortcut>⌘Z</MenubarShortcut>
-          </MenubarItem>
-          <MenubarItem>
-            Redo <MenubarShortcut>⇧⌘Z</MenubarShortcut>
-          </MenubarItem>
-          <MenubarSeparator />
-          <MenubarSub>
-            <MenubarSubTrigger>Find</MenubarSubTrigger>
-            <MenubarSubContent>
-              <MenubarItem>Find...</MenubarItem>
-              <MenubarItem>Find Next</MenubarItem>
-              <MenubarItem>Find Previous</MenubarItem>
-            </MenubarSubContent>
-          </MenubarSub>
-          <MenubarSeparator />
-          <MenubarItem>Cut</MenubarItem>
-          <MenubarItem>Copy</MenubarItem>
-          <MenubarItem>Paste</MenubarItem>
-        </MenubarContent>
-      </MenubarMenu>
-    </Menubar>
+    <div>
+      <Menubar className="border-0 shadow-none bg-transparent p-0">
+        <MenubarMenu>
+          <MenubarTrigger className="bg-transparent hover:bg-accent data-[state=open]:bg-accent">
+            File
+          </MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem>Import from</MenubarItem>
+
+            <MenubarSub>
+              <MenubarSubTrigger>Export to</MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarItem onClick={() => handleExport("dbml")}>
+                  DBML
+                </MenubarItem>
+                <MenubarItem onClick={() => handleExport("json")}>
+                  JSON
+                </MenubarItem>
+                <MenubarItem onClick={() => handleExport("mysql")}>
+                  MySQL
+                </MenubarItem>
+                <MenubarItem onClick={() => handleExport("psql")}>
+                  Postgres
+                </MenubarItem>
+              </MenubarSubContent>
+            </MenubarSub>
+          </MenubarContent>
+        </MenubarMenu>
+      </Menubar>
+
+      <CodePreview
+        open={showCodePreview}
+        onOpenChange={setShowCodePreview}
+        code={code}
+        format={previewType}
+      />
+    </div>
   );
 };
 
