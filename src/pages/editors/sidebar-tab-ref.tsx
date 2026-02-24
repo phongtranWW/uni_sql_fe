@@ -7,7 +7,7 @@ const SidebarTabRef = () => {
   return (
     <div className="flex flex-col gap-1">
       {refs.map((table) => (
-        <SidebarRef key={table.id} reference={table} />
+        <SidebarRef key={table.name} reference={table} />
       ))}
     </div>
   );

@@ -24,7 +24,7 @@ interface SidebarTableProps {
 
 const SidebarTable = ({ table }: SidebarTableProps) => {
   return (
-    <Collapsible key={table.id}>
+    <Collapsible key={table.name}>
       <div className="group flex items-center justify-between rounded-none hover:bg-accent px-2">
         <CollapsibleTrigger asChild>
           <Button
@@ -102,7 +102,7 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
       <CollapsibleContent className="ml-6">
         <div className="flex flex-col divide-y divide-border p-2">
           {table.fields.map((field) => (
-            <SidebarField key={field.id} field={field} />
+            <SidebarField key={field.name} field={field} />
           ))}
         </div>
       </CollapsibleContent>
