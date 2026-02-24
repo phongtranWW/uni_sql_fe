@@ -22,14 +22,13 @@ const Board = () => {
 
   useEffect(() => {
     const mappedNodes: Node[] = tables.map((table, index) => ({
-      id: table.id,
+      id: table.name,
       type: "tableNode",
       position: {
         x: index * 250,
         y: 100,
       },
       data: {
-        id: table.id,
         name: table.name,
         fields: table.fields,
         alias: table.alias,
@@ -44,17 +43,17 @@ const Board = () => {
     const newEdges: Edge[] = refs.map(
       (ref) =>
         ({
-          id: ref.id,
-          source: ref.endpoints[0].tableId,
-          sourceHandle: ref.endpoints[0].fieldIds[0],
-          target: ref.endpoints[1].tableId,
-          targetHandle: ref.endpoints[1].fieldIds[0],
+          id: ref.name,
+          source: ref.endpoints[0].tableName,
+          sourceHandle: ref.endpoints[0].fieldName,
+          target: ref.endpoints[1].tableName,
+          targetHandle: ref.endpoints[1].fieldName,
           type: "refEdge",
           label: ref.name,
           data: {
-            id: ref.id,
             name: ref.name,
             endpoints: ref.endpoints,
+            operator: ref.operator,
           },
         }) as Edge,
     );

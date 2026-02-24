@@ -1,18 +1,14 @@
 export interface Endpoint {
-  id: string;
-  tableId: string;
-  fieldIds: string[];
-  relation: "1" | "*";
+  tableName: string;
+  fieldName: string;
 }
 
 export interface EndpointCreate {
-  tableId: string;
-  fieldIds: string[];
-  relation: "1" | "*";
+  tableName: string;
+  fieldName: string;
 }
 
 export interface EndpointUpdate {
-  tableId?: string;
-  fieldIds?: string[];
-  relation?: "1" | "*";
+  tableName?: string;
+  fieldName?: string;
 }

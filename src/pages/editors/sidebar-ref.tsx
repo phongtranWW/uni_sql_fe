@@ -1,12 +1,21 @@
-import { ChevronRightIcon, MoreHorizontal } from "lucide-react";
-import type { Table } from "@/features/database/schemas/table";
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Button } from "@/components/ui/button";
-import SidebarField from "./sidebar-field";
+import type { Ref } from "@/features/database/schemas/ref";
+import { ChevronRightIcon, MoreHorizontal } from "lucide-react";
+import SidebarEndpoint from "./sidebar-endpoint";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   Field,
@@ -18,13 +27,13 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-interface SidebarTableProps {
-  table: Table;
+interface SidebarRefProps {
+  reference: Ref;
 }
 
-const SidebarTable = ({ table }: SidebarTableProps) => {
+const SidebarRef = ({ reference }: SidebarRefProps) => {
   return (
-    <Collapsible key={table.id}>
+    <Collapsible key={reference.id}>
       <div className="group flex items-center justify-between rounded-none hover:bg-accent px-2">
         <CollapsibleTrigger asChild>
           <Button
@@ -33,7 +42,7 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
             className="flex-1 justify-start text-base transition-none"
           >
             <ChevronRightIcon className="mr-2 transition-transform group-data-[state=open]:rotate-90" />
-            {table.name}
+            {reference.name}
           </Button>
         </CollapsibleTrigger>
 
@@ -51,7 +60,7 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
 
           <DialogContent>
             <FieldSet>
-              <FieldLegend>Table Details</FieldLegend>
+              <FieldLegend>Reference Details</FieldLegend>
               <FieldDescription>
                 All changes will be applied immediately.
               </FieldDescription>
@@ -62,52 +71,43 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
                     id="name"
                     autoComplete="off"
                     placeholder="Name"
-                    value={table.name}
+                    value={reference.name}
                   />
                 </Field>
-                <div className="grid grid-cols-2 gap-4">
-                  <Field>
-                    <FieldLabel htmlFor="name">Alias</FieldLabel>
-                    <Input
-                      id="name"
-                      autoComplete="off"
-                      placeholder="Name"
-                      value={table.alias || ""}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="type">Head Color</FieldLabel>
-                    <label
-                      htmlFor="headColor"
-                      className="flex items-center gap-2 h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 cursor-pointer hover:bg-accent transition-colors"
-                    >
-                      <input
-                        id="headColor"
-                        type="color"
-                        className="w-5 h-5 rounded-sm cursor-pointer border-0 bg-transparent p-0 appearance-none"
-                        value={table.headerColor || "#000000"}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {table.headerColor || "#000000"}
-                      </span>
-                    </label>
-                  </Field>
-                </div>
               </FieldGroup>
             </FieldSet>
           </DialogContent>
         </Dialog>
       </div>
-
       <CollapsibleContent className="ml-6">
         <div className="flex flex-col divide-y divide-border p-2">
-          {table.fields.map((field) => (
-            <SidebarField key={field.id} field={field} />
-          ))}
+          <SidebarEndpoint label="Primary:" endpoint={reference.endpoints[0]} />
+          <SidebarEndpoint label="Foreign:" endpoint={reference.endpoints[1]} />
+          <div className="flex items-center gap-2 py-2">
+            <Label>Cardinality:</Label>
+            <Select>
+              <SelectTrigger className="h-7! flex-1 text-base rounded-xs px-1 py-2">
+                <SelectValue placeholder="Cardinality" className="text-base" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="light" className="text-base">
+                    One to one
+                  </SelectItem>
+                  <SelectItem value="dark" className="text-base">
+                    One to many
+                  </SelectItem>
+                  <SelectItem value="system" className="text-base">
+                    Many to one
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CollapsibleContent>
     </Collapsible>
   );
 };
 
-export default SidebarTable;
+export default SidebarRef;

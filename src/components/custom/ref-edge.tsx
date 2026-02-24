@@ -1,4 +1,5 @@
 import type { Endpoint } from "@/features/database/schemas/endpoint";
+import type { RefOperator } from "@/features/database/schemas/ref";
 import { getEdgeParams } from "@/utils/get-edge-params";
 import {
   BaseEdge,
@@ -10,15 +11,14 @@ import {
 
 type RefEdge = Edge<
   {
-    id: string;
     name: string;
-    endpoints: Endpoint[];
+    endpoints: [Endpoint, Endpoint];
+    operator: RefOperator;
   },
   "ref"
 >;
 
 export function RefEdge({
-  id,
   source,
   target,
   sourceHandleId,
@@ -44,20 +44,5 @@ export function RefEdge({
     targetPosition,
   });
 
-  return (
-    <BaseEdge
-      id={id}
-      path={path}
-      markerEnd={
-        data?.endpoints[1].relation === "1"
-          ? "url(#one-marker)"
-          : "url(#many-marker)"
-      }
-      markerStart={
-        data?.endpoints[0].relation === "1"
-          ? "url(#one-marker)"
-          : "url(#many-marker)"
-      }
-    />
-  );
+  return <BaseEdge id={data?.name} path={path} />;
 }
