@@ -24,8 +24,19 @@ interface SidebarTableProps {
 
 const SidebarTable = ({ table }: SidebarTableProps) => {
   return (
-    <Collapsible key={table.name}>
-      <div className="group flex items-center justify-between rounded-none hover:bg-accent px-2">
+    <Collapsible
+      key={table.name}
+      className="border-l-4"
+      style={{
+        borderLeftColor: table.headerColor || "#e5e7eb",
+      }}
+    >
+      <div
+        className="group flex items-center justify-between rounded-none hover:bg-accent px-2"
+        style={{
+          borderLeftColor: table.headerColor || "#e5e7eb",
+        }}
+      >
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
