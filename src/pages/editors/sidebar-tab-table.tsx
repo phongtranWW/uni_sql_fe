@@ -8,7 +8,7 @@ const SidebarTabTable = () => {
   return (
     <div className="flex flex-col gap-1">
       {tables.map((table) => (
-        <SidebarTable key={table.id} table={table} />
+        <SidebarTable key={table.name} table={table} />
       ))}
     </div>
   );

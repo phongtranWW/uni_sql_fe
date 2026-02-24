@@ -33,7 +33,7 @@ interface SidebarRefProps {
 
 const SidebarRef = ({ reference }: SidebarRefProps) => {
   return (
-    <Collapsible key={reference.id}>
+    <Collapsible key={reference.name}>
       <div className="group flex items-center justify-between rounded-none hover:bg-accent px-2">
         <CollapsibleTrigger asChild>
           <Button

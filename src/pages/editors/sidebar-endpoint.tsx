@@ -11,9 +11,9 @@ interface SidebarEndpointProps {
 
 const SidebarEndpoint = ({ label, endpoint }: SidebarEndpointProps) => {
   const table = useAppSelector((state: RootState) =>
-    state.database.tables.find((t) => t.id === endpoint.tableId),
+    state.database.tables.find((t) => t.name === endpoint.tableName),
   );
-  const field = table?.fields.find((f) => f.id === endpoint.fieldId);
+  const field = table?.fields.find((f) => f.name === endpoint.fieldName);
 
   return (
     <div className="flex items-center gap-2 py-2">
