@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 
 const Sidebar = () => {
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col px-2">
       <Tabs defaultValue="tables">
         <TabsList variant="line">
           <TabsTrigger value="tables">

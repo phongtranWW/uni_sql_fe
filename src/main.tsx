@@ -6,6 +6,7 @@ import router from "@/router";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "@/app/store";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
         enableSystem={false}
       >
         <RouterProvider router={router} />
+        <Toaster />
       </ThemeProvider>
     </ReduxProvider>
   </StrictMode>,

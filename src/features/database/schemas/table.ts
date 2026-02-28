@@ -1,22 +1,24 @@
+import type { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import type { Field } from "./field";
+
+export type TableHeaderColor =
+  (typeof TABLE_HEADER_COLORS)[keyof typeof TABLE_HEADER_COLORS];
 
 export interface Table {
   name: string;
   fields: Field[];
+  headerColor: TableHeaderColor;
   alias: string | null;
-  headerColor: string | null;
 }
 
 export interface TableCreate {
   name: string;
-  headerColor?: string;
+  headerColor: TableHeaderColor;
   alias?: string;
-  fields?: Field[];
 }
 
 export interface TableUpdate {
   name?: string;
-  headerColor?: string;
+  headerColor?: TableHeaderColor;
   alias?: string;
-  fields?: Field[];
 }
