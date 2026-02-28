@@ -6,8 +6,8 @@ const SidebarTabRef = () => {
   const refs = useAppSelector((state: RootState) => state.database.refs);
   return (
     <div className="flex flex-col gap-1">
-      {refs.map((table) => (
-        <SidebarRef key={table.name} reference={table} />
+      {refs.map((ref) => (
+        <SidebarRef key={ref.name} reference={ref} />
       ))}
     </div>
   );

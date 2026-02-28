@@ -1,6 +1,7 @@
 import { initialDatabase } from "@/data/mock_database";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Table, TableCreate, TableUpdate } from "./schemas/table";
+import type { RefUpdate } from "./schemas/ref";
 
 const databaseSlice = createSlice({
   name: "database",
@@ -29,9 +30,24 @@ const databaseSlice = createSlice({
       if (!table) return;
       Object.assign(table, action.payload.tableUpdate);
     },
+    removeRef: (state, action: PayloadAction<string>) => {
+      state.refs = state.refs.filter((r) => r.name !== action.payload);
+    },
+    updateRef: (
+      state,
+      action: PayloadAction<{
+        name: string;
+        refUpdate: RefUpdate;
+      }>,
+    ) => {
+      const ref = state.refs.find((r) => r.name === action.payload.name);
+      if (!ref) return;
+      Object.assign(ref, action.payload.refUpdate);
+    },
   },
 });
 
-export const { addTable, removeTable, updateTable } = databaseSlice.actions;
+export const { addTable, removeTable, updateTable, removeRef, updateRef } =
+  databaseSlice.actions;
 
 export default databaseSlice.reducer;
