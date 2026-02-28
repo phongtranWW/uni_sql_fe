@@ -187,7 +187,6 @@ const SidebarRefDetail = ({ reference }: SidebarRefDetailProps) => {
           variant="ghost"
           size="icon"
           onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
         >
           <MoreHorizontal />
         </Button>

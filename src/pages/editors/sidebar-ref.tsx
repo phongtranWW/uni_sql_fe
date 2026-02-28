@@ -1,30 +1,32 @@
-import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleTrigger } from "@/components/ui/collapsible";
-import type { Ref } from "@/features/database/schemas/ref";
-import { ChevronRightIcon } from "lucide-react";
+import { REF_OPERATOR, type Ref } from "@/features/database/schemas/ref";
+import { ArrowLeft, ArrowRight, SeparatorVertical } from "lucide-react";
 import SidebarRefDetail from "./sidebar-ref-detail";
+
+const ICONS = {
+  [REF_OPERATOR.ONE_TO_ONE]: SeparatorVertical,
+  [REF_OPERATOR.ONE_TO_MANY]: ArrowLeft,
+  [REF_OPERATOR.MANY_TO_ONE]: ArrowRight,
+};
 
 interface SidebarRefProps {
   reference: Ref;
 }
 
 const SidebarRef = ({ reference }: SidebarRefProps) => {
+  const Icon = ICONS[reference.operator];
+
   return (
-    <Collapsible key={reference.name}>
-      <div className="group flex items-center justify-between rounded-none hover:bg-accent px-2">
-        <CollapsibleTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex-1 justify-start text-base transition-none"
-          >
-            <ChevronRightIcon className="mr-2 transition-transform group-data-[state=open]:rotate-90" />
-            {reference.name}
-          </Button>
-        </CollapsibleTrigger>
-        <SidebarRefDetail reference={reference} />
+    <div className="group flex items-center justify-between gap-2 px-2 py-1 hover:bg-accent transition-colors">
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-sm font-medium truncate">{reference.name}</span>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <span className="truncate">{reference.endpoints[0].tableName}</span>
+          <Icon className="size-3 shrink-0" />
+          <span className="truncate">{reference.endpoints[1].tableName}</span>
+        </div>
       </div>
-    </Collapsible>
+      <SidebarRefDetail reference={reference} />
+    </div>
   );
 };
 
