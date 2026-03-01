@@ -1,5 +1,4 @@
 import { useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import SidebarRef from "./sidebar-ref";
 import {
   InputGroup,
@@ -8,9 +7,10 @@ import {
 } from "@/components/ui/input-group";
 import { useState } from "react";
 import { SearchIcon } from "lucide-react";
+import { selectRefs } from "@/features/database/selectors";
 
 const SidebarTabRef = () => {
-  const refs = useAppSelector((state: RootState) => state.database.refs);
+  const refs = useAppSelector(selectRefs);
   const [key, setKey] = useState("");
 
   const filteredRefs = refs.filter((ref) =>

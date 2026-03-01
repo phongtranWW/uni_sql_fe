@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
+import { selectRefs, selectTables } from "@/features/database/selectors";
 import { setSelectedTables } from "@/features/database/slice";
 import {
   Background,
@@ -16,8 +16,8 @@ import {
 import { useCallback, useEffect } from "react";
 
 const Board = () => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
-  const refs = useAppSelector((state: RootState) => state.database.refs);
+  const tables = useAppSelector(selectTables);
+  const refs = useAppSelector(selectRefs);
   const dispatch = useAppDispatch();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);

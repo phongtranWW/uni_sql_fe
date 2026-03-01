@@ -1,5 +1,4 @@
 import { useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import {
   Menubar,
   MenubarContent,
@@ -15,9 +14,10 @@ import { useState } from "react";
 import CodePreview from "./code-preview";
 import { type CodeFormat } from "@/types/format";
 import { CODE_FORMATS } from "@/constants/code-formats";
+import { selectDatabaseState } from "@/features/database/selectors";
 
 const HeaderMenubar = () => {
-  const database = useAppSelector((state: RootState) => state.database);
+  const database = useAppSelector(selectDatabaseState);
 
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [code, setCode] = useState("");

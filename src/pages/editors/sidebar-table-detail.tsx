@@ -1,5 +1,4 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import ColorPicker from "@/components/custom/color-picker";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import type {
   Table,
   TableHeaderColor,
 } from "@/features/database/schemas/table";
+import { selectTables } from "@/features/database/selectors";
 import { removeTable, updateTable } from "@/features/database/slice";
 import { isTableNameUnique, isTableNameValid } from "@/utils/rules/tables";
 import { MoreHorizontal } from "lucide-react";
@@ -29,7 +29,7 @@ interface SidebarTableDetailProps {
 }
 
 const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
+  const tables = useAppSelector(selectTables);
   const dispatch = useAppDispatch();
 
   const [name, setName] = useState<string>(table.name);

@@ -1,10 +1,16 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit";
 import { configureStore } from "@reduxjs/toolkit";
-import databaseReducer from "@/features/database/slice";
+import databaseReducer, { setSelectedTables } from "@/features/database/slice";
+import undoable, { excludeAction } from "redux-undo";
 
 export const store = configureStore({
   reducer: {
-    database: databaseReducer,
+    database: undoable(databaseReducer, {
+      limit: 50,
+      undoType: "DATABASE_UNDO",
+      redoType: "DATABASE_REDO",
+      filter: excludeAction([setSelectedTables.type]),
+    }),
   },
 });
 
