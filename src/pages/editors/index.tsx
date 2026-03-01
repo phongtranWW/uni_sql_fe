@@ -6,8 +6,11 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import Header from "./header";
+import useShortcuts from "@/hooks/use-shortcuts";
 
 export const Editors = () => {
+  useShortcuts();
+
   return (
     <div className="flex flex-col h-screen">
       <Header />

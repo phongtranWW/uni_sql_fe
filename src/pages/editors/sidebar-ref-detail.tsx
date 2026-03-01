@@ -32,9 +32,9 @@ import {
 import { toast } from "sonner";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import { Separator } from "@/components/ui/separator";
 import { removeRef, updateRef } from "@/features/database/slice";
+import { selectTables } from "@/features/database/selectors";
 
 const OPERATOR_ICONS = {
   [REF_OPERATOR.ONE_TO_ONE]: SeparatorHorizontal,
@@ -55,7 +55,7 @@ const SidebarEndpoint = ({
   onTableChange,
   onFieldChange,
 }: SidebarEndpointProps) => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
+  const tables = useAppSelector(selectTables);
   const table = tables.find((t) => t.name === tableName);
 
   return (
