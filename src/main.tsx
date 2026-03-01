@@ -6,6 +6,8 @@ import router from "@/router";
 import { Provider as ReduxProvider } from "react-redux";
 import { store } from "@/app/store";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -16,7 +18,10 @@ createRoot(document.getElementById("root")!).render(
         storageKey="vite-ui-theme"
         enableSystem={false}
       >
-        <RouterProvider router={router} />
+        <TooltipProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </TooltipProvider>
       </ThemeProvider>
     </ReduxProvider>
   </StrictMode>,

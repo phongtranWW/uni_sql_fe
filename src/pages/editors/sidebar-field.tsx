@@ -1,97 +1,52 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Field as FieldShadcn,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Field } from "@/features/database/schemas/field";
-import { MoreHorizontalIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { BanIcon, FingerprintIcon, KeyRoundIcon } from "lucide-react";
+import SidebarFieldDetail from "./sidebar-field-detail";
 
 interface SidebarFieldProps {
+  tableName: string;
   field: Field;
 }
 
-const SidebarField = ({ field }: SidebarFieldProps) => {
+const SidebarField = ({ tableName, field }: SidebarFieldProps) => {
   return (
-    <div className="flex items-center gap-2 py-2">
-      <Input
-        value={field.name}
-        className="h-7 text-base rounded-xs px-1 py-2"
-      />
-      <Input
-        value={field.type}
-        className="h-7 text-base rounded-xs px-1 py-2"
-      />
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-xs">
-            <MoreHorizontalIcon />
-          </Button>
-        </DialogTrigger>
-
-        <DialogContent>
-          <FieldSet>
-            <FieldLegend>Field Details</FieldLegend>
-            <FieldDescription>
-              All changes will be applied immediately.
-            </FieldDescription>
-            <FieldGroup>
-              <div className="grid grid-cols-2 gap-4">
-                <FieldShadcn>
-                  <FieldLabel htmlFor="name">Name</FieldLabel>
-                  <Input
-                    id="name"
-                    autoComplete="off"
-                    placeholder="Name"
-                    value={field.name}
-                  />
-                </FieldShadcn>
-                <FieldShadcn>
-                  <FieldLabel htmlFor="type">Type</FieldLabel>
-                  <Input
-                    id="type"
-                    autoComplete="off"
-                    placeholder="Name"
-                    value={field.type}
-                  />
-                </FieldShadcn>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="pk" checked={field.pk} />
-                  <FieldLabel htmlFor="pk" className="font-normal">
-                    Primary Key
-                  </FieldLabel>
-                </FieldShadcn>
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="increment" checked={field.increment} />
-                  <FieldLabel htmlFor="increment" className="font-normal">
-                    Auto Increment
-                  </FieldLabel>
-                </FieldShadcn>
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="unique" checked={field.unique} />
-                  <FieldLabel htmlFor="unique" className="font-normal">
-                    Unique
-                  </FieldLabel>
-                </FieldShadcn>
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="not_null" checked={field.not_null} />
-                  <FieldLabel htmlFor="not_null" className="font-normal">
-                    Not Null
-                  </FieldLabel>
-                </FieldShadcn>
-              </div>
-            </FieldGroup>
-          </FieldSet>
-        </DialogContent>
-      </Dialog>
+    <div className="group flex items-center gap-2 px-2 py-1 hover:bg-accent transition-colors">
+      <Tooltip>
+        <TooltipTrigger>
+          <KeyRoundIcon
+            className={cn({ "text-amber-500": field.pk }, "size-3")}
+          />
+        </TooltipTrigger>
+        <TooltipContent>Primary Key</TooltipContent>
+      </Tooltip>
+      <p className="flex-1 text-sm font-semibold truncate">{field.name}</p>
+      <p className="flex-1 text-sm text-muted-foreground truncate">
+        {field.type}
+      </p>
+      <div className="flex items-center gap-1 shrink-0">
+        <Tooltip>
+          <TooltipTrigger>
+            <BanIcon
+              className={cn({ "text-red-500": field.not_null }, "size-3")}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Not Null</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <FingerprintIcon
+              className={cn({ "text-green-500": field.unique }, "size-3")}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Unique</TooltipContent>
+        </Tooltip>
+      </div>
+      <SidebarFieldDetail tableName={tableName} field={field} />
     </div>
   );
 };

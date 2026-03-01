@@ -1,10 +1,115 @@
 import { initialDatabase } from "@/data/mock_database";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Table, TableCreate, TableUpdate } from "./schemas/table";
+import type { RefUpdate } from "./schemas/ref";
+import type { FieldCreate, FieldUpdate } from "./schemas/field";
 
 const databaseSlice = createSlice({
   name: "database",
   initialState: initialDatabase,
-  reducers: {},
+  reducers: {
+    addTable: (state, action: PayloadAction<TableCreate>) => {
+      const table: Table = {
+        name: action.payload.name,
+        alias: action.payload.alias || null,
+        headerColor: action.payload.headerColor,
+        fields: [],
+      };
+      state.tables.push(table);
+    },
+    removeTable: (state, action: PayloadAction<string>) => {
+      state.tables = state.tables.filter((t) => t.name !== action.payload);
+    },
+    updateTable: (
+      state,
+      action: PayloadAction<{
+        name: string;
+        tableUpdate: TableUpdate;
+      }>,
+    ) => {
+      const table = state.tables.find((t) => t.name === action.payload.name);
+      if (!table) return;
+      Object.assign(table, action.payload.tableUpdate);
+    },
+    addField: (
+      state,
+      action: PayloadAction<{
+        tableName: string;
+        fieldCreate: FieldCreate;
+      }>,
+    ) => {
+      const table = state.tables.find(
+        (t) => t.name === action.payload.tableName,
+      );
+      if (!table) return;
+      table.fields.push({
+        name: action.payload.fieldCreate.name,
+        type: action.payload.fieldCreate.type,
+        unique: action.payload.fieldCreate.unique || false,
+        pk: action.payload.fieldCreate.pk || false,
+        not_null: action.payload.fieldCreate.not_null || false,
+        increment: action.payload.fieldCreate.increment || false,
+      });
+    },
+    removeField: (
+      state,
+      action: PayloadAction<{
+        tableName: string;
+        fieldName: string;
+      }>,
+    ) => {
+      const table = state.tables.find(
+        (t) => t.name === action.payload.tableName,
+      );
+      if (!table) return;
+      table.fields = table.fields.filter(
+        (f) => f.name !== action.payload.fieldName,
+      );
+    },
+    updateField: (
+      state,
+      action: PayloadAction<{
+        tableName: string;
+        fieldName: string;
+        fieldUpdate: FieldUpdate;
+      }>,
+    ) => {
+      const table = state.tables.find(
+        (t) => t.name === action.payload.tableName,
+      );
+      if (!table) return;
+      const field = table.fields.find(
+        (f) => f.name === action.payload.fieldName,
+      );
+      if (!field) return;
+      Object.assign(field, action.payload.fieldUpdate);
+    },
+    removeRef: (state, action: PayloadAction<string>) => {
+      state.refs = state.refs.filter((r) => r.name !== action.payload);
+    },
+    updateRef: (
+      state,
+      action: PayloadAction<{
+        name: string;
+        refUpdate: RefUpdate;
+      }>,
+    ) => {
+      const ref = state.refs.find((r) => r.name === action.payload.name);
+      if (!ref) return;
+      Object.assign(ref, action.payload.refUpdate);
+    },
+  },
 });
+
+export const {
+  addTable,
+  removeTable,
+  updateTable,
+  addField,
+  removeField,
+  updateField,
+  removeRef,
+  updateRef,
+} = databaseSlice.actions;
 
 export default databaseSlice.reducer;

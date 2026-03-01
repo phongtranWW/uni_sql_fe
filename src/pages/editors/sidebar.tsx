@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 
 const Sidebar = () => {
   return (
-    <div className="h-full flex flex-col">
-      <Tabs defaultValue="tables">
+    <div className="h-full flex flex-col px-2">
+      <Tabs defaultValue="tables" className="flex-1 flex flex-col min-h-0">
         <TabsList variant="line">
           <TabsTrigger value="tables">
             <Table />
@@ -18,10 +18,10 @@ const Sidebar = () => {
             <Label>References</Label>
           </TabsTrigger>
         </TabsList>
-        <TabsContent value="tables">
+        <TabsContent value="tables" className="flex-1 min-h-0">
           <SidebarTabTable />
         </TabsContent>
-        <TabsContent value="references">
+        <TabsContent value="references" className="flex-1 min-h-0">
           <SidebarTabRef />
         </TabsContent>
       </Tabs>

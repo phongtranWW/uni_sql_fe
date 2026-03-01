@@ -1,0 +1,12 @@
+export const TABLE_HEADER_COLORS = {
+  SLATE: "#64748B",
+  BLUE: "#3B82F6",
+  SKY: "#0EA5E9",
+  EMERALD: "#10B981",
+  TEAL: "#14B8A6",
+  AMBER: "#F59E0B",
+  ORANGE: "#F97316",
+  ROSE: "#F43F5E",
+  VIOLET: "#8B5CF6",
+  FUCHSIA: "#D946EF",
+} as const;
