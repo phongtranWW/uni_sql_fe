@@ -26,6 +26,7 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hotkeys-hook": "^5.2.4",
     "react-redux": "^9.2.0",
     "react-resizable-panels": "^4.6.4",
     "react-router": "^7.13.0",
