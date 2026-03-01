@@ -2,7 +2,7 @@ import { initialDatabase } from "@/data/mock_database";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Table, TableCreate, TableUpdate } from "./schemas/table";
 import type { RefUpdate } from "./schemas/ref";
-import type { FieldCreate } from "./schemas/field";
+import type { FieldCreate, FieldUpdate } from "./schemas/field";
 
 const databaseSlice = createSlice({
   name: "database",
@@ -51,6 +51,39 @@ const databaseSlice = createSlice({
         increment: action.payload.fieldCreate.increment || false,
       });
     },
+    removeField: (
+      state,
+      action: PayloadAction<{
+        tableName: string;
+        fieldName: string;
+      }>,
+    ) => {
+      const table = state.tables.find(
+        (t) => t.name === action.payload.tableName,
+      );
+      if (!table) return;
+      table.fields = table.fields.filter(
+        (f) => f.name !== action.payload.fieldName,
+      );
+    },
+    updateField: (
+      state,
+      action: PayloadAction<{
+        tableName: string;
+        fieldName: string;
+        fieldUpdate: FieldUpdate;
+      }>,
+    ) => {
+      const table = state.tables.find(
+        (t) => t.name === action.payload.tableName,
+      );
+      if (!table) return;
+      const field = table.fields.find(
+        (f) => f.name === action.payload.fieldName,
+      );
+      if (!field) return;
+      Object.assign(field, action.payload.fieldUpdate);
+    },
     removeRef: (state, action: PayloadAction<string>) => {
       state.refs = state.refs.filter((r) => r.name !== action.payload);
     },
@@ -73,6 +106,8 @@ export const {
   removeTable,
   updateTable,
   addField,
+  removeField,
+  updateField,
   removeRef,
   updateRef,
 } = databaseSlice.actions;

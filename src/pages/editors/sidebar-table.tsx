@@ -52,7 +52,11 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
       <CollapsibleContent className="ml-4 flex flex-col gap-2">
         <div className="flex flex-col py-1 divide-y divide-border">
           {table.fields.map((field) => (
-            <SidebarField key={field.name} field={field} />
+            <SidebarField
+              key={field.name}
+              tableName={table.name}
+              field={field}
+            />
           ))}
         </div>
         <Button

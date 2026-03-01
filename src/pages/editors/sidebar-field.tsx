@@ -1,16 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {
-  Field as FieldShadcn,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -18,18 +5,15 @@ import {
 } from "@/components/ui/tooltip";
 import type { Field } from "@/features/database/schemas/field";
 import { cn } from "@/lib/utils";
-import {
-  BanIcon,
-  FingerprintIcon,
-  KeyRoundIcon,
-  MoreHorizontalIcon,
-} from "lucide-react";
+import { BanIcon, FingerprintIcon, KeyRoundIcon } from "lucide-react";
+import SidebarFieldDetail from "./sidebar-field-detail";
 
 interface SidebarFieldProps {
+  tableName: string;
   field: Field;
 }
 
-const SidebarField = ({ field }: SidebarFieldProps) => {
+const SidebarField = ({ tableName, field }: SidebarFieldProps) => {
   return (
     <div className="group flex items-center gap-2 px-2 py-1 hover:bg-accent transition-colors">
       <Tooltip>
@@ -62,73 +46,7 @@ const SidebarField = ({ field }: SidebarFieldProps) => {
           <TooltipContent>Unique</TooltipContent>
         </Tooltip>
       </div>
-
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          >
-            <MoreHorizontalIcon className="size-3.5" />
-          </Button>
-        </DialogTrigger>
-
-        <DialogContent>
-          <FieldSet>
-            <FieldLegend>Field Details</FieldLegend>
-            <FieldDescription>
-              All changes will be applied immediately.
-            </FieldDescription>
-            <FieldGroup>
-              <div className="grid grid-cols-2 gap-4">
-                <FieldShadcn>
-                  <FieldLabel htmlFor="name">Name</FieldLabel>
-                  <Input
-                    id="name"
-                    autoComplete="off"
-                    placeholder="Name"
-                    value={field.name}
-                  />
-                </FieldShadcn>
-                <FieldShadcn>
-                  <FieldLabel htmlFor="type">Type</FieldLabel>
-                  <Input
-                    id="type"
-                    autoComplete="off"
-                    placeholder="Type"
-                    value={field.type}
-                  />
-                </FieldShadcn>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { id: "pk", label: "Primary Key", checked: field.pk },
-                  {
-                    id: "increment",
-                    label: "Auto Increment",
-                    checked: field.increment,
-                  },
-                  { id: "unique", label: "Unique", checked: field.unique },
-                  {
-                    id: "not_null",
-                    label: "Not Null",
-                    checked: field.not_null,
-                  },
-                ].map(({ id, label, checked }) => (
-                  <FieldShadcn key={id} orientation="horizontal">
-                    <Checkbox id={id} checked={checked} />
-                    <FieldLabel htmlFor={id} className="font-normal">
-                      {label}
-                    </FieldLabel>
-                  </FieldShadcn>
-                ))}
-              </div>
-            </FieldGroup>
-          </FieldSet>
-        </DialogContent>
-      </Dialog>
+      <SidebarFieldDetail tableName={tableName} field={field} />
     </div>
   );
 };
