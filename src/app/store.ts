@@ -7,8 +7,6 @@ export const store = configureStore({
   reducer: {
     database: undoable(databaseReducer, {
       limit: 50,
-      undoType: "DATABASE_UNDO",
-      redoType: "DATABASE_REDO",
       filter: excludeAction([setSelectedTables.type]),
     }),
   },

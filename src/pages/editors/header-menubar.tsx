@@ -1,9 +1,10 @@
-import { useAppSelector } from "@/app/hook";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
 import {
   Menubar,
   MenubarContent,
   MenubarItem,
   MenubarMenu,
+  MenubarShortcut,
   MenubarSub,
   MenubarSubContent,
   MenubarSubTrigger,
@@ -15,9 +16,11 @@ import CodePreview from "./code-preview";
 import { type CodeFormat } from "@/types/format";
 import { CODE_FORMATS } from "@/constants/code-formats";
 import { selectDatabaseState } from "@/features/database/selectors";
+import { ActionCreators } from "redux-undo";
 
 const HeaderMenubar = () => {
   const database = useAppSelector(selectDatabaseState);
+  const dispatch = useAppDispatch();
 
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [code, setCode] = useState("");
@@ -25,7 +28,6 @@ const HeaderMenubar = () => {
 
   const handleExport = (type: "dbml" | "json" | "psql" | "mysql") => {
     const exporter = Exportor.fromDatabase(database);
-
     let result = "";
 
     switch (type) {
@@ -57,7 +59,6 @@ const HeaderMenubar = () => {
           </MenubarTrigger>
           <MenubarContent>
             <MenubarItem>Import from</MenubarItem>
-
             <MenubarSub>
               <MenubarSubTrigger>Export to</MenubarSubTrigger>
               <MenubarSubContent>
@@ -75,6 +76,19 @@ const HeaderMenubar = () => {
                 </MenubarItem>
               </MenubarSubContent>
             </MenubarSub>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu>
+          <MenubarTrigger className="bg-transparent hover:bg-accent data-[state=open]:bg-accent">
+            Edit
+          </MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem onClick={() => dispatch(ActionCreators.undo())}>
+              Undo <MenubarShortcut>Ctrl + Z</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={() => dispatch(ActionCreators.redo())}>
+              Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
+            </MenubarItem>
           </MenubarContent>
         </MenubarMenu>
       </Menubar>
