@@ -10,8 +10,20 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Field } from "@/features/database/schemas/field";
-import { MoreHorizontalIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  BanIcon,
+  FingerprintIcon,
+  KeyRoundIcon,
+  MoreHorizontalIcon,
+} from "lucide-react";
 
 interface SidebarFieldProps {
   field: Field;
@@ -19,19 +31,46 @@ interface SidebarFieldProps {
 
 const SidebarField = ({ field }: SidebarFieldProps) => {
   return (
-    <div className="flex items-center gap-2 py-2">
-      <Input
-        value={field.name}
-        className="h-7 text-base rounded-xs px-1 py-2"
-      />
-      <Input
-        value={field.type}
-        className="h-7 text-base rounded-xs px-1 py-2"
-      />
+    <div className="group flex items-center gap-2 px-2 py-1 hover:bg-accent transition-colors">
+      <Tooltip>
+        <TooltipTrigger>
+          <KeyRoundIcon
+            className={cn({ "text-amber-500": field.pk }, "size-3")}
+          />
+        </TooltipTrigger>
+        <TooltipContent>Primary Key</TooltipContent>
+      </Tooltip>
+      <p className="flex-1 text-sm font-semibold truncate">{field.name}</p>
+      <p className="flex-1 text-sm text-muted-foreground truncate">
+        {field.type}
+      </p>
+      <div className="flex items-center gap-1 shrink-0">
+        <Tooltip>
+          <TooltipTrigger>
+            <BanIcon
+              className={cn({ "text-red-500": field.not_null }, "size-3")}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Not Null</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger>
+            <FingerprintIcon
+              className={cn({ "text-green-500": field.unique }, "size-3")}
+            />
+          </TooltipTrigger>
+          <TooltipContent>Unique</TooltipContent>
+        </Tooltip>
+      </div>
+
       <Dialog>
         <DialogTrigger asChild>
-          <Button variant="outline" size="icon" className="h-7 w-7 rounded-xs">
-            <MoreHorizontalIcon />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+          >
+            <MoreHorizontalIcon className="size-3.5" />
           </Button>
         </DialogTrigger>
 
@@ -57,36 +96,34 @@ const SidebarField = ({ field }: SidebarFieldProps) => {
                   <Input
                     id="type"
                     autoComplete="off"
-                    placeholder="Name"
+                    placeholder="Type"
                     value={field.type}
                   />
                 </FieldShadcn>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="pk" checked={field.pk} />
-                  <FieldLabel htmlFor="pk" className="font-normal">
-                    Primary Key
-                  </FieldLabel>
-                </FieldShadcn>
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="increment" checked={field.increment} />
-                  <FieldLabel htmlFor="increment" className="font-normal">
-                    Auto Increment
-                  </FieldLabel>
-                </FieldShadcn>
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="unique" checked={field.unique} />
-                  <FieldLabel htmlFor="unique" className="font-normal">
-                    Unique
-                  </FieldLabel>
-                </FieldShadcn>
-                <FieldShadcn orientation="horizontal">
-                  <Checkbox id="not_null" checked={field.not_null} />
-                  <FieldLabel htmlFor="not_null" className="font-normal">
-                    Not Null
-                  </FieldLabel>
-                </FieldShadcn>
+              <Separator />
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { id: "pk", label: "Primary Key", checked: field.pk },
+                  {
+                    id: "increment",
+                    label: "Auto Increment",
+                    checked: field.increment,
+                  },
+                  { id: "unique", label: "Unique", checked: field.unique },
+                  {
+                    id: "not_null",
+                    label: "Not Null",
+                    checked: field.not_null,
+                  },
+                ].map(({ id, label, checked }) => (
+                  <FieldShadcn key={id} orientation="horizontal">
+                    <Checkbox id={id} checked={checked} />
+                    <FieldLabel htmlFor={id} className="font-normal">
+                      {label}
+                    </FieldLabel>
+                  </FieldShadcn>
+                ))}
               </div>
             </FieldGroup>
           </FieldSet>

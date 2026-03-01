@@ -16,6 +16,7 @@ import {
 } from "@/utils/rules/tables";
 import { addTable } from "@/features/database/slice";
 import { toast } from "sonner";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const SidebarTabTable = () => {
   const tables = useAppSelector((state: RootState) => state.database.tables);
@@ -45,22 +46,21 @@ const SidebarTabTable = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="h-full flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <Input type="search" placeholder="Search" className="rounded-xs" />
-        <Button
-          variant="default"
-          className="rounded-xs"
-          onClick={handleCreateTable}
-        >
+        <Button className="rounded-xs" onClick={handleCreateTable}>
           <Plus /> New
         </Button>
       </div>
-      <div className="flex flex-col gap-1">
-        {tables.map((table) => (
-          <SidebarTable key={table.name} table={table} />
-        ))}
-      </div>
+
+      <ScrollArea className="flex-1 min-h-0">
+        <div className="flex flex-col gap-1">
+          {tables.map((table) => (
+            <SidebarTable key={table.name} table={table} />
+          ))}
+        </div>
+      </ScrollArea>
     </div>
   );
 };
