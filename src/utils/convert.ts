@@ -2,6 +2,7 @@ import type { Database } from "@/features/database/schemas/database";
 import type { Field } from "@/features/database/schemas/field";
 import type { Ref, RefOperator } from "@/features/database/schemas/ref";
 import type { Table } from "@/features/database/schemas/table";
+import { generateTableHeaderColor } from "./generators/tables";
 
 export const tableToDbml = (table: Table) => {
   const header = table.alias
@@ -65,20 +66,10 @@ export const dbmlToDatabase = (dbml: string): Database => {
       const tableName = tableMatch[1];
       const alias = tableMatch[2] ?? null;
       const fields: Field[] = [];
-      let headerColor: string | null = null;
       i++;
 
       while (i < lines.length && lines[i].trim() !== "}") {
         const fieldLine = lines[i].trim();
-
-        const colorMatch = fieldLine.match(
-          /headercolor\s*:\s*["']?(#[\w]+)["']?/i,
-        );
-        if (colorMatch) {
-          headerColor = colorMatch[1];
-          i++;
-          continue;
-        }
 
         if (!fieldLine || fieldLine.startsWith("Note")) {
           i++;
@@ -111,7 +102,12 @@ export const dbmlToDatabase = (dbml: string): Database => {
         i++;
       }
 
-      tables.push({ name: tableName, alias, fields, headerColor });
+      tables.push({
+        name: tableName,
+        alias,
+        fields,
+        headerColor: generateTableHeaderColor(),
+      });
       i++;
       continue;
     }

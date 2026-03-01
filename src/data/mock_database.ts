@@ -1,10 +1,11 @@
+import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import type { Database } from "@/features/database/schemas/database";
 import { REF_OPERATOR, type Ref } from "@/features/database/schemas/ref";
 import type { Table } from "@/features/database/schemas/table";
 
 const users: Table = {
   name: "users",
-  headerColor: "#3b82f6",
+  headerColor: TABLE_HEADER_COLORS.BLUE,
   alias: "u",
   fields: [
     {
@@ -36,7 +37,7 @@ const users: Table = {
 
 const posts: Table = {
   name: "posts",
-  headerColor: "#10b981",
+  headerColor: TABLE_HEADER_COLORS.EMERALD,
   alias: "p",
   fields: [
     {
@@ -76,7 +77,7 @@ const posts: Table = {
 
 const comments: Table = {
   name: "comments",
-  headerColor: "#f59e0b",
+  headerColor: TABLE_HEADER_COLORS.ROSE,
   alias: "c",
   fields: [
     {
@@ -116,7 +117,7 @@ const comments: Table = {
 
 const posts_comments: Table = {
   name: "posts_comments",
-  headerColor: "#f59e83",
+  headerColor: TABLE_HEADER_COLORS.VIOLET,
   alias: "pc",
   fields: [
     {
