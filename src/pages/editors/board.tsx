@@ -1,8 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
-import { setSelectedTables } from "@/features/database/slice";
+import { REF_OPERATOR } from "@/features/database/schemas/ref";
+import { selectRefs, selectTables } from "@/features/database/selectors";
+import { addRef, setSelectedTables } from "@/features/database/slice";
 import {
   Background,
   ConnectionLineType,
@@ -10,14 +11,15 @@ import {
   ReactFlow,
   useEdgesState,
   useNodesState,
+  type Connection,
   type Edge,
   type Node,
 } from "@xyflow/react";
 import { useCallback, useEffect } from "react";
 
 const Board = () => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
-  const refs = useAppSelector((state: RootState) => state.database.refs);
+  const tables = useAppSelector(selectTables);
+  const refs = useAppSelector(selectRefs);
   const dispatch = useAppDispatch();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -92,6 +94,38 @@ const Board = () => {
     [dispatch],
   );
 
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (
+        !connection.source ||
+        !connection.target ||
+        !connection.sourceHandle ||
+        !connection.targetHandle
+      )
+        return;
+
+      const refName = `fk_${connection.source}_${connection.target}`;
+
+      dispatch(
+        addRef({
+          name: refName,
+          endpoints: [
+            {
+              tableName: connection.source,
+              fieldName: connection.sourceHandle,
+            },
+            {
+              tableName: connection.target,
+              fieldName: connection.targetHandle,
+            },
+          ],
+          operator: REF_OPERATOR.ONE_TO_MANY,
+        }),
+      );
+    },
+    [dispatch],
+  );
+
   return (
     <>
       <svg style={{ position: "absolute", width: 0, height: 0, zIndex: -1 }}>
@@ -127,6 +161,7 @@ const Board = () => {
         onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
         onNodeDragStop={handleNodeDragStop}
+        onConnect={handleConnect}
       >
         <Background />
       </ReactFlow>

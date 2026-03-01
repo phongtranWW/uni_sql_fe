@@ -1,5 +1,4 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
 import SidebarTable from "./sidebar-table";
 import { Button } from "@/components/ui/button";
 import { Plus, SearchIcon } from "lucide-react";
@@ -22,9 +21,10 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import { selectTables } from "@/features/database/selectors";
 
 const SidebarTabTable = () => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
+  const tables = useAppSelector(selectTables);
   const [key, setKey] = useState("");
 
   const dispatch = useAppDispatch();
