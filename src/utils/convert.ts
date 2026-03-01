@@ -125,6 +125,7 @@ export const dbmlToDatabase = (dbml: string): Database => {
           { tableName: t1, fieldName: f1 },
           { tableName: t2, fieldName: f2 },
         ],
+        isSelected: false,
       });
       i++;
       continue;
@@ -148,6 +149,7 @@ export const dbmlToDatabase = (dbml: string): Database => {
               { tableName: t1, fieldName: f1 },
               { tableName: t2, fieldName: f2 },
             ],
+            isSelected: false,
           });
         }
         i++;
