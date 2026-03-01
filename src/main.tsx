@@ -8,6 +8,7 @@ import { store } from "@/app/store";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { ReactFlowProvider } from "@xyflow/react";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -18,10 +19,12 @@ createRoot(document.getElementById("root")!).render(
         storageKey="vite-ui-theme"
         enableSystem={false}
       >
-        <TooltipProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-        </TooltipProvider>
+        <ReactFlowProvider>
+          <TooltipProvider>
+            <RouterProvider router={router} />
+            <Toaster />
+          </TooltipProvider>
+        </ReactFlowProvider>
       </ThemeProvider>
     </ReduxProvider>
   </StrictMode>,

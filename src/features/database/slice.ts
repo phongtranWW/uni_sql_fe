@@ -14,6 +14,7 @@ const databaseSlice = createSlice({
         alias: action.payload.alias || null,
         headerColor: action.payload.headerColor,
         fields: [],
+        isSelected: false,
       };
       state.tables.push(table);
     },
@@ -30,6 +31,11 @@ const databaseSlice = createSlice({
       const table = state.tables.find((t) => t.name === action.payload.name);
       if (!table) return;
       Object.assign(table, action.payload.tableUpdate);
+    },
+    setSelectedTables: (state, action: PayloadAction<string[]>) => {
+      state.tables.forEach(
+        (t) => (t.isSelected = action.payload.includes(t.name)),
+      );
     },
     addField: (
       state,
@@ -105,6 +111,7 @@ export const {
   addTable,
   removeTable,
   updateTable,
+  setSelectedTables,
   addField,
   removeField,
   updateField,

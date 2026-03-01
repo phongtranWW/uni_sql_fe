@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import SidebarField from "./sidebar-field";
 import SidebarTableDetail from "./sidebar-table-detail";
 import { useAppDispatch } from "@/app/hook";
-import { addField } from "@/features/database/slice";
+import { addField, updateTable } from "@/features/database/slice";
 import { generateFieldName } from "@/utils/generators/field";
 import { toast } from "sonner";
 
@@ -34,6 +34,15 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
       key={table.name}
       className="group border-l-4 transition-colors"
       style={{ borderLeftColor: table.headerColor }}
+      open={table.isSelected}
+      onOpenChange={(open) => {
+        dispatch(
+          updateTable({
+            name: table.name,
+            tableUpdate: { isSelected: open },
+          }),
+        );
+      }}
     >
       <div className="flex items-center justify-between hover:bg-accent px-2 rounded-none">
         <CollapsibleTrigger asChild>

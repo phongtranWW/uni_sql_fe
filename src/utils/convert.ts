@@ -107,6 +107,7 @@ export const dbmlToDatabase = (dbml: string): Database => {
         alias,
         fields,
         headerColor: generateTableHeaderColor(),
+        isSelected: false,
       });
       i++;
       continue;
