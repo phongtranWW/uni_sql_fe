@@ -3,7 +3,11 @@ import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
 import { REF_OPERATOR } from "@/features/database/schemas/ref";
 import { selectRefs, selectTables } from "@/features/database/selectors";
-import { addRef, setSelectedTables } from "@/features/database/slice";
+import {
+  addRef,
+  setSelectedRefs,
+  setSelectedTables,
+} from "@/features/database/slice";
 import {
   Background,
   ConnectionLineType,
@@ -61,6 +65,7 @@ const Board = () => {
             endpoints: ref.endpoints,
             operator: ref.operator,
           },
+          selected: ref.isSelected,
         }) as Edge,
     );
     setEdges(newEdges);
@@ -70,7 +75,11 @@ const Board = () => {
     const selectedNodes = nodes.filter((n) => n.selected);
     const selectedTableNames = selectedNodes.map((n) => n.id);
     dispatch(setSelectedTables(selectedTableNames));
-  }, [dispatch, nodes]);
+
+    const selectedEdges = edges.filter((e) => e.selected);
+    const selectedRefNames = selectedEdges.map((e) => e.id);
+    dispatch(setSelectedRefs(selectedRefNames));
+  }, [dispatch, nodes, edges]);
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -82,10 +91,19 @@ const Board = () => {
     [dispatch, setNodes],
   );
 
+  const handleEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      dispatch(setSelectedRefs([edge.id]));
+    },
+    [dispatch],
+  );
+
   const handlePaneClick = useCallback(() => {
     dispatch(setSelectedTables([]));
+    dispatch(setSelectedRefs([]));
     setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
-  }, [dispatch, setNodes]);
+    setEdges((prev) => prev.map((e) => ({ ...e, selected: false })));
+  }, [dispatch, setNodes, setEdges]);
 
   const handleNodeDragStop = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -159,6 +177,7 @@ const Board = () => {
         panOnDrag={[1, 2]}
         onSelectionEnd={handleSelectionEnd}
         onNodeClick={handleNodeClick}
+        onEdgeClick={handleEdgeClick}
         onPaneClick={handlePaneClick}
         onNodeDragStop={handleNodeDragStop}
         onConnect={handleConnect}

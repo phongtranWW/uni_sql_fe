@@ -144,6 +144,7 @@ const posts_comments: Table = {
 };
 
 const fk_users_post: Ref = {
+  isSelected: false,
   name: "users_posts",
   endpoints: [
     {
@@ -160,6 +161,7 @@ const fk_users_post: Ref = {
 
 const fk_post_comments: Ref = {
   name: "fk_post_comments",
+  isSelected: false,
   endpoints: [
     {
       tableName: posts.name,
@@ -175,6 +177,7 @@ const fk_post_comments: Ref = {
 
 const fk_comment_posts: Ref = {
   name: "fk_comment_posts",
+  isSelected: false,
   endpoints: [
     {
       tableName: comments.name,

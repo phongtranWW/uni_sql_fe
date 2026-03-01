@@ -95,6 +95,7 @@ const databaseSlice = createSlice({
         name: action.payload.name,
         endpoints: action.payload.endpoints,
         operator: action.payload.operator,
+        isSelected: false,
       });
     },
     removeRef: (state, action: PayloadAction<string>) => {
@@ -111,6 +112,15 @@ const databaseSlice = createSlice({
       if (!ref) return;
       Object.assign(ref, action.payload.refUpdate);
     },
+    setSelectedRefs: (state, action: PayloadAction<string[]>) => {
+      state.refs.forEach(
+        (r) => (r.isSelected = action.payload.includes(r.name)),
+      );
+    },
+    removeSelectedElements: (state) => {
+      state.tables = state.tables.filter((t) => !t.isSelected);
+      state.refs = state.refs.filter((r) => !r.isSelected);
+    },
   },
 });
 
@@ -125,6 +135,8 @@ export const {
   addRef,
   removeRef,
   updateRef,
+  setSelectedRefs,
+  removeSelectedElements,
 } = databaseSlice.actions;
 
 export default databaseSlice.reducer;

@@ -17,6 +17,7 @@ import { type CodeFormat } from "@/types/format";
 import { CODE_FORMATS } from "@/constants/code-formats";
 import { selectDatabaseState } from "@/features/database/selectors";
 import { ActionCreators } from "redux-undo";
+import { removeSelectedElements } from "@/features/database/slice";
 
 const HeaderMenubar = () => {
   const database = useAppSelector(selectDatabaseState);
@@ -88,6 +89,9 @@ const HeaderMenubar = () => {
             </MenubarItem>
             <MenubarItem onClick={() => dispatch(ActionCreators.redo())}>
               Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem onClick={() => dispatch(removeSelectedElements())}>
+              Delete <MenubarShortcut>Del / Bac</MenubarShortcut>
             </MenubarItem>
           </MenubarContent>
         </MenubarMenu>
