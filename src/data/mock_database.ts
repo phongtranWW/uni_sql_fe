@@ -5,6 +5,7 @@ import type { Table } from "@/features/database/schemas/table";
 
 const users: Table = {
   name: "users",
+  isSelected: false,
   headerColor: TABLE_HEADER_COLORS.BLUE,
   alias: "u",
   fields: [
@@ -37,6 +38,7 @@ const users: Table = {
 
 const posts: Table = {
   name: "posts",
+  isSelected: false,
   headerColor: TABLE_HEADER_COLORS.EMERALD,
   alias: "p",
   fields: [
@@ -77,6 +79,7 @@ const posts: Table = {
 
 const comments: Table = {
   name: "comments",
+  isSelected: false,
   headerColor: TABLE_HEADER_COLORS.ROSE,
   alias: "c",
   fields: [
@@ -117,6 +120,7 @@ const comments: Table = {
 
 const posts_comments: Table = {
   name: "posts_comments",
+  isSelected: false,
   headerColor: TABLE_HEADER_COLORS.VIOLET,
   alias: "pc",
   fields: [
@@ -140,6 +144,7 @@ const posts_comments: Table = {
 };
 
 const fk_users_post: Ref = {
+  isSelected: false,
   name: "users_posts",
   endpoints: [
     {
@@ -156,6 +161,7 @@ const fk_users_post: Ref = {
 
 const fk_post_comments: Ref = {
   name: "fk_post_comments",
+  isSelected: false,
   endpoints: [
     {
       tableName: posts.name,
@@ -171,6 +177,7 @@ const fk_post_comments: Ref = {
 
 const fk_comment_posts: Ref = {
   name: "fk_comment_posts",
+  isSelected: false,
   endpoints: [
     {
       tableName: comments.name,

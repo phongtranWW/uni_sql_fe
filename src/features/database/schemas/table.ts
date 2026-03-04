@@ -8,6 +8,7 @@ export interface Table {
   name: string;
   fields: Field[];
   headerColor: TableHeaderColor;
+  isSelected: boolean;
   alias: string | null;
 }
 
@@ -21,4 +22,5 @@ export interface TableUpdate {
   name?: string;
   headerColor?: TableHeaderColor;
   alias?: string;
+  isSelected?: boolean;
 }

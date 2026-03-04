@@ -10,6 +10,7 @@ export type RefOperator = (typeof REF_OPERATOR)[keyof typeof REF_OPERATOR];
 
 export interface Ref {
   name: string;
+  isSelected: boolean;
   endpoints: [Endpoint, Endpoint];
   operator: RefOperator;
 }

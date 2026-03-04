@@ -1,7 +1,7 @@
 import { initialDatabase } from "@/data/mock_database";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Table, TableCreate, TableUpdate } from "./schemas/table";
-import type { RefUpdate } from "./schemas/ref";
+import type { RefCreate, RefUpdate } from "./schemas/ref";
 import type { FieldCreate, FieldUpdate } from "./schemas/field";
 
 const databaseSlice = createSlice({
@@ -14,6 +14,7 @@ const databaseSlice = createSlice({
         alias: action.payload.alias || null,
         headerColor: action.payload.headerColor,
         fields: [],
+        isSelected: false,
       };
       state.tables.push(table);
     },
@@ -30,6 +31,11 @@ const databaseSlice = createSlice({
       const table = state.tables.find((t) => t.name === action.payload.name);
       if (!table) return;
       Object.assign(table, action.payload.tableUpdate);
+    },
+    setSelectedTables: (state, action: PayloadAction<string[]>) => {
+      state.tables.forEach(
+        (t) => (t.isSelected = action.payload.includes(t.name)),
+      );
     },
     addField: (
       state,
@@ -84,6 +90,14 @@ const databaseSlice = createSlice({
       if (!field) return;
       Object.assign(field, action.payload.fieldUpdate);
     },
+    addRef: (state, action: PayloadAction<RefCreate>) => {
+      state.refs.push({
+        name: action.payload.name,
+        endpoints: action.payload.endpoints,
+        operator: action.payload.operator,
+        isSelected: false,
+      });
+    },
     removeRef: (state, action: PayloadAction<string>) => {
       state.refs = state.refs.filter((r) => r.name !== action.payload);
     },
@@ -98,6 +112,15 @@ const databaseSlice = createSlice({
       if (!ref) return;
       Object.assign(ref, action.payload.refUpdate);
     },
+    setSelectedRefs: (state, action: PayloadAction<string[]>) => {
+      state.refs.forEach(
+        (r) => (r.isSelected = action.payload.includes(r.name)),
+      );
+    },
+    removeSelectedElements: (state) => {
+      state.tables = state.tables.filter((t) => !t.isSelected);
+      state.refs = state.refs.filter((r) => !r.isSelected);
+    },
   },
 });
 
@@ -105,11 +128,15 @@ export const {
   addTable,
   removeTable,
   updateTable,
+  setSelectedTables,
   addField,
   removeField,
   updateField,
+  addRef,
   removeRef,
   updateRef,
+  setSelectedRefs,
+  removeSelectedElements,
 } = databaseSlice.actions;
 
 export default databaseSlice.reducer;

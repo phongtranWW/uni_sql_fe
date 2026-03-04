@@ -1,7 +1,13 @@
-import { useAppSelector } from "@/app/hook";
-import type { RootState } from "@/app/store";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
 import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
+import { REF_OPERATOR } from "@/features/database/schemas/ref";
+import { selectRefs, selectTables } from "@/features/database/selectors";
+import {
+  addRef,
+  setSelectedRefs,
+  setSelectedTables,
+} from "@/features/database/slice";
 import {
   Background,
   ConnectionLineType,
@@ -9,34 +15,38 @@ import {
   ReactFlow,
   useEdgesState,
   useNodesState,
+  type Connection,
   type Edge,
   type Node,
 } from "@xyflow/react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 const Board = () => {
-  const tables = useAppSelector((state: RootState) => state.database.tables);
-  const refs = useAppSelector((state: RootState) => state.database.refs);
+  const tables = useAppSelector(selectTables);
+  const refs = useAppSelector(selectRefs);
+  const dispatch = useAppDispatch();
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   useEffect(() => {
-    const mappedNodes: Node[] = tables.map((table, index) => ({
-      id: table.name,
-      type: "tableNode",
-      position: {
-        x: index * 250,
-        y: 100,
-      },
-      data: {
-        name: table.name,
-        fields: table.fields,
-        alias: table.alias,
-        headerColor: table.headerColor,
-      },
-    }));
-
-    setNodes(mappedNodes);
+    setNodes((prevNodes) => {
+      return tables.map((table, index) => {
+        const existingNode = prevNodes.find((n) => n.id === table.name);
+        return {
+          id: table.name,
+          type: "tableNode",
+          position: existingNode?.position ?? { x: index * 250, y: 100 },
+          selected: table.isSelected,
+          data: {
+            name: table.name,
+            fields: table.fields,
+            alias: table.alias,
+            headerColor: table.headerColor,
+          },
+        };
+      });
+    });
   }, [tables, setNodes]);
 
   useEffect(() => {
@@ -55,10 +65,84 @@ const Board = () => {
             endpoints: ref.endpoints,
             operator: ref.operator,
           },
+          selected: ref.isSelected,
         }) as Edge,
     );
     setEdges(newEdges);
   }, [refs, setEdges]);
+
+  const handleSelectionEnd = useCallback(() => {
+    const selectedNodes = nodes.filter((n) => n.selected);
+    const selectedTableNames = selectedNodes.map((n) => n.id);
+    dispatch(setSelectedTables(selectedTableNames));
+
+    const selectedEdges = edges.filter((e) => e.selected);
+    const selectedRefNames = selectedEdges.map((e) => e.id);
+    dispatch(setSelectedRefs(selectedRefNames));
+  }, [dispatch, nodes, edges]);
+
+  const handleNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      dispatch(setSelectedTables([node.id]));
+      setNodes((prev) =>
+        prev.map((n) => ({ ...n, selected: n.id === node.id })),
+      );
+    },
+    [dispatch, setNodes],
+  );
+
+  const handleEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => {
+      dispatch(setSelectedRefs([edge.id]));
+    },
+    [dispatch],
+  );
+
+  const handlePaneClick = useCallback(() => {
+    dispatch(setSelectedTables([]));
+    dispatch(setSelectedRefs([]));
+    setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
+    setEdges((prev) => prev.map((e) => ({ ...e, selected: false })));
+  }, [dispatch, setNodes, setEdges]);
+
+  const handleNodeDragStop = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      dispatch(setSelectedTables([node.id]));
+    },
+    [dispatch],
+  );
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      if (
+        !connection.source ||
+        !connection.target ||
+        !connection.sourceHandle ||
+        !connection.targetHandle
+      )
+        return;
+
+      const refName = `fk_${connection.source}_${connection.target}`;
+
+      dispatch(
+        addRef({
+          name: refName,
+          endpoints: [
+            {
+              tableName: connection.source,
+              fieldName: connection.sourceHandle,
+            },
+            {
+              tableName: connection.target,
+              fieldName: connection.targetHandle,
+            },
+          ],
+          operator: REF_OPERATOR.ONE_TO_MANY,
+        }),
+      );
+    },
+    [dispatch],
+  );
 
   return (
     <>
@@ -91,6 +175,12 @@ const Board = () => {
         fitView
         selectionOnDrag={true}
         panOnDrag={[1, 2]}
+        onSelectionEnd={handleSelectionEnd}
+        onNodeClick={handleNodeClick}
+        onEdgeClick={handleEdgeClick}
+        onPaneClick={handlePaneClick}
+        onNodeDragStop={handleNodeDragStop}
+        onConnect={handleConnect}
       >
         <Background />
       </ReactFlow>

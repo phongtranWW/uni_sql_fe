@@ -138,3 +138,7 @@
 .react-flow__edge.selected {
   color: hsl(var(--primary));
 }
+
+.react-flow__node.selected {
+  outline: none !important;
+}

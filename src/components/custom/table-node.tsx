@@ -2,6 +2,7 @@ import type { Field } from "@/features/database/schemas/field";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Badge } from "../ui/badge";
 import { Key, Lock } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type TableNode = Node<
   {
@@ -13,9 +14,14 @@ type TableNode = Node<
   "table"
 >;
 
-export default function TableNode({ data }: NodeProps<TableNode>) {
+export default function TableNode({ data, selected }: NodeProps<TableNode>) {
   return (
-    <div className="overflow-hidden rounded-sm flex flex-col w-60 bg-card border border-border shadow-sm">
+    <div
+      className={cn(
+        "overflow-hidden rounded-sm flex flex-col w-60 bg-card border shadow-sm transition-all",
+        selected ? "border-primary border-2 border-dashed" : "border-border",
+      )}
+    >
       <div
         className="text-center py-2 text-sm font-semibold text-card-foreground"
         style={{ backgroundColor: data.headerColor || undefined }}
