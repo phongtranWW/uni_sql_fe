@@ -5,6 +5,7 @@ import databaseReducer, {
   setSelectedTables,
 } from "@/features/database/slice";
 import undoable, { excludeAction } from "redux-undo";
+import authReducer from "@/features/auth/slice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
       limit: 50,
       filter: excludeAction([setSelectedTables.type, setSelectedRefs.type]),
     }),
+    auth: authReducer,
   },
 });
 
