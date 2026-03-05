@@ -19,7 +19,9 @@ export default function TableNode({ data, selected }: NodeProps<TableNode>) {
     <div
       className={cn(
         "overflow-hidden rounded-sm flex flex-col w-60 bg-card border shadow-sm transition-all",
-        selected ? "border-primary border-2 border-dashed" : "border-border",
+        selected
+          ? "border-primary border-2 border-dashed"
+          : "border-border border-dashed hover:border-primary hover:border-2",
       )}
     >
       <div
