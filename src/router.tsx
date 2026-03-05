@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { Home } from "./pages/home";
 import { Editors } from "./pages/editors";
+import TemplatePage from "./pages/template";
 
 const router = createBrowserRouter([
   {
@@ -10,6 +11,10 @@ const router = createBrowserRouter([
   {
     path: "/editor",
     element: <Editors />,
+  },
+  {
+    path: "/template",
+    element: <TemplatePage />,
   },
 ]);
 
