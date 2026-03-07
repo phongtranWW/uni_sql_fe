@@ -13,12 +13,9 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type {
-  Table,
-  TableHeaderColor,
-} from "@/features/database/schemas/table";
-import { selectTables } from "@/features/database/selectors";
-import { removeTable, updateTable } from "@/features/database/slice";
+import type { Table, TableHeaderColor } from "@/features/project/schemas/table";
+import { selectDatabaseTables } from "@/features/project/selectors";
+import { removeTable, updateTable } from "@/features/project/slices/database";
 import { isTableNameUnique, isTableNameValid } from "@/utils/rules/tables";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
@@ -29,7 +26,7 @@ interface SidebarTableDetailProps {
 }
 
 const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
-  const tables = useAppSelector(selectTables);
+  const tables = useAppSelector(selectDatabaseTables);
   const dispatch = useAppDispatch();
 
   const [name, setName] = useState<string>(table.name);

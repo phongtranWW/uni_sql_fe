@@ -1,7 +1,7 @@
 import { useAppDispatch } from "@/app/hook";
 import { ActionCreators } from "redux-undo";
 import { useHotkeys } from "react-hotkeys-hook";
-import { removeSelectedElements } from "@/features/database/slice";
+import { removeSelectedElements } from "@/features/project/slices/database";
 
 const useShortcuts = () => {
   const dispatch = useAppDispatch();

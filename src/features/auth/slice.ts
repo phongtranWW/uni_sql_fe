@@ -26,7 +26,6 @@ const authSlice = createSlice({
         handleAuthCallback.fulfilled,
         (state, action: PayloadAction<Profile>) => {
           state.status = "succeeded";
-          console.log(action.payload);
           state.profile = action.payload;
           state.error = null;
         },

@@ -15,12 +15,12 @@ import { useState } from "react";
 import CodePreview from "./code-preview";
 import { type CodeFormat } from "@/types/format";
 import { CODE_FORMATS } from "@/constants/code-formats";
-import { selectDatabaseState } from "@/features/database/selectors";
 import { ActionCreators } from "redux-undo";
-import { removeSelectedElements } from "@/features/database/slice";
+import { selectDatabase } from "@/features/project/selectors";
+import { removeSelectedElements } from "@/features/project/slices/database";
 
 const HeaderMenubar = () => {
-  const database = useAppSelector(selectDatabaseState);
+  const database = useAppSelector(selectDatabase);
   const dispatch = useAppDispatch();
 
   const [showCodePreview, setShowCodePreview] = useState(false);

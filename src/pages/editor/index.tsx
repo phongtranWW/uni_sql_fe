@@ -9,20 +9,18 @@ import Header from "./header";
 import useShortcuts from "@/hooks/use-shortcuts";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { useEffect } from "react";
-import { loadDatabase } from "@/features/database/slice";
 import { useParams } from "react-router";
 import { toast } from "sonner";
+import { selectMeta } from "@/features/project/selectors";
+import { getDatabase } from "@/features/project/thunks";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const status = useAppSelector((state) => state.database.present.status);
-  const error = useAppSelector((state) => state.database.present.error);
-
+  const { status, error } = useAppSelector(selectMeta);
   useShortcuts();
-
   useEffect(() => {
-    if (id) dispatch(loadDatabase(id));
+    if (id) dispatch(getDatabase(id));
   }, [id, dispatch]);
 
   useEffect(() => {
