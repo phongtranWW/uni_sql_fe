@@ -1,5 +1,3 @@
-import { store } from "@/app/store";
-import { sessionExpired } from "@/features/auth/slice";
 import { tokenStorage } from "@/utils/token-storage";
 import axios, {
   AxiosError,
@@ -30,7 +28,7 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      store.dispatch(sessionExpired());
+      tokenStorage.clear();
     }
 
     return Promise.reject(error);

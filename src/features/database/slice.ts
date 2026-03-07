@@ -1,12 +1,42 @@
 import { initialDatabase } from "@/data/mock_database";
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import type { Table, TableCreate, TableUpdate } from "./schemas/table";
 import type { RefCreate, RefUpdate } from "./schemas/ref";
 import type { FieldCreate, FieldUpdate } from "./schemas/field";
+import axios from "axios";
+import { databaseService, type DatabaseDto } from "./service";
+
+export type LoadStatus = "idle" | "loading" | "succeeded" | "failed";
+
+export const loadDatabase = createAsyncThunk<
+  DatabaseDto,
+  string,
+  { rejectValue: string }
+>("database/load", async (id, { rejectWithValue }) => {
+  try {
+    const data = await databaseService.getById(id);
+    return data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to load database",
+      );
+    }
+    return rejectWithValue("Failed to load database");
+  }
+});
 
 const databaseSlice = createSlice({
   name: "database",
-  initialState: initialDatabase,
+  initialState: {
+    ...initialDatabase,
+    status: "idle",
+    error: null as string | null,
+  },
   reducers: {
     addTable: (state, action: PayloadAction<TableCreate>) => {
       const table: Table = {
@@ -121,6 +151,22 @@ const databaseSlice = createSlice({
       state.tables = state.tables.filter((t) => !t.isSelected);
       state.refs = state.refs.filter((r) => !r.isSelected);
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(loadDatabase.pending, (state) => {
+      state.status = "loading";
+    });
+    builder.addCase(loadDatabase.fulfilled, (state, action) => {
+      state.status = "succeeded";
+      const database = action.payload;
+      state.tables = database.tables;
+      state.refs = database.refs;
+      state.name = database.name;
+    });
+    builder.addCase(loadDatabase.rejected, (state, action) => {
+      state.status = "failed";
+      state.error = action.payload || null;
+    });
   },
 });
 

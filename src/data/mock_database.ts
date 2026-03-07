@@ -192,6 +192,7 @@ const fk_comment_posts: Ref = {
 };
 
 export const initialDatabase: Database = {
+  name: "Mock Database",
   tables: [users, posts, comments, posts_comments],
   refs: [fk_users_post, fk_post_comments, fk_comment_posts],
 };
