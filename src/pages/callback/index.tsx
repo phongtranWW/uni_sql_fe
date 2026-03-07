@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/app/hook";
-import { handleAuthCallback } from "@/features/auth/slice";
+import { handleAuthCallback } from "@/features/auth/thunks";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router";
@@ -12,12 +12,9 @@ const AuthCallback = () => {
   useEffect(() => {
     if (hasHandled.current) return;
     hasHandled.current = true;
-
     (async () => {
       const token = searchParams.get("accessToken");
-
       if (!token) return navigate("/login", { replace: true });
-
       try {
         await dispatch(handleAuthCallback(token)).unwrap();
         navigate("/", { replace: true });

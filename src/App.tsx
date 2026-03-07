@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useAppDispatch } from "./app/hook";
-import { restoreSession } from "./features/auth/slice";
 import { useEffect } from "react";
+import { restoreSession } from "./features/auth/thunks";
 
 const App = () => {
   const dispatch = useAppDispatch();

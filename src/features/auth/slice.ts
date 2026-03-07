@@ -1,88 +1,17 @@
-import { tokenStorage } from "@/utils/token-storage";
-import {
-  createSlice,
-  createAsyncThunk,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
-import type { Auth } from "./schemas/auth";
-import { authService } from "./service";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Profile } from "./schemas/profile";
-import axios from "axios";
-
-export const handleAuthCallback = createAsyncThunk<
-  { profile: Profile; token: string },
-  string,
-  { rejectValue: string }
->("auth/handleCallback", async (token, { rejectWithValue }) => {
-  try {
-    tokenStorage.set(token);
-    const profile = await authService.getProfile();
-    return {
-      profile,
-      token,
-    };
-  } catch (error) {
-    tokenStorage.clear();
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || "Authentication failed",
-      );
-    }
-    return rejectWithValue("Authentication failed");
-  }
-});
-
-export const restoreSession = createAsyncThunk<
-  { profile: Profile; token: string },
-  void,
-  { rejectValue: string }
->("auth/restoreSession", async (_, { rejectWithValue }) => {
-  try {
-    const token = tokenStorage.get();
-
-    if (!token) {
-      return rejectWithValue("Access token not found");
-    }
-    const profile = await authService.getProfile();
-    return {
-      profile,
-      token,
-    };
-  } catch (error: unknown) {
-    tokenStorage.clear();
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Session expired. Please log in again.",
-      );
-    }
-    return rejectWithValue("Session expired. Please log in again.");
-  }
-});
-
-export const logout = createAsyncThunk<void, void>("auth/logout", async () => {
-  tokenStorage.clear();
-});
-
-const initialState: Auth = {
-  profile: null,
-  token: tokenStorage.get(),
-  isLoading: true,
-  isAuthenticated: false,
-  error: null,
-};
+import { initialAuth } from "./state";
+import {
+  handleAuthCallback,
+  loginWithGoogle,
+  logout,
+  restoreSession,
+} from "./thunks";
 
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: initialAuth,
   reducers: {
-    sessionExpired(state) {
-      state.profile = null;
-      state.token = null;
-      state.isAuthenticated = false;
-      state.error = "Session expired. Please log in again.";
-      tokenStorage.clear();
-    },
     clearError(state) {
       state.error = null;
     },
@@ -91,64 +20,62 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(handleAuthCallback.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
+        state.status = "loading";
       })
       .addCase(
         handleAuthCallback.fulfilled,
-        (state, action: PayloadAction<{ profile: Profile; token: string }>) => {
-          state.isLoading = false;
-          state.isAuthenticated = true;
-          state.profile = action.payload.profile;
-          state.token = action.payload.token;
+        (state, action: PayloadAction<Profile>) => {
+          state.status = "succeeded";
+          console.log(action.payload);
+          state.profile = action.payload;
           state.error = null;
         },
       )
       .addCase(handleAuthCallback.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isAuthenticated = false;
-        state.error = action.payload || "Authentication failed";
-      });
-    builder
-      .addCase(restoreSession.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(
-        restoreSession.fulfilled,
-        (state, action: PayloadAction<{ profile: Profile; token: string }>) => {
-          state.isLoading = false;
-          state.isAuthenticated = true;
-          state.profile = action.payload.profile;
-          state.token = action.payload.token;
-          state.error = null;
-        },
-      )
-      .addCase(restoreSession.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isAuthenticated = false;
-        state.profile = null;
+        state.status = "failed";
         state.error = action.payload || null;
       });
     builder
-      .addCase(logout.pending, (state) => {
-        state.isLoading = true;
+      .addCase(restoreSession.pending, (state) => {
+        state.status = "loading";
       })
-      .addCase(logout.fulfilled, (state) => {
-        state.isLoading = false;
-        state.profile = null;
-        state.token = null;
-        state.isAuthenticated = false;
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.profile = action.payload;
         state.error = null;
       })
-      .addCase(logout.rejected, (state) => {
-        state.isLoading = false;
-        state.token = null;
-        state.isAuthenticated = false;
-        state.isAuthenticated = false;
+      .addCase(restoreSession.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || null;
+        state.profile = null;
+      });
+    builder
+      .addCase(logout.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.status = "succeeded";
+        state.profile = null;
+        state.error = null;
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || null;
+      });
+    builder
+      .addCase(loginWithGoogle.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(loginWithGoogle.fulfilled, (state) => {
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload || null;
       });
   },
 });
 
-export const { sessionExpired, clearError } = authSlice.actions;
+export const { clearError } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
-import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { clearError } from "@/features/auth/slice";
+import { loginWithGoogle } from "@/features/auth/thunks";
+import { Spinner } from "@/components/ui/spinner";
+import { selectAuthState } from "@/features/auth/selectors";
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
@@ -38,20 +42,23 @@ export interface FormProps {
 }
 
 export const Form = ({ className }: FormProps) => {
-  const { loginWithGoogle, isAuthenticated, isLoading, error, clearError } =
-    useAuth();
+  const { profile, error, status } = useAppSelector(selectAuthState);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/", { replace: true });
-  }, [isAuthenticated, navigate]);
+    if (profile) navigate("/", { replace: true });
+  }, [profile, navigate]);
 
   useEffect(() => {
     if (error) {
       toast.error(error);
       clearError();
     }
-  }, [error, clearError]);
+  }, [error]);
+
+  const handleLoginWithGoogle = async () =>
+    dispatch(loginWithGoogle()).unwrap();
 
   return (
     <div
@@ -76,11 +83,12 @@ export const Form = ({ className }: FormProps) => {
           <Button
             variant="outline"
             className="w-full gap-2.5"
-            onClick={loginWithGoogle}
-            disabled={isLoading}
+            onClick={handleLoginWithGoogle}
+            disabled={status === "loading"}
           >
+            {status === "loading" && <Spinner />}
             <GoogleIcon />
-            {isLoading ? "Redirecting…" : "Continue with Google"}
+            Continue with Google
           </Button>
 
           <Button

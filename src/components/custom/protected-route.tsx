@@ -1,23 +1,12 @@
-import { useAuth } from "@/hooks/use-auth";
-import { Loader2 } from "lucide-react";
+import { useAppSelector } from "@/app/hook";
 import { Navigate, Outlet } from "react-router";
+import { Spinner } from "../ui/spinner";
+import { selectAuthState } from "@/features/auth/selectors";
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">
-            Checking authentication...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  const { profile, status } = useAppSelector(selectAuthState);
+  if (status === "loading") return <Spinner />;
+  return profile ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;
