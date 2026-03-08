@@ -1,13 +1,16 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
-import { REF_OPERATOR } from "@/features/database/schemas/ref";
-import { selectRefs, selectTables } from "@/features/database/selectors";
+import { REF_OPERATOR } from "@/features/project/schemas/ref";
+import {
+  selectDatabaseRefs,
+  selectDatabaseTables,
+} from "@/features/project/selectors";
 import {
   addRef,
   setSelectedRefs,
   setSelectedTables,
-} from "@/features/database/slice";
+} from "@/features/project/slices/database";
 import {
   Background,
   ConnectionLineType,
@@ -22,8 +25,8 @@ import {
 import { useCallback, useEffect } from "react";
 
 const Board = () => {
-  const tables = useAppSelector(selectTables);
-  const refs = useAppSelector(selectRefs);
+  const tables = useAppSelector(selectDatabaseTables);
+  const refs = useAppSelector(selectDatabaseRefs);
   const dispatch = useAppDispatch();
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);

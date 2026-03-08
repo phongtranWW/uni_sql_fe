@@ -17,8 +17,8 @@ import {
   FieldGroup,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { Field } from "@/features/database/schemas/field";
-import { removeField, updateField } from "@/features/database/slice";
+import type { Field } from "@/features/project/schemas/field";
+import { removeField, updateField } from "@/features/project/slices/database";
 import {
   ArrowUp,
   Ban,
