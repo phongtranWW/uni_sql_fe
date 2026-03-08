@@ -1,4 +1,4 @@
-import type { Database } from "@/features/database/schemas/database";
+import type { Database } from "@/features/project/schemas/database";
 import type { Database as CoreDatabase } from "@dbml/core";
 import { ModelExporter, Parser } from "@dbml/core";
 import { dbmlToDatabase } from "./convert";

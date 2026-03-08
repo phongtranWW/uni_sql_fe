@@ -7,10 +7,10 @@ import {
 } from "@/components/ui/input-group";
 import { useState } from "react";
 import { SearchIcon } from "lucide-react";
-import { selectRefs } from "@/features/database/selectors";
+import { selectDatabaseRefs } from "@/features/project/selectors";
 
 const SidebarTabRef = () => {
-  const refs = useAppSelector(selectRefs);
+  const refs = useAppSelector(selectDatabaseRefs);
   const [key, setKey] = useState("");
 
   const filteredRefs = refs.filter((ref) =>

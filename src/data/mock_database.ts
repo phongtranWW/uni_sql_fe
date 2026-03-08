@@ -1,7 +1,7 @@
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-import type { Database } from "@/features/database/schemas/database";
-import { REF_OPERATOR, type Ref } from "@/features/database/schemas/ref";
-import type { Table } from "@/features/database/schemas/table";
+import type { Database } from "@/features/project/schemas/database";
+import { REF_OPERATOR, type Ref } from "@/features/project/schemas/ref";
+import type { Table } from "@/features/project/schemas/table";
 
 const users: Table = {
   name: "users",
@@ -192,6 +192,7 @@ const fk_comment_posts: Ref = {
 };
 
 export const initialDatabase: Database = {
+  name: "Mock Database",
   tables: [users, posts, comments, posts_comments],
   refs: [fk_users_post, fk_post_comments, fk_comment_posts],
 };

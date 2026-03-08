@@ -1,5 +1,5 @@
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-import type { TableHeaderColor } from "@/features/database/schemas/table";
+import type { TableHeaderColor } from "@/features/project/schemas/table";
 import { nanoid } from "@reduxjs/toolkit";
 
 export const generateTableHeaderColor = (): TableHeaderColor => {
