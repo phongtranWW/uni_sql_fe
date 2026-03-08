@@ -161,5 +161,5 @@ export const dbmlToDatabase = (dbml: string): Database => {
     i++;
   }
 
-  return { tables, refs };
+  return { name: "", tables, refs };
 };

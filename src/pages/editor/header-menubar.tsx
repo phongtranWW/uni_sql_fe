@@ -16,12 +16,16 @@ import CodePreview from "./code-preview";
 import { type CodeFormat } from "@/types/format";
 import { CODE_FORMATS } from "@/constants/code-formats";
 import { ActionCreators } from "redux-undo";
-import { selectDatabase } from "@/features/project/selectors";
+import { selectDatabase, selectMeta } from "@/features/project/selectors";
 import { removeSelectedElements } from "@/features/project/slices/database";
+import { useParams } from "react-router";
+import { upsertProject } from "@/features/project/thunks";
 
 const HeaderMenubar = () => {
-  const database = useAppSelector(selectDatabase);
   const dispatch = useAppDispatch();
+  const { id } = useParams<{ id: string }>();
+  const database = useAppSelector(selectDatabase);
+  const { saveStatus } = useAppSelector(selectMeta);
 
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [code, setCode] = useState("");
@@ -89,6 +93,14 @@ const HeaderMenubar = () => {
             </MenubarItem>
             <MenubarItem onClick={() => dispatch(ActionCreators.redo())}>
               Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
+            </MenubarItem>
+            <MenubarItem
+              onClick={() => {
+                if (id && saveStatus === "unsaved")
+                  dispatch(upsertProject({ id, database }));
+              }}
+            >
+              Save <MenubarShortcut>Ctrl + S</MenubarShortcut>
             </MenubarItem>
             <MenubarItem onClick={() => dispatch(removeSelectedElements())}>
               Delete <MenubarShortcut>Del / Bac</MenubarShortcut>

@@ -1,6 +1,7 @@
 import logo from "@/assets/logo.png";
 import HeaderMenubar from "./header-menubar";
 import HeaderThemeToggle from "./header-theme-toggle";
+import HeaderProjectStatus from "./header-project-status";
 
 const Header = () => {
   return (
@@ -10,7 +11,8 @@ const Header = () => {
         <HeaderMenubar />
       </div>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-3">
+        <HeaderProjectStatus />
         <HeaderThemeToggle />
       </div>
     </header>
