@@ -15,7 +15,7 @@ import {
   REF_OPERATOR,
   type Ref,
   type RefOperator,
-} from "@/features/database/schemas/ref";
+} from "@/features/project/schemas/ref";
 import {
   ArrowDown,
   ArrowUp,
@@ -33,8 +33,8 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { Separator } from "@/components/ui/separator";
-import { removeRef, updateRef } from "@/features/database/slice";
-import { selectTables } from "@/features/database/selectors";
+import { selectDatabaseTables } from "@/features/project/selectors";
+import { removeRef, updateRef } from "@/features/project/slices/database";
 
 const OPERATOR_ICONS = {
   [REF_OPERATOR.ONE_TO_ONE]: SeparatorHorizontal,
@@ -55,7 +55,7 @@ const SidebarEndpoint = ({
   onTableChange,
   onFieldChange,
 }: SidebarEndpointProps) => {
-  const tables = useAppSelector(selectTables);
+  const tables = useAppSelector(selectDatabaseTables);
   const table = tables.find((t) => t.name === tableName);
 
   return (

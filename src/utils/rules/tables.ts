@@ -1,4 +1,4 @@
-import type { Table } from "@/features/database/schemas/table";
+import type { Table } from "@/features/project/schemas/table";
 
 const IDENTIFIER_REGEX = RegExp(/^[a-zA-Z_][a-zA-Z0-9_]*$/);
 const RESERVED_KEYWORDS = [

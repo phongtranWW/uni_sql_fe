@@ -1,32 +1,29 @@
-import { initialDatabase } from "@/data/mock_database";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Table, TableCreate, TableUpdate } from "./schemas/table";
-import type { RefCreate, RefUpdate } from "./schemas/ref";
-import type { FieldCreate, FieldUpdate } from "./schemas/field";
+import type { RefCreate, RefUpdate } from "../schemas/ref";
+import { getProject } from "../thunks";
+import type { TableCreate, TableUpdate } from "../schemas/table";
+import type { FieldCreate, FieldUpdate } from "../schemas/field";
+import { initialDatabase } from "../state";
 
 const databaseSlice = createSlice({
   name: "database",
   initialState: initialDatabase,
   reducers: {
     addTable: (state, action: PayloadAction<TableCreate>) => {
-      const table: Table = {
+      state.tables.push({
         name: action.payload.name,
         alias: action.payload.alias || null,
         headerColor: action.payload.headerColor,
         fields: [],
         isSelected: false,
-      };
-      state.tables.push(table);
+      });
     },
     removeTable: (state, action: PayloadAction<string>) => {
       state.tables = state.tables.filter((t) => t.name !== action.payload);
     },
     updateTable: (
       state,
-      action: PayloadAction<{
-        name: string;
-        tableUpdate: TableUpdate;
-      }>,
+      action: PayloadAction<{ name: string; tableUpdate: TableUpdate }>,
     ) => {
       const table = state.tables.find((t) => t.name === action.payload.name);
       if (!table) return;
@@ -39,10 +36,7 @@ const databaseSlice = createSlice({
     },
     addField: (
       state,
-      action: PayloadAction<{
-        tableName: string;
-        fieldCreate: FieldCreate;
-      }>,
+      action: PayloadAction<{ tableName: string; fieldCreate: FieldCreate }>,
     ) => {
       const table = state.tables.find(
         (t) => t.name === action.payload.tableName,
@@ -59,10 +53,7 @@ const databaseSlice = createSlice({
     },
     removeField: (
       state,
-      action: PayloadAction<{
-        tableName: string;
-        fieldName: string;
-      }>,
+      action: PayloadAction<{ tableName: string; fieldName: string }>,
     ) => {
       const table = state.tables.find(
         (t) => t.name === action.payload.tableName,
@@ -103,10 +94,7 @@ const databaseSlice = createSlice({
     },
     updateRef: (
       state,
-      action: PayloadAction<{
-        name: string;
-        refUpdate: RefUpdate;
-      }>,
+      action: PayloadAction<{ name: string; refUpdate: RefUpdate }>,
     ) => {
       const ref = state.refs.find((r) => r.name === action.payload.name);
       if (!ref) return;
@@ -121,6 +109,16 @@ const databaseSlice = createSlice({
       state.tables = state.tables.filter((t) => !t.isSelected);
       state.refs = state.refs.filter((r) => !r.isSelected);
     },
+    setName: (state, action: PayloadAction<string>) => {
+      state.name = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(getProject.fulfilled, (state, action) => {
+      state.name = action.payload.name;
+      state.tables = action.payload.tables;
+      state.refs = action.payload.refs;
+    });
   },
 });
 
@@ -137,6 +135,7 @@ export const {
   updateRef,
   setSelectedRefs,
   removeSelectedElements,
+  setName,
 } = databaseSlice.actions;
 
 export default databaseSlice.reducer;

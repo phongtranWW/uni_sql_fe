@@ -1,5 +1,5 @@
-import type { Endpoint } from "@/features/database/schemas/endpoint";
-import type { RefOperator } from "@/features/database/schemas/ref";
+import type { Endpoint } from "@/features/project/schemas/endpoint";
+import type { RefOperator } from "@/features/project/schemas/ref";
 import { getEdgeParams } from "@/utils/get-edge-params";
 import {
   BaseEdge,

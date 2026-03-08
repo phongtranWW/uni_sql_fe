@@ -1,5 +1,5 @@
 import { ChevronRightIcon, Plus } from "lucide-react";
-import type { Table } from "@/features/database/schemas/table";
+import type { Table } from "@/features/project/schemas/table";
 import {
   Collapsible,
   CollapsibleContent,
@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 import SidebarField from "./sidebar-field";
 import SidebarTableDetail from "./sidebar-table-detail";
 import { useAppDispatch } from "@/app/hook";
-import { addField, updateTable } from "@/features/database/slice";
 import { generateFieldName } from "@/utils/generators/field";
 import { toast } from "sonner";
+import { addField, updateTable } from "@/features/project/slices/database";
 
 interface SidebarTableProps {
   table: Table;

@@ -1,4 +1,4 @@
-import { REF_OPERATOR, type Ref } from "@/features/database/schemas/ref";
+import { REF_OPERATOR, type Ref } from "@/features/project/schemas/ref";
 import { ArrowLeft, ArrowRight, SeparatorVertical } from "lucide-react";
 import SidebarRefDetail from "./sidebar-ref-detail";
 import { cn } from "@/lib/utils";

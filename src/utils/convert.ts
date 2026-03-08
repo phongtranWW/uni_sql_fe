@@ -1,7 +1,7 @@
-import type { Database } from "@/features/database/schemas/database";
-import type { Field } from "@/features/database/schemas/field";
-import type { Ref, RefOperator } from "@/features/database/schemas/ref";
-import type { Table } from "@/features/database/schemas/table";
+import type { Database } from "@/features/project/schemas/database";
+import type { Field } from "@/features/project/schemas/field";
+import type { Ref, RefOperator } from "@/features/project/schemas/ref";
+import type { Table } from "@/features/project/schemas/table";
 import { generateTableHeaderColor } from "./generators/tables";
 
 export const tableToDbml = (table: Table) => {
@@ -161,5 +161,5 @@ export const dbmlToDatabase = (dbml: string): Database => {
     i++;
   }
 
-  return { tables, refs };
+  return { name: "", tables, refs };
 };

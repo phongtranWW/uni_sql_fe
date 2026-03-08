@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hook";
 import SidebarTable from "./sidebar-table";
 import { Button } from "@/components/ui/button";
 import { Plus, SearchIcon } from "lucide-react";
-import type { TableCreate } from "@/features/database/schemas/table";
+import type { TableCreate } from "@/features/project/schemas/table";
 import {
   generateTableHeaderColor,
   generateTableName,
@@ -12,7 +12,6 @@ import {
   isTableNameUnique,
   isTableNameValid,
 } from "@/utils/rules/tables";
-import { addTable } from "@/features/database/slice";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
@@ -21,10 +20,11 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { selectTables } from "@/features/database/selectors";
+import { selectDatabaseTables } from "@/features/project/selectors";
+import { addTable } from "@/features/project/slices/database";
 
 const SidebarTabTable = () => {
-  const tables = useAppSelector(selectTables);
+  const tables = useAppSelector(selectDatabaseTables);
   const [key, setKey] = useState("");
 
   const dispatch = useAppDispatch();
