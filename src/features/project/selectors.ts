@@ -1,5 +1,4 @@
 import type { RootState } from "@/app/store";
-
 export const selectProjectState = (state: RootState) => state.project;
 
 export const selectMeta = (state: RootState) => selectProjectState(state).meta;

@@ -12,7 +12,8 @@ import { useEffect } from "react";
 import { useParams } from "react-router";
 import { toast } from "sonner";
 import { selectMeta } from "@/features/project/selectors";
-import { getDatabase } from "@/features/project/thunks";
+import { Spinner } from "@/components/ui/spinner";
+import { getProject } from "@/features/project/thunks";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ const Editor = () => {
   const { status, error } = useAppSelector(selectMeta);
   useShortcuts();
   useEffect(() => {
-    if (id) dispatch(getDatabase(id));
+    if (id) dispatch(getProject(id));
   }, [id, dispatch]);
 
   useEffect(() => {
@@ -28,9 +29,7 @@ const Editor = () => {
       toast.error(error);
     }
   }, [status, error]);
-
-  if (status === "loading") return <div>Loading...</div>;
-  if (status !== "succeeded") return null;
+  if (status === "loading") return <Spinner />;
 
   return (
     <div className="flex flex-col h-screen">

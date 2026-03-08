@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RefCreate, RefUpdate } from "../schemas/ref";
-import { getDatabase } from "../thunks";
+import { getProject } from "../thunks";
 import type { TableCreate, TableUpdate } from "../schemas/table";
 import type { FieldCreate, FieldUpdate } from "../schemas/field";
 import { initialDatabase } from "../state";
@@ -114,7 +114,7 @@ const databaseSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getDatabase.fulfilled, (state, action) => {
+    builder.addCase(getProject.fulfilled, (state, action) => {
       state.name = action.payload.name;
       state.tables = action.payload.tables;
       state.refs = action.payload.refs;
