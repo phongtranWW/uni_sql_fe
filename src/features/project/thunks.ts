@@ -116,3 +116,28 @@ export const updateTable = createAsyncThunk<
     }
   },
 );
+
+export const deleteTable = createAsyncThunk<
+  string,
+  string,
+  { state: RootState; rejectValue: string }
+>("project/deleteTable", async (name, { getState, rejectWithValue }) => {
+  try {
+    if (name) {
+      if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name))
+        throw new Error(
+          "Table name must start with a letter or underscore, and contain only letters, numbers, or underscores",
+        );
+      if (name.length > 63)
+        throw new Error("Table name must not exceed 63 characters");
+    }
+    const { tables } = selectDatabase(getState());
+    const table = tables.find((t) => t.name === name);
+    if (!table) throw new Error(`Table "${name}" not found`);
+    return name;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Failed to create table",
+    );
+  }
+});

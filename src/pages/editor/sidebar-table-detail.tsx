@@ -14,8 +14,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import type { Table, TableUpdate } from "@/features/project/schemas/table";
-import { removeTable } from "@/features/project/slices/database";
-import { updateTable } from "@/features/project/thunks";
+import { deleteTable, updateTable } from "@/features/project/thunks";
 import { isRejectedWithValue } from "@reduxjs/toolkit";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
@@ -54,8 +53,11 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
   };
 
   const handleDelete = () => {
-    dispatch(removeTable(table.name));
-    setOpen(false);
+    const result = dispatch(deleteTable(table.name));
+    if (!isRejectedWithValue(result)) {
+      toast.success("Table removed successfully");
+      setOpen(false);
+    }
   };
 
   return (

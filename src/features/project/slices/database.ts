@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RefCreate, RefUpdate } from "../schemas/ref";
-import { createTable, getProject, updateTable } from "../thunks";
+import { createTable, deleteTable, getProject, updateTable } from "../thunks";
 import type { FieldCreate, FieldUpdate } from "../schemas/field";
 import { initialDatabase } from "../state";
 
@@ -8,9 +8,6 @@ const databaseSlice = createSlice({
   name: "database",
   initialState: initialDatabase,
   reducers: {
-    removeTable: (state, action: PayloadAction<string>) => {
-      state.tables = state.tables.filter((t) => t.name !== action.payload);
-    },
     setSelectedTables: (state, action: PayloadAction<string[]>) => {
       state.tables.forEach(
         (t) => (t.isSelected = action.payload.includes(t.name)),
@@ -113,11 +110,13 @@ const databaseSlice = createSlice({
       if (!table) return;
       Object.assign(table, action.payload.tableUpdate);
     });
+    builder.addCase(deleteTable.fulfilled, (state, action) => {
+      state.tables = state.tables.filter((t) => t.name !== action.payload);
+    });
   },
 });
 
 export const {
-  removeTable,
   setSelectedTables,
   addField,
   removeField,

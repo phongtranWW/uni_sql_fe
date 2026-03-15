@@ -1,6 +1,12 @@
 import { createSlice, isAnyOf, type PayloadAction } from "@reduxjs/toolkit";
 import { initialMeta } from "../state";
-import { createTable, getProject, updateTable, upsertProject } from "../thunks";
+import {
+  createTable,
+  deleteTable,
+  getProject,
+  updateTable,
+  upsertProject,
+} from "../thunks";
 
 const metaSlice = createSlice({
   name: "meta",
@@ -39,7 +45,11 @@ const metaSlice = createSlice({
         state.saveStatus = "unsaved";
       });
     builder.addMatcher(
-      isAnyOf(createTable.fulfilled, updateTable.fulfilled),
+      isAnyOf(
+        createTable.fulfilled,
+        updateTable.fulfilled,
+        deleteTable.fulfilled,
+      ),
       (state) => {
         state.saveStatus = "unsaved";
       },
