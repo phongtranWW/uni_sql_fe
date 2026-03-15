@@ -8,8 +8,10 @@ import {
 } from "@/features/project/selectors";
 import {
   addRef,
-  setSelectedRefs,
-  setSelectedTables,
+  clearSelectedRefs,
+  clearSelectedTables,
+  setRefsSelected,
+  setTablesSelected,
 } from "@/features/project/slices/database";
 import {
   Background,
@@ -77,40 +79,40 @@ const Board = () => {
   const handleSelectionEnd = useCallback(() => {
     const selectedNodes = nodes.filter((n) => n.selected);
     const selectedTableNames = selectedNodes.map((n) => n.id);
-    dispatch(setSelectedTables(selectedTableNames));
+    dispatch(setTablesSelected({ name: selectedTableNames, value: true }));
 
     const selectedEdges = edges.filter((e) => e.selected);
     const selectedRefNames = selectedEdges.map((e) => e.id);
-    dispatch(setSelectedRefs(selectedRefNames));
+    dispatch(setRefsSelected({ name: selectedRefNames, value: true }));
   }, [dispatch, nodes, edges]);
 
   const handleNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      dispatch(setSelectedTables([node.id]));
-      setNodes((prev) =>
-        prev.map((n) => ({ ...n, selected: n.id === node.id })),
-      );
+      dispatch(clearSelectedTables());
+      dispatch(setTablesSelected({ name: [node.id], value: true }));
     },
-    [dispatch, setNodes],
+    [dispatch],
   );
 
   const handleEdgeClick = useCallback(
     (_: React.MouseEvent, edge: Edge) => {
-      dispatch(setSelectedRefs([edge.id]));
+      dispatch(clearSelectedRefs());
+      dispatch(setRefsSelected({ name: [edge.id], value: true }));
     },
     [dispatch],
   );
 
   const handlePaneClick = useCallback(() => {
-    dispatch(setSelectedTables([]));
-    dispatch(setSelectedRefs([]));
+    dispatch(clearSelectedTables());
+    dispatch(clearSelectedRefs());
     setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
     setEdges((prev) => prev.map((e) => ({ ...e, selected: false })));
   }, [dispatch, setNodes, setEdges]);
 
   const handleNodeDragStop = useCallback(
     (_: React.MouseEvent, node: Node) => {
-      dispatch(setSelectedTables([node.id]));
+      dispatch(clearSelectedTables());
+      dispatch(setTablesSelected({ name: [node.id], value: false }));
     },
     [dispatch],
   );

@@ -8,10 +8,22 @@ const databaseSlice = createSlice({
   name: "database",
   initialState: initialDatabase,
   reducers: {
-    setSelectedTables: (state, action: PayloadAction<string[]>) => {
-      state.tables.forEach(
-        (t) => (t.isSelected = action.payload.includes(t.name)),
-      );
+    setTablesSelected: (
+      state,
+      action: PayloadAction<{
+        name: string[];
+        value: boolean;
+      }>,
+    ) => {
+      const { name, value } = action.payload;
+      state.tables.forEach((table) => {
+        if (name.includes(table.name)) {
+          table.isSelected = value;
+        }
+      });
+    },
+    clearSelectedTables: (state) => {
+      state.tables.forEach((t) => (t.isSelected = false));
     },
     addField: (
       state,
@@ -79,14 +91,22 @@ const databaseSlice = createSlice({
       if (!ref) return;
       Object.assign(ref, action.payload.refUpdate);
     },
-    setSelectedRefs: (state, action: PayloadAction<string[]>) => {
-      state.refs.forEach(
-        (r) => (r.isSelected = action.payload.includes(r.name)),
-      );
+    setRefsSelected: (
+      state,
+      action: PayloadAction<{
+        name: string[];
+        value: boolean;
+      }>,
+    ) => {
+      const { name, value } = action.payload;
+      state.refs.forEach((ref) => {
+        if (name.includes(ref.name)) {
+          ref.isSelected = value;
+        }
+      });
     },
-    removeSelectedElements: (state) => {
-      state.tables = state.tables.filter((t) => !t.isSelected);
-      state.refs = state.refs.filter((r) => !r.isSelected);
+    clearSelectedRefs: (state) => {
+      state.refs.forEach((r) => (r.isSelected = false));
     },
     setName: (state, action: PayloadAction<string>) => {
       state.name = action.payload;
@@ -117,15 +137,16 @@ const databaseSlice = createSlice({
 });
 
 export const {
-  setSelectedTables,
+  setRefsSelected,
+  setTablesSelected,
+  clearSelectedTables,
+  clearSelectedRefs,
   addField,
   removeField,
   updateField,
   addRef,
   removeRef,
   updateRef,
-  setSelectedRefs,
-  removeSelectedElements,
   setName,
 } = databaseSlice.actions;
 

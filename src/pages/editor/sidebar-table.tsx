@@ -11,7 +11,10 @@ import SidebarTableDetail from "./sidebar-table-detail";
 import { useAppDispatch } from "@/app/hook";
 import { generateFieldName } from "@/utils/generators/field";
 import { toast } from "sonner";
-import { addField } from "@/features/project/slices/database";
+import {
+  addField,
+  setTablesSelected,
+} from "@/features/project/slices/database";
 
 interface SidebarTableProps {
   table: Table;
@@ -35,6 +38,9 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
       className="group border-l-4 transition-colors"
       style={{ borderLeftColor: table.headerColor }}
       open={table.isSelected}
+      onOpenChange={(open) => {
+        dispatch(setTablesSelected({ name: [table.name], value: open }));
+      }}
     >
       <div className="flex items-center justify-between hover:bg-accent px-2 rounded-none">
         <CollapsibleTrigger asChild>
