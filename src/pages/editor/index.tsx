@@ -10,7 +10,6 @@ import useShortcuts from "@/hooks/use-shortcuts";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { useCallback, useEffect } from "react";
 import { useBlocker, useParams } from "react-router";
-import { toast } from "sonner";
 import { selectMeta } from "@/features/project/selectors";
 import { Spinner } from "@/components/ui/spinner";
 import { getProject } from "@/features/project/thunks";
@@ -28,7 +27,7 @@ import {
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const { status, error, saveStatus } = useAppSelector(selectMeta);
+  const { status, saveStatus } = useAppSelector(selectMeta);
   const isDirty = saveStatus !== "saved";
 
   useShortcuts();
@@ -38,10 +37,6 @@ const Editor = () => {
   useEffect(() => {
     if (id) dispatch(getProject(id));
   }, [id, dispatch]);
-
-  useEffect(() => {
-    if (status === "failed" && error) toast.error(error);
-  }, [status, error]);
 
   useEffect(() => {
     if (!isDirty) return;

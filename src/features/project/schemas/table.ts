@@ -15,12 +15,11 @@ export interface Table {
 export interface TableCreate {
   name: string;
   headerColor: TableHeaderColor;
-  alias?: string;
+  alias: string | null;
 }
 
 export interface TableUpdate {
-  name?: string;
-  headerColor?: TableHeaderColor;
-  alias?: string;
-  isSelected?: boolean;
+  name: string | null;
+  headerColor: TableHeaderColor | null;
+  alias: string | null;
 }

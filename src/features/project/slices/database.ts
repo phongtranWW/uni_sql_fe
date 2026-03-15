@@ -1,7 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RefCreate, RefUpdate } from "../schemas/ref";
-import { getProject } from "../thunks";
-import type { TableCreate, TableUpdate } from "../schemas/table";
+import { createTable, getProject, updateTable } from "../thunks";
 import type { FieldCreate, FieldUpdate } from "../schemas/field";
 import { initialDatabase } from "../state";
 
@@ -9,25 +8,8 @@ const databaseSlice = createSlice({
   name: "database",
   initialState: initialDatabase,
   reducers: {
-    addTable: (state, action: PayloadAction<TableCreate>) => {
-      state.tables.push({
-        name: action.payload.name,
-        alias: action.payload.alias || null,
-        headerColor: action.payload.headerColor,
-        fields: [],
-        isSelected: false,
-      });
-    },
     removeTable: (state, action: PayloadAction<string>) => {
       state.tables = state.tables.filter((t) => t.name !== action.payload);
-    },
-    updateTable: (
-      state,
-      action: PayloadAction<{ name: string; tableUpdate: TableUpdate }>,
-    ) => {
-      const table = state.tables.find((t) => t.name === action.payload.name);
-      if (!table) return;
-      Object.assign(table, action.payload.tableUpdate);
     },
     setSelectedTables: (state, action: PayloadAction<string[]>) => {
       state.tables.forEach(
@@ -119,13 +101,23 @@ const databaseSlice = createSlice({
       state.tables = action.payload.tables;
       state.refs = action.payload.refs;
     });
+    builder.addCase(createTable.fulfilled, (state, action) => {
+      state.tables.push({
+        ...action.payload,
+        fields: [],
+        isSelected: false,
+      });
+    });
+    builder.addCase(updateTable.fulfilled, (state, action) => {
+      const table = state.tables.find((t) => t.name === action.payload.name);
+      if (!table) return;
+      Object.assign(table, action.payload.tableUpdate);
+    });
   },
 });
 
 export const {
-  addTable,
   removeTable,
-  updateTable,
   setSelectedTables,
   addField,
   removeField,

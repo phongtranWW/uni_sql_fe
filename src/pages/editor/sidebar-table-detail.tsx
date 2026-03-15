@@ -1,9 +1,8 @@
-import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { useAppDispatch } from "@/app/hook";
 import ColorPicker from "@/components/custom/color-picker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -13,10 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { Table, TableHeaderColor } from "@/features/project/schemas/table";
-import { selectDatabaseTables } from "@/features/project/selectors";
-import { removeTable, updateTable } from "@/features/project/slices/database";
-import { isTableNameUnique, isTableNameValid } from "@/utils/rules/tables";
+import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
+import type { Table, TableUpdate } from "@/features/project/schemas/table";
+import { removeTable } from "@/features/project/slices/database";
+import { updateTable } from "@/features/project/thunks";
+import { isRejectedWithValue } from "@reduxjs/toolkit";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,48 +26,40 @@ interface SidebarTableDetailProps {
 }
 
 const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
-  const tables = useAppSelector(selectDatabaseTables);
   const dispatch = useAppDispatch();
+  const [open, setOpen] = useState(false);
+  const [tableUpdate, setTableUpdate] = useState<TableUpdate>({
+    name: table.name,
+    alias: table.alias,
+    headerColor: table.headerColor,
+  });
 
-  const [name, setName] = useState<string>(table.name);
-  const [alias, setAlias] = useState<string>(table.alias || "");
-  const [headerColor, setHeaderColor] = useState<TableHeaderColor>(
-    table.headerColor,
-  );
+  const handleOpenChange = (next: boolean) => {
+    if (next) {
+      setTableUpdate({
+        name: table.name,
+        alias: table.alias,
+        headerColor: table.headerColor,
+      });
+    }
+    setOpen(next);
+  };
 
   const handleSave = () => {
-    try {
-      if (name !== table.name) {
-        isTableNameValid(name);
-        isTableNameUnique(tables, name);
-      }
-
-      dispatch(
-        updateTable({
-          name: table.name,
-          tableUpdate: {
-            name,
-            headerColor,
-            alias: alias || undefined,
-          },
-        }),
-      );
-
+    const result = dispatch(updateTable({ name: table.name, tableUpdate }));
+    if (!isRejectedWithValue(result)) {
       toast.success("Table updated successfully");
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
+      setOpen(false);
     }
   };
 
   const handleDelete = () => {
     dispatch(removeTable(table.name));
-    toast.success("Table deleted successfully");
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -79,7 +71,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Table Info</DialogTitle>
           <DialogDescription>
@@ -93,35 +85,44 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
               id="name"
               autoComplete="off"
               placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={tableUpdate.name || ""}
+              onChange={(e) =>
+                setTableUpdate((prev) => ({ ...prev, name: e.target.value }))
+              }
             />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="name">Alias</FieldLabel>
+              <FieldLabel htmlFor="alias">Alias</FieldLabel>
               <Input
-                id="name"
+                id="alias"
                 autoComplete="off"
-                placeholder="Name"
-                value={alias || ""}
-                onChange={(e) => setAlias(e.target.value)}
+                placeholder="Alias"
+                value={tableUpdate.alias || ""}
+                onChange={(e) =>
+                  setTableUpdate((prev) => ({ ...prev, alias: e.target.value }))
+                }
               />
             </Field>
             <Field>
-              <FieldLabel htmlFor="type">Head Color</FieldLabel>
-              <ColorPicker value={headerColor} onChange={setHeaderColor} />
+              <FieldLabel htmlFor="headerColor">Head Color</FieldLabel>
+              <ColorPicker
+                value={tableUpdate.headerColor || TABLE_HEADER_COLORS.AMBER}
+                onChange={(color) =>
+                  setTableUpdate((prev) => ({ ...prev, headerColor: color }))
+                }
+              />
             </Field>
           </div>
         </FieldGroup>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button variant="destructive" onClick={handleDelete}>
             Delete
           </Button>
-          <Button onClick={handleSave}>Save</Button>
+          <Button onClick={handleSave}>Update</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -3,8 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/features/auth/slice";
 import projectReducer from "@/features/project/slices";
 import projectsReducer from "@/features/projects/slice";
-import listenerMiddleware from "./middlewares";
-
+import listenerMiddleware from "./listener-middlewares";
 export const store = configureStore({
   reducer: {
     projects: projectsReducer,

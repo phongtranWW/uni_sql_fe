@@ -11,14 +11,12 @@ export interface DatabaseState {
 export interface MetaState {
   status: "loading" | "succeeded" | "failed";
   saveStatus: "saved" | "unsaved" | "saving";
-  error: string | null;
   originalDatabase: Database | null;
 }
 
 export const initialMeta: MetaState = {
   status: "loading",
   saveStatus: "unsaved",
-  error: null,
   originalDatabase: null,
 };
 

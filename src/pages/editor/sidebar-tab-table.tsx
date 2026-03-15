@@ -7,12 +7,6 @@ import {
   generateTableHeaderColor,
   generateTableName,
 } from "@/utils/generators/tables";
-import {
-  isTableAliasValid,
-  isTableNameUnique,
-  isTableNameValid,
-} from "@/utils/rules/tables";
-import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
 import {
@@ -21,35 +15,20 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { selectDatabaseTables } from "@/features/project/selectors";
-import { addTable } from "@/features/project/slices/database";
+import { createTable } from "@/features/project/thunks";
 
 const SidebarTabTable = () => {
   const tables = useAppSelector(selectDatabaseTables);
   const [key, setKey] = useState("");
-
   const dispatch = useAppDispatch();
 
   const handleCreateTable = () => {
     const tableCreate: TableCreate = {
       name: generateTableName(),
       headerColor: generateTableHeaderColor(),
+      alias: null,
     };
-
-    try {
-      isTableNameValid(tableCreate.name);
-      isTableNameUnique(tables, tableCreate.name);
-      isTableAliasValid(tableCreate.name);
-
-      dispatch(addTable(tableCreate));
-
-      toast.success("Table created successfully");
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Something went wrong");
-      }
-    }
+    dispatch(createTable(tableCreate));
   };
 
   const filteredTables = tables.filter((t) =>
