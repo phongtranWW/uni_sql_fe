@@ -1,6 +1,7 @@
 import { createSlice, isAnyOf, type PayloadAction } from "@reduxjs/toolkit";
 import { initialMeta } from "../state";
 import {
+  createRef,
   createTable,
   deleteTable,
   getProject,
@@ -49,6 +50,7 @@ const metaSlice = createSlice({
         createTable.fulfilled,
         updateTable.fulfilled,
         deleteTable.fulfilled,
+        createRef.fulfilled,
       ),
       (state) => {
         state.saveStatus = "unsaved";

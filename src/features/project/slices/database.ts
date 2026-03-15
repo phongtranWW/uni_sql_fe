@@ -1,6 +1,12 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RefCreate, RefUpdate } from "../schemas/ref";
-import { createTable, deleteTable, getProject, updateTable } from "../thunks";
+import {
+  createRef,
+  createTable,
+  deleteTable,
+  getProject,
+  updateTable,
+} from "../thunks";
 import type { FieldCreate, FieldUpdate } from "../schemas/field";
 import { initialDatabase } from "../state";
 
@@ -132,6 +138,12 @@ const databaseSlice = createSlice({
     });
     builder.addCase(deleteTable.fulfilled, (state, action) => {
       state.tables = state.tables.filter((t) => t.name !== action.payload);
+    });
+    builder.addCase(createRef.fulfilled, (state, action) => {
+      state.refs.push({
+        ...action.payload,
+        isSelected: false,
+      });
     });
   },
 });

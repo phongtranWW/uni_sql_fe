@@ -17,7 +17,6 @@ import { type CodeFormat } from "@/types/format";
 import { CODE_FORMATS } from "@/constants/code-formats";
 import { ActionCreators } from "redux-undo";
 import { selectDatabase, selectMeta } from "@/features/project/selectors";
-import { removeSelectedElements } from "@/features/project/slices/database";
 import { useParams } from "react-router";
 import { upsertProject } from "@/features/project/thunks";
 
@@ -102,7 +101,7 @@ const HeaderMenubar = () => {
             >
               Save <MenubarShortcut>Ctrl + S</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={() => dispatch(removeSelectedElements())}>
+            <MenubarItem>
               Delete <MenubarShortcut>Del / Bac</MenubarShortcut>
             </MenubarItem>
           </MenubarContent>

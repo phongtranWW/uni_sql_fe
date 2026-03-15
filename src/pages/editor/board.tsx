@@ -7,12 +7,13 @@ import {
   selectDatabaseTables,
 } from "@/features/project/selectors";
 import {
-  addRef,
   clearSelectedRefs,
   clearSelectedTables,
   setRefsSelected,
   setTablesSelected,
 } from "@/features/project/slices/database";
+import { createRef } from "@/features/project/thunks";
+import { nanoid } from "@reduxjs/toolkit";
 import {
   Background,
   ConnectionLineType,
@@ -127,10 +128,10 @@ const Board = () => {
       )
         return;
 
-      const refName = `fk_${connection.source}_${connection.target}`;
+      const refName = `fk_${connection.source}_${connection.target}_${nanoid(4)}`;
 
       dispatch(
-        addRef({
+        createRef({
           name: refName,
           endpoints: [
             {

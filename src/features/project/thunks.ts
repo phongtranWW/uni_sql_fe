@@ -5,6 +5,9 @@ import { projectService } from "./service";
 import type { TableCreate, TableUpdate } from "./schemas/table";
 import { selectDatabase } from "./selectors";
 import type { RootState } from "@/app/store";
+import type { RefCreate } from "./schemas/ref";
+import type { Endpoint } from "./schemas/endpoint";
+import type { Field } from "./schemas/field";
 
 export const getProject = createAsyncThunk<
   Database,
@@ -141,3 +144,40 @@ export const deleteTable = createAsyncThunk<
     );
   }
 });
+
+export const createRef = createAsyncThunk<
+  RefCreate,
+  RefCreate,
+  { state: RootState; rejectValue: string }
+>(
+  "project/createRef",
+  async (referenceCreate, { getState, rejectWithValue }) => {
+    try {
+      const tables = getState().project.database.present.tables;
+      const resolveField = ({ tableName, fieldName }: Endpoint): Field => {
+        const table = tables.find((t) => t.name === tableName);
+        if (!table) throw new Error(`Table "${tableName}" not found`);
+        const field = table.fields.find((f) => f.name === fieldName);
+        if (!field)
+          throw new Error(
+            `Field "${fieldName}" not found in table "${tableName}"`,
+          );
+        return field;
+      };
+
+      const fieldA = resolveField(referenceCreate.endpoints[0]);
+      const fieldB = resolveField(referenceCreate.endpoints[1]);
+
+      if (fieldA.type !== fieldB.type)
+        throw new Error(
+          `Field types do not match: "${fieldA.type}" vs "${fieldB.type}"`,
+        );
+
+      return referenceCreate;
+    } catch (error) {
+      return rejectWithValue(
+        error instanceof Error ? error.message : "Failed to create reference",
+      );
+    }
+  },
+);
