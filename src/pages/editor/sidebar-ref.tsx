@@ -1,7 +1,7 @@
-import { REF_OPERATOR, type Ref } from "@/features/project/schemas/ref";
 import { ArrowLeft, ArrowRight, SeparatorVertical } from "lucide-react";
 import SidebarRefDetail from "./sidebar-ref-detail";
 import { cn } from "@/lib/utils";
+import { REF_OPERATOR, type Ref } from "@/features/project/schemas/ref.schema";
 
 const ICONS = {
   [REF_OPERATOR.ONE_TO_ONE]: SeparatorVertical,

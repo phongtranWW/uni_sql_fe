@@ -1,5 +1,5 @@
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-import type { TableHeaderColor } from "@/features/project/schemas/table";
+import type { TableHeaderColor } from "@/features/project/states/table";
 import { cn } from "@/lib/utils";
 
 interface ColorPickerProps {

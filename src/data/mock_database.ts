@@ -1,7 +1,7 @@
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-import type { Database } from "@/features/project/schemas/database";
-import { REF_OPERATOR, type Ref } from "@/features/project/schemas/ref";
-import type { Table } from "@/features/project/schemas/table";
+import type { Database } from "@/features/project/states/database";
+import { REF_OPERATOR, type Ref } from "@/features/project/states/ref";
+import type { Table } from "@/features/project/states/table";
 
 const users: Table = {
   name: "users",

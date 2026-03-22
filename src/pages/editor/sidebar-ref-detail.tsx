@@ -12,11 +12,6 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
-  REF_OPERATOR,
-  type Ref,
-  type RefOperator,
-} from "@/features/project/schemas/ref";
-import {
   ArrowDown,
   ArrowUp,
   MoreHorizontal,
@@ -33,8 +28,16 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { Separator } from "@/components/ui/separator";
-import { selectDatabaseTables } from "@/features/project/selectors";
-import { removeRef, updateRef } from "@/features/project/slices/database";
+import {
+  REF_OPERATOR,
+  type Ref,
+  type RefOperator,
+} from "@/features/project/schemas/ref.schema";
+import { selectTables } from "@/features/project/selectors/project.selector";
+import {
+  refRemoved,
+  refUpdated,
+} from "@/features/project/slices/project.slice";
 
 const OPERATOR_ICONS = {
   [REF_OPERATOR.ONE_TO_ONE]: SeparatorHorizontal,
@@ -55,7 +58,7 @@ const SidebarEndpoint = ({
   onTableChange,
   onFieldChange,
 }: SidebarEndpointProps) => {
-  const tables = useAppSelector(selectDatabaseTables);
+  const tables = useAppSelector(selectTables);
   const table = tables.find((t) => t.name === tableName);
 
   return (
@@ -154,7 +157,7 @@ const SidebarRefDetail = ({ reference }: SidebarRefDetailProps) => {
 
   const handleSave = () => {
     dispatch(
-      updateRef({
+      refUpdated({
         name: reference.name,
         refUpdate: {
           name,
@@ -176,7 +179,7 @@ const SidebarRefDetail = ({ reference }: SidebarRefDetailProps) => {
   };
 
   const handleDelete = () => {
-    dispatch(removeRef(reference.name));
+    dispatch(refRemoved(reference.name));
     toast.success("Reference deleted successfully");
   };
 

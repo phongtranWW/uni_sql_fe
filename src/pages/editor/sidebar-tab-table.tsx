@@ -2,7 +2,6 @@ import { useAppDispatch, useAppSelector } from "@/app/hook";
 import SidebarTable from "./sidebar-table";
 import { Button } from "@/components/ui/button";
 import { Plus, SearchIcon } from "lucide-react";
-import type { TableCreate } from "@/features/project/schemas/table";
 import {
   generateTableHeaderColor,
   generateTableName,
@@ -14,11 +13,12 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { selectDatabaseTables } from "@/features/project/selectors";
-import { createTable } from "@/features/project/thunks";
+import { selectTables } from "@/features/project/selectors/project.selector";
+import { tableCreated } from "@/features/project/slices/project.slice";
+import type { TableCreate } from "@/features/project/schemas/table-schema";
 
 const SidebarTabTable = () => {
-  const tables = useAppSelector(selectDatabaseTables);
+  const tables = useAppSelector(selectTables);
   const [key, setKey] = useState("");
   const dispatch = useAppDispatch();
 
@@ -27,8 +27,9 @@ const SidebarTabTable = () => {
       name: generateTableName(),
       headerColor: generateTableHeaderColor(),
       alias: null,
+      isSelected: true,
     };
-    dispatch(createTable(tableCreate));
+    dispatch(tableCreated(tableCreate));
   };
 
   const filteredTables = tables.filter((t) =>

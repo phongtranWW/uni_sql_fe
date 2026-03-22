@@ -1,4 +1,4 @@
-import type { Field } from "@/features/project/schemas/field";
+import type { Field } from "@/features/project/states/field";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Badge } from "../ui/badge";
 import { Key, Lock } from "lucide-react";

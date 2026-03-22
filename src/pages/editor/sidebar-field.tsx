@@ -3,7 +3,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Field } from "@/features/project/schemas/field";
+import type { Field } from "@/features/project/states/field";
 import { cn } from "@/lib/utils";
 import { BanIcon, FingerprintIcon, KeyRoundIcon } from "lucide-react";
 import SidebarFieldDetail from "./sidebar-field-detail";

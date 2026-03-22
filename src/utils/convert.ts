@@ -1,7 +1,7 @@
-import type { Database } from "@/features/project/schemas/database";
-import type { Field } from "@/features/project/schemas/field";
-import type { Ref, RefOperator } from "@/features/project/schemas/ref";
-import type { Table } from "@/features/project/schemas/table";
+import type { Database } from "@/features/project/states/database";
+import type { Field } from "@/features/project/states/field";
+import type { Ref, RefOperator } from "@/features/project/states/ref";
+import type { Table } from "@/features/project/states/table";
 import { generateTableHeaderColor } from "./generators/tables";
 
 export const tableToDbml = (table: Table) => {

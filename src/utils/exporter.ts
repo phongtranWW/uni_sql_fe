@@ -1,6 +1,6 @@
 import type { Database as CoreDatabase } from "@dbml/core";
 import { ModelExporter, Parser } from "@dbml/core";
-import type { Database } from "@/features/project/schemas/database";
+import type { Database } from "@/features/project/states/database";
 import { databaseToDbml } from "./convert";
 
 export class Exportor {

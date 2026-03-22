@@ -10,7 +10,6 @@ import useShortcuts from "@/hooks/use-shortcuts";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { useCallback, useEffect } from "react";
 import { useBlocker, useParams } from "react-router";
-import { selectMeta } from "@/features/project/selectors";
 import { Spinner } from "@/components/ui/spinner";
 import { getProject } from "@/features/project/thunks";
 import {
@@ -23,11 +22,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { selectSaveStatus } from "@/features/project/selectors/project.selector";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const { status, saveStatus } = useAppSelector(selectMeta);
+  const saveStatus = useAppSelector(selectSaveStatus);
   const isDirty = saveStatus !== "saved";
 
   useShortcuts();

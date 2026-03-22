@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
-import { Loader2, CloudOff, Check } from "lucide-react";
+import { Loader2, CloudOff, Check, BadgeAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAppSelector } from "@/app/hook";
-import { selectMeta } from "@/features/project/selectors";
+import { selectSaveStatus } from "@/features/project/selectors/project.selector";
 
 const STATUS_CONFIG = {
   saving: {
@@ -23,10 +23,16 @@ const STATUS_CONFIG = {
     variant: "outline" as const,
     className: "text-green-600 border-green-400 dark:text-green-500",
   },
+  idle: {
+    label: "Not loaded",
+    icon: <BadgeAlert className="h-3 w-3" />,
+    variant: "outline" as const,
+    className: "text-green-600 border-green-400 dark:text-green-500",
+  },
 };
 
 const HeaderProjectStatus = () => {
-  const { saveStatus } = useAppSelector(selectMeta);
+  const saveStatus = useAppSelector(selectSaveStatus);
   const config = STATUS_CONFIG[saveStatus];
 
   return (

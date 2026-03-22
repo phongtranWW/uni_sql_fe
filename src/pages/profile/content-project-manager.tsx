@@ -1,16 +1,20 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import type { AppDispatch } from "@/app/store";
-import { selectProjects } from "@/features/projects/selectors";
-import { getProjects } from "@/features/projects/thunks";
-import type { ProjectGetManyParams } from "@/services/project/params";
 import { useEffect, useState } from "react";
 import ContentProjectToolbar from "./content-project-toolbar";
 import ContentProjectTable from "./content-project-table";
 import ContentProjectPagination from "./content-project-pagination";
+import {
+  selectProjects,
+  selectTotal,
+} from "@/features/project/selectors/projects.selector";
+import type { ProjectGetManyParams } from "@/features/project/services/project.service";
+import { getProjects } from "@/features/project/thunks";
 
 const ContentProjectManager = () => {
   const dispatch = useAppDispatch<AppDispatch>();
-  const { items, total } = useAppSelector(selectProjects);
+  const projects = useAppSelector(selectProjects);
+  const total = useAppSelector(selectTotal);
 
   const [params, setParams] = useState<ProjectGetManyParams>({
     page: 1,
@@ -21,7 +25,7 @@ const ContentProjectManager = () => {
   });
 
   useEffect(() => {
-    dispatch(getProjects(params));
+    dispatch(getProjects({ params }));
   }, [dispatch, params]);
 
   return (
@@ -31,7 +35,7 @@ const ContentProjectManager = () => {
         total={total}
         onParamsChange={setParams}
       />
-      <ContentProjectTable projects={items} />
+      <ContentProjectTable projects={projects} />
       <ContentProjectPagination params={params} onParamsChange={setParams} />
     </div>
   );

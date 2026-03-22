@@ -17,8 +17,11 @@ import {
   FieldGroup,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { Field } from "@/features/project/schemas/field";
-import { removeField, updateField } from "@/features/project/slices/database";
+import type { Field } from "@/features/project/schemas/field-schema";
+import {
+  fieldRemoved,
+  fieldUpdated,
+} from "@/features/project/slices/project.slice";
 import {
   ArrowUp,
   Ban,
@@ -27,7 +30,6 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 interface SidebarFieldDetailProps {
   tableName: string;
@@ -45,23 +47,17 @@ const SidebarFieldDetail = ({ field, tableName }: SidebarFieldDetailProps) => {
   const [increment, setIncrement] = useState(field.increment);
 
   const handleSave = () => {
-    try {
-      dispatch(
-        updateField({
-          tableName,
-          fieldName: field.name,
-          fieldUpdate: { name, type, pk, unique, not_null: notNull, increment },
-        }),
-      );
-      toast.success("Field updated successfully");
-    } catch (error) {
-      if (error instanceof Error) toast.error(error.message);
-    }
+    dispatch(
+      fieldUpdated({
+        tableName,
+        fieldName: field.name,
+        fieldUpdate: { name, type, pk, unique, not_null: notNull, increment },
+      }),
+    );
   };
 
   const handleDelete = () => {
-    dispatch(removeField({ tableName, fieldName: field.name }));
-    toast.success("Field deleted successfully");
+    dispatch(fieldRemoved({ tableName, fieldName: field.name }));
   };
 
   return (

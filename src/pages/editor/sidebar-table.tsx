@@ -1,5 +1,4 @@
 import { ChevronRightIcon, Plus } from "lucide-react";
-import type { Table } from "@/features/project/schemas/table";
 import {
   Collapsible,
   CollapsibleContent,
@@ -11,10 +10,11 @@ import SidebarTableDetail from "./sidebar-table-detail";
 import { useAppDispatch } from "@/app/hook";
 import { generateFieldName } from "@/utils/generators/field";
 import { toast } from "sonner";
+import type { Table } from "@/features/project/schemas/table-schema";
 import {
-  addField,
-  setTablesSelected,
-} from "@/features/project/slices/database";
+  fieldAdded,
+  tablesSelected,
+} from "@/features/project/slices/project.slice";
 
 interface SidebarTableProps {
   table: Table;
@@ -24,9 +24,16 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
   const dispatch = useAppDispatch();
   const handleAddField = () => {
     dispatch(
-      addField({
+      fieldAdded({
         tableName: table.name,
-        fieldCreate: { name: generateFieldName(), type: "int" },
+        fieldCreate: {
+          name: generateFieldName(),
+          type: "int",
+          pk: false,
+          unique: false,
+          not_null: false,
+          increment: false,
+        },
       }),
     );
     toast.success("Field created successfully");
@@ -39,7 +46,7 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
       style={{ borderLeftColor: table.headerColor }}
       open={table.isSelected}
       onOpenChange={(open) => {
-        dispatch(setTablesSelected({ name: [table.name], value: open }));
+        dispatch(tablesSelected({ name: [table.name], value: open }));
       }}
     >
       <div className="flex items-center justify-between hover:bg-accent px-2 rounded-none">

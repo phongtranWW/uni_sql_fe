@@ -1,13 +1,14 @@
 import type { Action, ThunkAction } from "@reduxjs/toolkit";
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/features/auth/slice";
-import projectReducer from "@/features/project/slices";
-import projectsReducer from "@/features/projects/slice";
 import listenerMiddleware from "./listener-middlewares";
+import projectReducer from "@/features/project/slices/project.slice";
+import projectsReucer from "@/features/project/slices/projects.slice";
+
 export const store = configureStore({
   reducer: {
-    projects: projectsReducer,
     project: projectReducer,
+    projects: projectsReucer,
     auth: authReducer,
   },
   middleware: (getDefaultMiddleware) =>

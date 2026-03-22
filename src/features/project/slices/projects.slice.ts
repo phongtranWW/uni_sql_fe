@@ -1,29 +1,25 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getProjects } from "./thunks";
-import { initialProjects } from "./state";
+import { initialProjectsSliceState } from "../states/projects.state";
+import { getProjects } from "../thunks";
 
 const projectsSlice = createSlice({
   name: "projects",
-  initialState: initialProjects,
+  initialState: initialProjectsSliceState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(getProjects.pending, (state) => {
-        state.status = "loading";
-        state.error = null;
+        state.fetchStatus = "loading";
       })
       .addCase(getProjects.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.items = action.payload.data;
+        state.fetchStatus = "succeeded";
+        state.items = action.payload.items;
         state.total = action.payload.total;
         state.page = action.payload.page;
-        state.limit = action.payload.limit;
         state.totalPages = action.payload.totalPages;
-        state.error = null;
       })
-      .addCase(getProjects.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload ?? null;
+      .addCase(getProjects.rejected, (state) => {
+        state.fetchStatus = "failed";
       });
   },
 });

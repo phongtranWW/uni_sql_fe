@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { useAppDispatch } from "@/app/hook";
 import {
   Menubar,
   MenubarContent,
@@ -10,50 +10,13 @@ import {
   MenubarSubTrigger,
   MenubarTrigger,
 } from "@/components/ui/menubar";
-import { Exportor } from "@/utils/exporter";
 import { useState } from "react";
 import CodePreview from "./code-preview";
-import { type CodeFormat } from "@/types/format";
-import { CODE_FORMATS } from "@/constants/code-formats";
 import { ActionCreators } from "redux-undo";
-import { selectDatabase, selectMeta } from "@/features/project/selectors";
-import { useParams } from "react-router";
-import { upsertProject } from "@/features/project/thunks";
 
 const HeaderMenubar = () => {
   const dispatch = useAppDispatch();
-  const { id } = useParams<{ id: string }>();
-  const database = useAppSelector(selectDatabase);
-  const { saveStatus } = useAppSelector(selectMeta);
-
   const [showCodePreview, setShowCodePreview] = useState(false);
-  const [code, setCode] = useState("");
-  const [previewType, setPreviewType] = useState<CodeFormat>(CODE_FORMATS.JSON);
-
-  const handleExport = (type: "dbml" | "json" | "psql" | "mysql") => {
-    const exporter = Exportor.fromDatabase(database);
-    let result = "";
-
-    switch (type) {
-      case "dbml":
-        result = exporter.toDbml();
-        break;
-      case "json":
-        result = exporter.toJson();
-        break;
-      case "psql":
-        result = exporter.toPsql();
-        break;
-      case "mysql":
-        result = exporter.toMysql();
-        break;
-    }
-
-    setPreviewType(type);
-    setCode(result);
-    setShowCodePreview(true);
-  };
-
   return (
     <div>
       <Menubar className="border-0 shadow-none bg-transparent p-0">
@@ -66,18 +29,9 @@ const HeaderMenubar = () => {
             <MenubarSub>
               <MenubarSubTrigger>Export to</MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarItem onClick={() => handleExport("dbml")}>
-                  DBML
-                </MenubarItem>
-                <MenubarItem onClick={() => handleExport("json")}>
-                  JSON
-                </MenubarItem>
-                <MenubarItem onClick={() => handleExport("mysql")}>
-                  MySQL
-                </MenubarItem>
-                <MenubarItem onClick={() => handleExport("psql")}>
-                  Postgres
-                </MenubarItem>
+                <MenubarItem>JSON</MenubarItem>
+                <MenubarItem>MySQL</MenubarItem>
+                <MenubarItem>Postgres</MenubarItem>
               </MenubarSubContent>
             </MenubarSub>
           </MenubarContent>
@@ -93,12 +47,7 @@ const HeaderMenubar = () => {
             <MenubarItem onClick={() => dispatch(ActionCreators.redo())}>
               Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem
-              onClick={() => {
-                if (id && saveStatus === "unsaved")
-                  dispatch(upsertProject({ id, database }));
-              }}
-            >
+            <MenubarItem>
               Save <MenubarShortcut>Ctrl + S</MenubarShortcut>
             </MenubarItem>
             <MenubarItem>
@@ -111,8 +60,8 @@ const HeaderMenubar = () => {
       <CodePreview
         open={showCodePreview}
         onOpenChange={setShowCodePreview}
-        code={code}
-        format={previewType}
+        code={""}
+        format={"json"}
       />
     </div>
   );
