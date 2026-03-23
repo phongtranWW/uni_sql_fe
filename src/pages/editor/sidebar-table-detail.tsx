@@ -1,4 +1,4 @@
-import { useAppDispatch } from "@/app/hook";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
 import ColorPicker from "@/components/custom/color-picker";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,54 +17,60 @@ import type {
   Table,
   TableUpdate,
 } from "@/features/project/schemas/table-schema";
+import { selectTables } from "@/features/project/selectors/project.selector";
 import {
   tableDeleted,
   tableUpdated,
 } from "@/features/project/slices/project.slice";
-import { isRejectedWithValue } from "@reduxjs/toolkit";
 import { MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 interface SidebarTableDetailProps {
   table: Table;
 }
 
+const initialState = (table: Table): TableUpdate => ({
+  name: table.name,
+  alias: table.alias,
+  headerColor: table.headerColor,
+});
+
 const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
   const dispatch = useAppDispatch();
+  const tables = useAppSelector(selectTables);
   const [open, setOpen] = useState(false);
-  const [tableUpdate, setTableUpdate] = useState<TableUpdate>({
-    name: table.name,
-    alias: table.alias,
-    headerColor: table.headerColor,
-  });
+  const [tableUpdate, setTableUpdate] = useState<TableUpdate>(() =>
+    initialState(table),
+  );
 
-  const handleOpenChange = (next: boolean) => {
-    if (next) {
-      setTableUpdate({
-        name: table.name,
-        alias: table.alias,
-        headerColor: table.headerColor,
-      });
-    }
-    setOpen(next);
-  };
+  const handleOpenChange = useCallback(
+    (next: boolean) => {
+      if (next) setTableUpdate(initialState(table));
+      setOpen(next);
+    },
+    [table],
+  );
 
-  const handleSave = () => {
-    const result = dispatch(tableUpdated({ name: table.name, tableUpdate }));
-    if (!isRejectedWithValue(result)) {
-      toast.success("Table updated successfully");
-      setOpen(false);
-    }
-  };
+  const handleSave = useCallback(() => {
+    const nameChanged = table.name !== tableUpdate.name;
+    const nameTaken = tables.some((t) => t.name === tableUpdate.name);
 
-  const handleDelete = () => {
-    const result = dispatch(tableDeleted(table.name));
-    if (!isRejectedWithValue(result)) {
-      toast.success("Table removed successfully");
-      setOpen(false);
+    if (nameChanged && nameTaken) {
+      toast.error("Table name already exists.");
+      return;
     }
-  };
+
+    dispatch(tableUpdated({ name: table.name, tableUpdate }));
+    toast.success("Table updated successfully.");
+    handleOpenChange(false);
+  }, [table.name, tableUpdate, tables, dispatch, handleOpenChange]);
+
+  const handleDelete = useCallback(() => {
+    dispatch(tableDeleted(table.name));
+    toast.success("Table deleted successfully.");
+    handleOpenChange(false);
+  }, [table.name, dispatch, handleOpenChange]);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -86,6 +92,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
             You can update the name, head color and alias of the table.
           </DialogDescription>
         </DialogHeader>
+
         <FieldGroup>
           <Field>
             <FieldLabel htmlFor="name">Name</FieldLabel>
@@ -93,7 +100,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
               id="name"
               autoComplete="off"
               placeholder="Name"
-              value={tableUpdate.name || ""}
+              value={tableUpdate.name ?? ""}
               onChange={(e) =>
                 setTableUpdate((prev) => ({ ...prev, name: e.target.value }))
               }
@@ -106,7 +113,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
                 id="alias"
                 autoComplete="off"
                 placeholder="Alias"
-                value={tableUpdate.alias || ""}
+                value={tableUpdate.alias ?? ""}
                 onChange={(e) =>
                   setTableUpdate((prev) => ({ ...prev, alias: e.target.value }))
                 }
@@ -115,7 +122,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
             <Field>
               <FieldLabel htmlFor="headerColor">Head Color</FieldLabel>
               <ColorPicker
-                value={tableUpdate.headerColor || TABLE_HEADER_COLORS.AMBER}
+                value={tableUpdate.headerColor ?? TABLE_HEADER_COLORS.AMBER}
                 onChange={(color) =>
                   setTableUpdate((prev) => ({ ...prev, headerColor: color }))
                 }
@@ -123,8 +130,9 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
             </Field>
           </div>
         </FieldGroup>
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={handleDelete}>
