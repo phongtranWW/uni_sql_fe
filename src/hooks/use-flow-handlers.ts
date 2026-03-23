@@ -7,9 +7,10 @@ import {
   tablesSelected,
   tablesSelectionCleared,
 } from "@/features/project/slices/project.slice";
-import { nanoid } from "@reduxjs/toolkit";
+import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 import { type Connection, type Edge, type Node } from "@xyflow/react";
 import { useCallback } from "react";
+import { toast } from "sonner";
 
 interface Params {
   nodes: Node[];
@@ -74,9 +75,27 @@ export const useFlowHandlers = ({
         !connection.targetHandle
       )
         return;
+
+      const alreadyExists = edges.some(
+        (e) =>
+          (e.source === connection.source &&
+            e.target === connection.target &&
+            e.sourceHandle === connection.sourceHandle &&
+            e.targetHandle === connection.targetHandle) ||
+          (e.source === connection.target &&
+            e.target === connection.source &&
+            e.sourceHandle === connection.targetHandle &&
+            e.targetHandle === connection.sourceHandle),
+      );
+
+      if (alreadyExists) {
+        toast.error("A relationship between these two fields already exists.");
+        return;
+      }
+
       dispatch(
         refCreated({
-          name: `fk_${connection.source}_${connection.target}_${nanoid(4)}`,
+          name: `fk_${connection.source}_${connection.target}_${nanoidAlpabet(4)}`,
           endpoints: [
             {
               tableName: connection.source,
@@ -92,7 +111,7 @@ export const useFlowHandlers = ({
         }),
       );
     },
-    [dispatch],
+    [dispatch, edges],
   );
 
   return {

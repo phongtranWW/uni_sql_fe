@@ -13,9 +13,10 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-import type {
-  Table,
-  TableUpdate,
+import {
+  TableUpdateSchema,
+  type Table,
+  type TableUpdate,
 } from "@/features/project/schemas/table-schema";
 import { selectTables } from "@/features/project/selectors/project.selector";
 import {
@@ -53,15 +54,22 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
   );
 
   const handleSave = useCallback(() => {
-    const nameChanged = table.name !== tableUpdate.name;
-    const nameTaken = tables.some((t) => t.name === tableUpdate.name);
+    const result = TableUpdateSchema.safeParse(tableUpdate);
+
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      return;
+    }
+
+    const nameChanged = table.name !== result.data.name;
+    const nameTaken = tables.some((t) => t.name === result.data.name);
 
     if (nameChanged && nameTaken) {
       toast.error("Table name already exists.");
       return;
     }
 
-    dispatch(tableUpdated({ name: table.name, tableUpdate }));
+    dispatch(tableUpdated({ name: table.name, tableUpdate: result.data }));
     toast.success("Table updated successfully.");
     handleOpenChange(false);
   }, [table.name, tableUpdate, tables, dispatch, handleOpenChange]);
