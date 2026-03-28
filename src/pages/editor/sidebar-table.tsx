@@ -28,7 +28,7 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
         tableName: table.name,
         fieldCreate: {
           name: generateFieldName(),
-          type: "int",
+          type: "INT",
           pk: false,
           unique: false,
           not_null: false,
