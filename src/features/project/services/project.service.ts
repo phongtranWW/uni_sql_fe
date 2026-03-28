@@ -21,7 +21,7 @@ export interface ProjectGetManyParams {
 }
 
 export interface ProjectExportParams {
-  format: "json" | "postgres" | "mysql";
+  format: "json" | "postgresql" | "mysql";
 }
 
 export const projectService = {
