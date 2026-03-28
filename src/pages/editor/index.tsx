@@ -9,25 +9,23 @@ import Header from "./header";
 import useShortcuts from "@/hooks/use-shortcuts";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { useCallback, useEffect } from "react";
-import { useBlocker, useParams } from "react-router";
-import { Spinner } from "@/components/ui/spinner";
+import { useBlocker, useParams, Navigate } from "react-router";
 import { getProject } from "@/features/project/thunks";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { selectSaveStatus } from "@/features/project/selectors/project.selector";
+  selectSaveStatus,
+  selectFetchStatus,
+  selectProject,
+} from "@/features/project/selectors/project.selector";
+import EditorLoading from "./editor-loading";
+import EditorError from "./editor-error";
+import EditorUnsavedAlert from "./editor-unsaved-alert";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const saveStatus = useAppSelector(selectSaveStatus);
+  const fetchStatus = useAppSelector(selectFetchStatus);
+  const project = useAppSelector(selectProject);
   const isDirty = saveStatus !== "saved";
 
   useShortcuts();
@@ -45,7 +43,17 @@ const Editor = () => {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [isDirty]);
 
-  if (status === "loading") return <Spinner />;
+  if (fetchStatus === "idle" || fetchStatus === "loading") {
+    return <EditorLoading />;
+  }
+
+  if (fetchStatus === "failed") {
+    return <EditorError />;
+  }
+
+  if (fetchStatus === "succeeded" && !project) {
+    return <Navigate to="/404" replace />;
+  }
 
   return (
     <>
@@ -62,28 +70,11 @@ const Editor = () => {
         </ResizablePanelGroup>
       </div>
 
-      <AlertDialog open={blocker.state === "blocked"}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes. Are you sure you want to leave? All
-              unsaved changes will be lost.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => blocker.reset?.()}>
-              Stay
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => blocker.proceed?.()}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Leave anyway
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <EditorUnsavedAlert
+        open={blocker.state === "blocked"}
+        onStay={() => blocker.reset?.()}
+        onProceed={() => blocker.proceed?.()}
+      />
     </>
   );
 };
