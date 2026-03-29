@@ -1,44 +1,112 @@
-import { ArrowLeft, ArrowRight, SeparatorVertical } from "lucide-react";
-import SidebarRefDetail from "./sidebar-ref-detail";
 import { cn } from "@/lib/utils";
-import { REF_OPERATOR, type Ref } from "@/features/project/schemas/ref.schema";
+import {
+  REF_OPERATOR,
+  RefPartSchema,
+  type Ref,
+  type RefPart,
+} from "@/features/project/schemas/ref.schema";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { selectRefs } from "@/features/project/selectors/project.selector";
+import { refPartial } from "@/features/project/slices/project.slice";
 
-const ICONS = {
-  [REF_OPERATOR.ONE_TO_ONE]: SeparatorVertical,
-  [REF_OPERATOR.ONE_TO_MANY]: ArrowLeft,
-  [REF_OPERATOR.MANY_TO_ONE]: ArrowRight,
+const RefName = ({
+  value,
+  onBlur,
+}: {
+  value: string;
+  onBlur: (v: string) => void;
+}) => {
+  const [name, setName] = useState(value);
+
+  return (
+    <Input
+      className="flex-1 min-w-0 h-7 text-xs rounded-sm px-1.5 py-0"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+      onBlur={(e) => onBlur(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") e.currentTarget.blur();
+      }}
+    />
+  );
 };
+
+const TypeSelect = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) => (
+  <Select value={value} onValueChange={onChange}>
+    <SelectTrigger
+      size="sm"
+      className="flex-1 min-w-0 h-7! text-xs rounded-sm px-1.5 py-0"
+    >
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent position="popper" align="end">
+      {Object.entries(REF_OPERATOR).map(([key, val]) => (
+        <SelectItem key={val} value={val} className="text-xs">
+          {key}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
 
 interface SidebarRefProps {
   reference: Ref;
 }
 
 const SidebarRef = ({ reference }: SidebarRefProps) => {
-  const Icon = ICONS[reference.operator];
+  const dispatch = useAppDispatch();
+  const refs = useAppSelector(selectRefs);
+  const handleRefPartial = useCallback(
+    (data: RefPart) => {
+      const result = RefPartSchema.safeParse(data);
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        return;
+      }
+      dispatch(refPartial({ refName: reference.name, data }));
+    },
+    [dispatch, reference.name],
+  );
 
   return (
     <div
       className={cn(
-        "group flex items-center justify-between gap-2 px-2 py-1 hover:bg-accent transition-colors",
-        reference.isSelected && "border-l-3 border-primary",
+        "group flex items-center justify-between gap-1 border-l-4 pl-1",
+        reference.isSelected ? "border-primary" : "border-muted-foreground/50",
       )}
     >
-      <div className="flex flex-col gap-0.5 min-w-0">
-        <span
-          className={cn(
-            "text-sm font-medium truncate",
-            reference.isSelected && "text-primary",
-          )}
-        >
-          {reference.name}
-        </span>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span className="truncate">{reference.endpoints[0].tableName}</span>
-          <Icon className="size-3 shrink-0" />
-          <span className="truncate">{reference.endpoints[1].tableName}</span>
-        </div>
-      </div>
-      <SidebarRefDetail reference={reference} />
+      <RefName
+        value={reference.name}
+        onBlur={(name) => {
+          if (refs.find((r) => r.name === name) && name !== reference.name) {
+            toast.error("Reference name already exists");
+            return;
+          }
+          handleRefPartial({ name });
+        }}
+      />
+      <TypeSelect
+        value={reference.operator}
+        onChange={(value) => {
+          handleRefPartial({ operator: value as RefPart["operator"] });
+        }}
+      />
     </div>
   );
 };

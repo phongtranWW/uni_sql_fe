@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/app/hook";
-import { REF_OPERATOR } from "@/features/project/schemas/ref.schema";
+import { RefCreateSchema } from "@/features/project/schemas/ref.schema";
 import {
   elementsDeleted,
   refCreated,
@@ -93,24 +93,24 @@ export const useFlowHandlers = ({
         toast.error("A relationship between these two fields already exists.");
         return;
       }
-
-      dispatch(
-        refCreated({
-          name: `fk_${connection.source}_${connection.target}_${nanoidAlpabet(4)}`,
-          endpoints: [
-            {
-              tableName: connection.source,
-              fieldName: connection.sourceHandle,
-            },
-            {
-              tableName: connection.target,
-              fieldName: connection.targetHandle,
-            },
-          ],
-          operator: REF_OPERATOR.ONE_TO_MANY,
-          isSelected: false,
-        }),
-      );
+      const result = RefCreateSchema.safeParse({
+        name: `fk_${connection.source}_${connection.target}_${nanoidAlpabet(3)}`,
+        endpoints: [
+          {
+            tableName: connection.source,
+            fieldName: connection.sourceHandle,
+          },
+          {
+            tableName: connection.target,
+            fieldName: connection.targetHandle,
+          },
+        ],
+      });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        return;
+      }
+      dispatch(refCreated(result.data));
     },
     [dispatch, edges],
   );
@@ -121,10 +121,10 @@ export const useFlowHandlers = ({
         elementsDeleted({
           tableNames: deletedNodes.map((n) => n.id),
           refNames: [],
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const handleEdgesDelete = useCallback(
@@ -133,10 +133,10 @@ export const useFlowHandlers = ({
         elementsDeleted({
           tableNames: [],
           refNames: deletedEdges.map((e) => e.id),
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   return {

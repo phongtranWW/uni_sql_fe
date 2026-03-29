@@ -30,7 +30,7 @@ const SidebarTabRef = () => {
           <SearchIcon className="text-muted-foreground" />
         </InputGroupAddon>
       </InputGroup>
-      <div className="flex flex-col divide-border">
+      <div className="flex flex-col gap-2 divider-y devider-border">
         {filteredRefs.map((ref) => (
           <SidebarRef key={ref.name} reference={ref} />
         ))}

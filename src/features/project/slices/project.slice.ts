@@ -12,7 +12,7 @@ import type {
   FieldPart,
   FieldReplace,
 } from "../schemas/field-schema";
-import type { RefCreate, RefUpdate } from "../schemas/ref.schema";
+import type { RefCreate, RefPart, RefReplace } from "../schemas/ref.schema";
 
 const projectSlice = createSlice({
   name: "project",
@@ -172,15 +172,29 @@ const projectSlice = createSlice({
     },
 
     refCreated: (state, action: PayloadAction<RefCreate>) => {
-      state.data?.refs.push({ ...action.payload, isSelected: false });
+      state.data?.refs.push({ ...action.payload });
     },
-    refUpdated: (
+    refReplaced: (
       state,
-      action: PayloadAction<{ name: string; refUpdate: RefUpdate }>,
+      action: PayloadAction<{ refName: string; data: RefReplace }>,
     ) => {
-      const ref = state.data?.refs.find((r) => r.name === action.payload.name);
+      const refs = state.data?.refs;
+      if (!refs) return;
+      const idx = refs.findIndex((t) => t.name === action.payload.refName);
+      if (idx === -1) return;
+      refs[idx] = {
+        ...action.payload.data,
+      };
+    },
+    refPartial: (
+      state,
+      action: PayloadAction<{ refName: string; data: RefPart }>,
+    ) => {
+      const ref = state.data?.refs.find(
+        (r) => r.name === action.payload.refName,
+      );
       if (!ref) return;
-      Object.assign(ref, action.payload.refUpdate);
+      Object.assign(ref, action.payload.data);
     },
     refRemoved: (state, action: PayloadAction<string>) => {
       if (!state.data) return;
@@ -242,7 +256,8 @@ export const {
   fieldPartial,
   fieldRemoved,
   refCreated,
-  refUpdated,
+  refReplaced,
+  refPartial,
   refRemoved,
   refsSelected,
   refsSelectionCleared,
