@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import SidebarField from "./sidebar-field";
 import SidebarTableDetail from "./sidebar-table-detail";
 import { useAppDispatch } from "@/app/hook";
-import { generateFieldName } from "@/utils/generators/field";
+import { useCallback } from "react";
 import { toast } from "sonner";
 import type { Table } from "@/features/project/schemas/table-schema";
 import {
   fieldCreated,
   tablesSelected,
 } from "@/features/project/slices/project.slice";
+import { FieldCreateSchema } from "@/features/project/schemas/field-schema";
 
 interface SidebarTableProps {
   table: Table;
@@ -22,22 +23,20 @@ interface SidebarTableProps {
 
 const SidebarTable = ({ table }: SidebarTableProps) => {
   const dispatch = useAppDispatch();
-  const handleAddField = () => {
+
+  const handleAddField = useCallback(() => {
+    const result = FieldCreateSchema.safeParse({});
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      return;
+    }
     dispatch(
       fieldCreated({
         tableName: table.name,
-        data: {
-          name: generateFieldName(),
-          type: "INT",
-          pk: false,
-          unique: false,
-          not_null: false,
-          increment: false,
-        },
+        data: result.data,
       }),
     );
-    toast.success("Field created successfully");
-  };
+  }, [dispatch, table.name]);
 
   return (
     <Collapsible
@@ -49,22 +48,23 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
         dispatch(tablesSelected({ name: [table.name], value: open }));
       }}
     >
-      <div className="flex items-center justify-between hover:bg-accent px-2 rounded-none">
+      <div className="flex items-center justify-between hover:bg-accent px-2">
         <CollapsibleTrigger asChild>
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 justify-start font-medium transition-none"
+            className="flex-1 justify-start font-medium"
           >
             <ChevronRightIcon className="mr-2 transition-transform group-data-[state=open]:rotate-90" />
             {table.name}
           </Button>
         </CollapsibleTrigger>
-        <SidebarTableDetail key={table.name} table={table} />
+
+        <SidebarTableDetail table={table} />
       </div>
 
       <CollapsibleContent className="ml-4 flex flex-col gap-2">
-        <div className="flex flex-col py-1 divide-y divide-border">
+        <div className="flex flex-col py-1 divide-y">
           {table.fields.map((field) => (
             <SidebarField
               key={field.name}
@@ -73,13 +73,10 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
             />
           ))}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleAddField}
-        >
-          <Plus /> Add Field
+
+        <Button variant="outline" size="sm" onClick={handleAddField}>
+          <Plus className="mr-2 size-4" />
+          Add Field
         </Button>
       </CollapsibleContent>
     </Collapsible>
