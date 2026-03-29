@@ -2,7 +2,11 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { initialProjectSliceState } from "../states/project.state";
 import undoable, { excludeAction } from "redux-undo";
 import { getProject, upsertProject } from "../thunks";
-import type { TableCreate, TablePart } from "../schemas/table-schema";
+import type {
+  TableCreate,
+  TablePart,
+  TableReplace,
+} from "../schemas/table-schema";
 import type {
   FieldCreate,
   FieldPart,
@@ -14,21 +18,32 @@ const projectSlice = createSlice({
   name: "project",
   initialState: initialProjectSliceState,
   reducers: {
-    // ─── Table ───────────────────────────────────────────
     tableCreated: (state, action: PayloadAction<TableCreate>) => {
       state.data?.tables.push({
         ...action.payload,
       });
     },
-    tableUpdated: (
+    tableReplaced: (
       state,
-      action: PayloadAction<{ name: string; tableUpdate: TablePart }>,
+      action: PayloadAction<{ tableName: string; data: TableReplace }>,
+    ) => {
+      const tables = state.data?.tables;
+      if (!tables) return;
+      const idx = tables.findIndex((t) => t.name === action.payload.tableName);
+      if (idx === -1) return;
+      tables[idx] = {
+        ...action.payload.data,
+      };
+    },
+    tablePartial: (
+      state,
+      action: PayloadAction<{ tableName: string; data: TablePart }>,
     ) => {
       const table = state.data?.tables.find(
-        (t) => t.name === action.payload.name,
+        (t) => t.name === action.payload.tableName,
       );
       if (!table) return;
-      Object.assign(table, action.payload.tableUpdate);
+      Object.assign(table, action.payload.data);
     },
     tableDeleted: (state, action: PayloadAction<string>) => {
       if (!state.data) return;
@@ -91,8 +106,6 @@ const projectSlice = createSlice({
         return !connectedToDeletedTable;
       });
     },
-
-    // ─── Field ───────────────────────────────────────────
     fieldCreated: (
       state,
       action: PayloadAction<{ tableName: string; data: FieldCreate }>,
@@ -158,7 +171,6 @@ const projectSlice = createSlice({
       );
     },
 
-    // ─── Ref ─────────────────────────────────────────────
     refCreated: (state, action: PayloadAction<RefCreate>) => {
       state.data?.refs.push({ ...action.payload, isSelected: false });
     },
@@ -218,7 +230,8 @@ const projectSlice = createSlice({
 
 export const {
   tableCreated,
-  tableUpdated,
+  tableReplaced,
+  tablePartial,
   tableDeleted,
   tablesSelected,
   tablesSelectionCleared,
