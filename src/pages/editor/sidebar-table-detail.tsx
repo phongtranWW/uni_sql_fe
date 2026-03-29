@@ -14,9 +14,9 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import {
-  TableUpdateSchema,
+  TablePartSchema,
   type Table,
-  type TableUpdate,
+  type TablePart,
 } from "@/features/project/schemas/table-schema";
 import { selectTables } from "@/features/project/selectors/project.selector";
 import {
@@ -31,7 +31,7 @@ interface SidebarTableDetailProps {
   table: Table;
 }
 
-const initialState = (table: Table): TableUpdate => ({
+const initialState = (table: Table): TablePart => ({
   name: table.name,
   alias: table.alias,
   headerColor: table.headerColor,
@@ -41,7 +41,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
   const dispatch = useAppDispatch();
   const tables = useAppSelector(selectTables);
   const [open, setOpen] = useState(false);
-  const [tableUpdate, setTableUpdate] = useState<TableUpdate>(() =>
+  const [tableUpdate, setTableUpdate] = useState<TablePart>(() =>
     initialState(table),
   );
 
@@ -54,7 +54,7 @@ const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
   );
 
   const handleSave = useCallback(() => {
-    const result = TableUpdateSchema.safeParse(tableUpdate);
+    const result = TablePartSchema.safeParse(tableUpdate);
 
     if (!result.success) {
       toast.error(result.error.issues[0].message);

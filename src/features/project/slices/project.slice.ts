@@ -2,7 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { initialProjectSliceState } from "../states/project.state";
 import undoable, { excludeAction } from "redux-undo";
 import { getProject, upsertProject } from "../thunks";
-import type { TableCreate, TableUpdate } from "../schemas/table-schema";
+import type { TableCreate, TablePart } from "../schemas/table-schema";
 import type {
   FieldCreate,
   FieldPart,
@@ -18,12 +18,11 @@ const projectSlice = createSlice({
     tableCreated: (state, action: PayloadAction<TableCreate>) => {
       state.data?.tables.push({
         ...action.payload,
-        fields: [],
       });
     },
     tableUpdated: (
       state,
-      action: PayloadAction<{ name: string; tableUpdate: TableUpdate }>,
+      action: PayloadAction<{ name: string; tableUpdate: TablePart }>,
     ) => {
       const table = state.data?.tables.find(
         (t) => t.name === action.payload.name,
