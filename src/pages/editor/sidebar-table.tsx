@@ -12,7 +12,7 @@ import { generateFieldName } from "@/utils/generators/field";
 import { toast } from "sonner";
 import type { Table } from "@/features/project/schemas/table-schema";
 import {
-  fieldAdded,
+  fieldCreated,
   tablesSelected,
 } from "@/features/project/slices/project.slice";
 
@@ -24,9 +24,9 @@ const SidebarTable = ({ table }: SidebarTableProps) => {
   const dispatch = useAppDispatch();
   const handleAddField = () => {
     dispatch(
-      fieldAdded({
+      fieldCreated({
         tableName: table.name,
-        fieldCreate: {
+        data: {
           name: generateFieldName(),
           type: "INT",
           pk: false,

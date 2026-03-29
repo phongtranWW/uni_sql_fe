@@ -8,53 +8,34 @@ import {
 import Header from "./header";
 import useShortcuts from "@/hooks/use-shortcuts";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import { useCallback, useEffect } from "react";
-import { useBlocker, useParams, Navigate } from "react-router";
+import { useEffect } from "react";
+import { useParams } from "react-router";
 import { getProject } from "@/features/project/thunks";
-import {
-  selectSaveStatus,
-  selectFetchStatus,
-  selectProject,
-} from "@/features/project/selectors/project.selector";
-import EditorLoading from "./editor-loading";
-import EditorError from "./editor-error";
+import { selectFetchStatus } from "@/features/project/selectors/project.selector";
 import EditorUnsavedAlert from "./editor-unsaved-alert";
+import { ActionCreators } from "redux-undo";
+import LoadingScreen from "@/components/custom/loading-screen";
+import useUnsavedWarning from "@/hooks/use-unsave-warning";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
-  const saveStatus = useAppSelector(selectSaveStatus);
   const fetchStatus = useAppSelector(selectFetchStatus);
-  const project = useAppSelector(selectProject);
-  const isDirty = saveStatus !== "saved";
+  const { blocker } = useUnsavedWarning();
 
   useShortcuts();
 
-  const blocker = useBlocker(useCallback(() => isDirty, [isDirty]));
-
   useEffect(() => {
-    if (id) dispatch(getProject(id));
+    if (id) {
+      dispatch(getProject(id)).then(() => {
+        dispatch(ActionCreators.clearHistory());
+      });
+    }
   }, [id, dispatch]);
 
-  useEffect(() => {
-    if (!isDirty) return;
-    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [isDirty]);
-
   if (fetchStatus === "idle" || fetchStatus === "loading") {
-    return <EditorLoading />;
+    return <LoadingScreen content="Loading project..." />;
   }
-
-  if (fetchStatus === "failed") {
-    return <EditorError />;
-  }
-
-  if (fetchStatus === "succeeded" && !project) {
-    return <Navigate to="/404" replace />;
-  }
-
   return (
     <>
       <div className="flex flex-col h-screen">

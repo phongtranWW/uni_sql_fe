@@ -27,6 +27,8 @@ const Board = () => {
     handleEdgeClick,
     handlePaneClick,
     handleConnect,
+    handleNodesDelete,
+    handleEdgesDelete,
   } = useFlowHandlers({ nodes, edges, setNodes, setEdges });
 
   return (
@@ -65,6 +67,8 @@ const Board = () => {
         onEdgeClick={handleEdgeClick}
         onPaneClick={handlePaneClick}
         onConnect={handleConnect}
+        onNodesDelete={handleNodesDelete}
+        onEdgesDelete={handleEdgesDelete}
       >
         <Background />
       </ReactFlow>

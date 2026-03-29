@@ -1,6 +1,7 @@
 import { useAppDispatch } from "@/app/hook";
 import { REF_OPERATOR } from "@/features/project/schemas/ref.schema";
 import {
+  elementsDeleted,
   refCreated,
   refsSelected,
   refsSelectionCleared,
@@ -114,11 +115,37 @@ export const useFlowHandlers = ({
     [dispatch, edges],
   );
 
+  const handleNodesDelete = useCallback(
+    (deletedNodes: Node[]) => {
+      dispatch(
+        elementsDeleted({
+          tableNames: deletedNodes.map((n) => n.id),
+          refNames: [],
+        })
+      );
+    },
+    [dispatch]
+  );
+
+  const handleEdgesDelete = useCallback(
+    (deletedEdges: Edge[]) => {
+      dispatch(
+        elementsDeleted({
+          tableNames: [],
+          refNames: deletedEdges.map((e) => e.id),
+        })
+      );
+    },
+    [dispatch]
+  );
+
   return {
     handleSelectionEnd,
     handleNodeClick,
     handleEdgeClick,
     handlePaneClick,
     handleConnect,
+    handleNodesDelete,
+    handleEdgesDelete,
   };
 };
