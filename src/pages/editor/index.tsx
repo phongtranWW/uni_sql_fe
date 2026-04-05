@@ -14,6 +14,8 @@ import { getProject } from "@/features/project/thunks";
 import { selectFetchStatus } from "@/features/project/selectors/project.selector";
 import { ActionCreators } from "redux-undo";
 import LoadingScreen from "@/components/custom/loading-screen";
+import IdleScreen from "@/components/custom/idle-screen";
+import ErrorScreen from "@/components/custom/error-screen";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,16 +24,18 @@ const Editor = () => {
   useShortcuts();
 
   useEffect(() => {
-    if (id) {
-      dispatch(getProject(id)).then(() => {
-        dispatch(ActionCreators.clearHistory());
-      });
-    }
+    if (!id) return;
+    const fetchData = async () => {
+      await dispatch(getProject(id));
+      dispatch(ActionCreators.clearHistory());
+    };
+    fetchData();
   }, [id, dispatch]);
 
-  if (fetchStatus === "idle" || fetchStatus === "loading") {
-    return <LoadingScreen content="Loading project..." />;
-  }
+  if (fetchStatus === "idle") return <IdleScreen />;
+  if (fetchStatus === "loading") return <LoadingScreen />;
+  if (fetchStatus === "failed") return <ErrorScreen />;
+
   return (
     <>
       <div className="flex flex-col h-screen">
@@ -46,12 +50,6 @@ const Editor = () => {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-
-      {/* <EditorUnsavedAlert
-        open={blocker.state === "blocked"}
-        onStay={() => blocker.reset?.()}
-        onProceed={() => blocker.proceed?.()}
-      /> */}
     </>
   );
 };
