@@ -114,6 +114,27 @@ export const ProjectSchema = z
         }
       });
     });
+
+    refs.forEach((ref, refIndex) => {
+      const [a, b] = ref.endpoints;
+      if (!a || !b) return;
+
+      const tableA = tableMap.get(a.tableName);
+      const tableB = tableMap.get(b.tableName);
+      if (!tableA || !tableB) return;
+
+      const fieldA = tableA.fields.find((f) => f.name === a.fieldName);
+      const fieldB = tableB.fields.find((f) => f.name === b.fieldName);
+      if (!fieldA || !fieldB) return;
+
+      if (fieldA.type !== fieldB.type) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Type mismatch: "${a.tableName}.${a.fieldName}" is ${fieldA.type} but "${b.tableName}.${b.fieldName}" is ${fieldB.type}`,
+          path: ["refs", refIndex, "endpoints"],
+        });
+      }
+    });
   });
 
 export const ProjectSummarySchema = z.object({
