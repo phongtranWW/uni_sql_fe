@@ -35,8 +35,8 @@ import {
 } from "@/features/project/schemas/ref.schema";
 import { selectTables } from "@/features/project/selectors/project.selector";
 import {
+  refPartial,
   refRemoved,
-  refUpdated,
 } from "@/features/project/slices/project.slice";
 
 const OPERATOR_ICONS = {
@@ -157,9 +157,9 @@ const SidebarRefDetail = ({ reference }: SidebarRefDetailProps) => {
 
   const handleSave = () => {
     dispatch(
-      refUpdated({
-        name: reference.name,
-        refUpdate: {
+      refPartial({
+        refName: reference.name,
+        data: {
           name,
           operator,
           endpoints: [

@@ -12,17 +12,13 @@ import { useEffect } from "react";
 import { useParams } from "react-router";
 import { getProject } from "@/features/project/thunks";
 import { selectFetchStatus } from "@/features/project/selectors/project.selector";
-import EditorUnsavedAlert from "./editor-unsaved-alert";
 import { ActionCreators } from "redux-undo";
 import LoadingScreen from "@/components/custom/loading-screen";
-import useUnsavedWarning from "@/hooks/use-unsave-warning";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const fetchStatus = useAppSelector(selectFetchStatus);
-  const { blocker } = useUnsavedWarning();
-
   useShortcuts();
 
   useEffect(() => {
@@ -51,11 +47,11 @@ const Editor = () => {
         </ResizablePanelGroup>
       </div>
 
-      <EditorUnsavedAlert
+      {/* <EditorUnsavedAlert
         open={blocker.state === "blocked"}
         onStay={() => blocker.reset?.()}
         onProceed={() => blocker.proceed?.()}
-      />
+      /> */}
     </>
   );
 };

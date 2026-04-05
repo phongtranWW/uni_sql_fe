@@ -231,13 +231,6 @@ const projectSlice = createSlice({
       })
       .addCase(getProject.rejected, (state) => {
         state.fetchStatus = "failed";
-      })
-      .addCase(upsertProject.pending, (state) => {
-        state.saveStatus = "saving";
-      })
-      .addCase(upsertProject.fulfilled, (state, action) => {
-        state.data = action.payload;
-        state.saveStatus = "saved";
       });
   },
 });

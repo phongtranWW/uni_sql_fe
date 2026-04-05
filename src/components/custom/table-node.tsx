@@ -1,8 +1,8 @@
-import type { Field } from "@/features/project/states/field";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import { Badge } from "../ui/badge";
 import { Key, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Field } from "@/features/project/schemas/field-schema";
 
 type TableNode = Node<
   {
