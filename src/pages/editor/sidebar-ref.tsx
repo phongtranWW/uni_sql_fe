@@ -17,7 +17,12 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { selectRefs } from "@/features/project/selectors/project.selector";
-import { refPartial } from "@/features/project/slices/project.slice";
+import {
+  refPartial,
+  refRemoved,
+} from "@/features/project/slices/project.slice";
+import { Button } from "@/components/ui/button";
+import { Trash2Icon } from "lucide-react";
 
 const RefName = ({
   value,
@@ -107,6 +112,17 @@ const SidebarRef = ({ reference }: SidebarRefProps) => {
           handleRefPartial({ operator: value as RefPart["operator"] });
         }}
       />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="shrink-0 size-7"
+        onClick={(e) => {
+          e.stopPropagation();
+          dispatch(refRemoved(reference.name));
+        }}
+      >
+        <Trash2Icon className="size-4" />
+      </Button>
     </div>
   );
 };
