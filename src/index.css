@@ -142,3 +142,45 @@
 .react-flow__node.selected {
   outline: none !important;
 }
+
+/* ReactFlow Controls */
+.react-flow__controls {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.react-flow__controls-button {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  fill: var(--foreground);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--accent);
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+/* ReactFlow MiniMap */
+.react-flow__minimap {
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.react-flow__minimap-mask {
+  fill: var(--muted);
+  opacity: 0.6;
+}
+
+.react-flow__minimap-node {
+  fill: var(--muted-foreground);
+  stroke: none;
+}

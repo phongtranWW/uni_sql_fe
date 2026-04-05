@@ -1,0 +1,41 @@
+export const ProjectSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  tables: z.array(TableSchema),
+  refs: z.array(RefSchema),
+});
+
+const BaseTableSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Name is required.")
+    .max(63, "Name must be at most 63 characters.")
+    .regex(
+      /^[a-z_][a-z0-9_]*$/,
+      "Name must start with a letter or underscore, and contain only lowercase letters, numbers, or underscores.",
+    ),
+  fields: z.array(FieldSchema).refine(
+    (fields) => {
+      const names = fields.map((f) => f.name);
+      return new Set(names).size === names.length;
+    },
+    {
+      message: "Field names must be unique",
+      path: ["fields"],
+    },
+  ),
+  headerColor: z.string(),
+  alias: z.string().nullable(),
+  isSelected: z.boolean(),
+});
+
+Thêm các luật như sau:
+- Đối với Project
+1) Table
+a. Không được trùng name
+
+
+2) Ref 
+a. Không được trùng name
+b. Phải nối tới hai bảng tồn tại
+c. Không được tạo quan hệ vòng

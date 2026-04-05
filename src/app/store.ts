@@ -3,12 +3,14 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/features/auth/slice";
 import projectReducer from "@/features/project/slices/project.slice";
 import projectsReucer from "@/features/project/slices/projects.slice";
+import editorSettingsReducer from "@/features/editor-settings/editor-settings.slice";
 
 export const store = configureStore({
   reducer: {
     project: projectReducer,
     projects: projectsReucer,
     auth: authReducer,
+    editorSettings: editorSettingsReducer,
   },
 });
 

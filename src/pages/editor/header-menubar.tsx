@@ -1,9 +1,12 @@
-import { useAppDispatch } from "@/app/hook";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { issuePanelSet, sidebarSet, minimapSet, controlSet } from "@/features/editor-settings/editor-settings.slice";
 import {
   Menubar,
+  MenubarCheckboxItem,
   MenubarContent,
   MenubarItem,
   MenubarMenu,
+  MenubarSeparator,
   MenubarShortcut,
   MenubarSub,
   MenubarSubContent,
@@ -26,6 +29,10 @@ const HeaderMenubar = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
   const { resolvedTheme, setTheme } = useTheme();
+  const showIssues = useAppSelector((state) => state.editorSettings.show.issuePanel);
+  const showSidebar = useAppSelector((state) => state.editorSettings.show.sidebar);
+  const showMinimap = useAppSelector((state) => state.editorSettings.show.minimap);
+  const showControl = useAppSelector((state) => state.editorSettings.show.control);
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [exportCode, setExportCode] = useState("");
   const [exportFormat, setExportFormat] = useState<CodeFormat>(
@@ -101,6 +108,31 @@ const HeaderMenubar = () => {
             View
           </MenubarTrigger>
           <MenubarContent>
+            <MenubarCheckboxItem
+              checked={showSidebar}
+              onCheckedChange={(checked) => dispatch(sidebarSet(checked))}
+            >
+              Show Sidebar
+            </MenubarCheckboxItem>
+            <MenubarCheckboxItem
+              checked={showIssues}
+              onCheckedChange={(checked) => dispatch(issuePanelSet(checked))}
+            >
+              Show Issues
+            </MenubarCheckboxItem>
+            <MenubarCheckboxItem
+              checked={showMinimap}
+              onCheckedChange={(checked) => dispatch(minimapSet(checked))}
+            >
+              Show Minimap
+            </MenubarCheckboxItem>
+            <MenubarCheckboxItem
+              checked={showControl}
+              onCheckedChange={(checked) => dispatch(controlSet(checked))}
+            >
+              Show Controls
+            </MenubarCheckboxItem>
+            <MenubarSeparator />
             <MenubarSub>
               <MenubarSubTrigger>Theme</MenubarSubTrigger>
               <MenubarSubContent>

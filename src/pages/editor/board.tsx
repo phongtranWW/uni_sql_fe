@@ -12,12 +12,15 @@ import {
   Background,
   ConnectionLineType,
   ConnectionMode,
+  Controls,
+  MiniMap,
   ReactFlow,
 } from "@xyflow/react";
 
 const Board = () => {
   const tables = useAppSelector(selectTables);
   const refs = useAppSelector(selectRefs);
+  const {  minimap, control} = useAppSelector((state) => state.editorSettings.show);
 
   const { nodes, setNodes, onNodesChange } = useFlowNodes(tables);
   const { edges, setEdges, onEdgesChange } = useFlowEdges(refs);
@@ -71,6 +74,8 @@ const Board = () => {
         onEdgesDelete={handleEdgesDelete}
       >
         <Background />
+        {minimap && <MiniMap />}
+        {control && <Controls />}
       </ReactFlow>
     </>
   );
