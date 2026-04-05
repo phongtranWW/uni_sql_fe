@@ -9,6 +9,8 @@ import {
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
+  MenubarRadioGroup,
+  MenubarRadioItem,
 } from "@/components/ui/menubar";
 import { useState } from "react";
 import CodePreview from "./code-preview";
@@ -18,13 +20,17 @@ import { useParams } from "react-router";
 import { CODE_FORMATS } from "@/constants/code-formats";
 import { type CodeFormat } from "@/types/format";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
 
 const HeaderMenubar = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
+  const { resolvedTheme, setTheme } = useTheme();
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [exportCode, setExportCode] = useState("");
-  const [exportFormat, setExportFormat] = useState<CodeFormat>(CODE_FORMATS.JSON);
+  const [exportFormat, setExportFormat] = useState<CodeFormat>(
+    CODE_FORMATS.JSON,
+  );
 
   const handleExport = async (format: "json" | "mysql" | "postgresql") => {
     if (!id) return;
@@ -36,13 +42,13 @@ const HeaderMenubar = () => {
           format === "postgresql"
             ? CODE_FORMATS.PostgreSQL
             : format === "mysql"
-            ? CODE_FORMATS.MySQL
-            : CODE_FORMATS.JSON
+              ? CODE_FORMATS.MySQL
+              : CODE_FORMATS.JSON,
         );
         setShowCodePreview(true);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unknown error",)
+      toast.error(error instanceof Error ? error.message : "Unknown error");
     }
   };
 
@@ -58,9 +64,15 @@ const HeaderMenubar = () => {
             <MenubarSub>
               <MenubarSubTrigger>Export to</MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarItem onClick={() => handleExport("json")}>JSON</MenubarItem>
-                <MenubarItem onClick={() => handleExport("mysql")}>MySQL</MenubarItem>
-                <MenubarItem onClick={() => handleExport("postgresql")}>Postgres</MenubarItem>
+                <MenubarItem onClick={() => handleExport("json")}>
+                  JSON
+                </MenubarItem>
+                <MenubarItem onClick={() => handleExport("mysql")}>
+                  MySQL
+                </MenubarItem>
+                <MenubarItem onClick={() => handleExport("postgresql")}>
+                  Postgres
+                </MenubarItem>
               </MenubarSubContent>
             </MenubarSub>
           </MenubarContent>
@@ -82,6 +94,26 @@ const HeaderMenubar = () => {
             <MenubarItem>
               Delete <MenubarShortcut>Del / Bac</MenubarShortcut>
             </MenubarItem>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu>
+          <MenubarTrigger className="bg-transparent hover:bg-accent data-[state=open]:bg-accent">
+            View
+          </MenubarTrigger>
+          <MenubarContent>
+            <MenubarSub>
+              <MenubarSubTrigger>Theme</MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarRadioGroup value={resolvedTheme} onValueChange={setTheme}>
+                  <MenubarRadioItem value="light">
+                    Light
+                  </MenubarRadioItem>
+                  <MenubarRadioItem value="dark">
+                    Dark
+                  </MenubarRadioItem>
+                </MenubarRadioGroup>
+              </MenubarSubContent>
+            </MenubarSub>
           </MenubarContent>
         </MenubarMenu>
       </Menubar>
