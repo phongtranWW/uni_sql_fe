@@ -13,6 +13,11 @@ import type {
   FieldReplace,
 } from "../schemas/field-schema";
 import type { RefCreate, RefPart, RefReplace } from "../schemas/ref.schema";
+import type {
+  IndexCreate,
+  IndexPart,
+  IndexReplace,
+} from "../schemas/index.schema";
 
 const projectSlice = createSlice({
   name: "project",
@@ -49,6 +54,12 @@ const projectSlice = createSlice({
       if (!state.data) return;
       state.data.tables = state.data.tables.filter(
         (t) => t.name !== action.payload,
+      );
+      state.data.indexes = state.data.indexes.filter(
+        (idx) => idx.tableName !== action.payload,
+      );
+      state.data.refs = state.data.refs.filter((ref) =>
+        ref.endpoints.every((ep) => ep.tableName !== action.payload),
       );
     },
     tablesSelected: (
@@ -215,6 +226,41 @@ const projectSlice = createSlice({
       state.data?.refs.forEach((r) => (r.isSelected = false));
     },
 
+    indexCreated: (state, action: PayloadAction<IndexCreate>) => {
+      state.data?.indexes?.push({ ...action.payload });
+    },
+
+    indexReplaced: (
+      state,
+      action: PayloadAction<{ indexName: string; data: IndexReplace }>,
+    ) => {
+      const indexes = state.data?.indexes;
+      if (!indexes) return;
+      const idx = indexes.findIndex((t) => t.name === action.payload.indexName);
+      if (idx === -1) return;
+      indexes[idx] = {
+        ...action.payload.data,
+      };
+    },
+
+    indexPartial: (
+      state,
+      action: PayloadAction<{ indexName: string; data: IndexPart }>,
+    ) => {
+      const index = state.data?.indexes?.find(
+        (r) => r.name === action.payload.indexName,
+      );
+      if (!index) return;
+      Object.assign(index, action.payload.data);
+    },
+
+    indexRemoved: (state, action: PayloadAction<string>) => {
+      if (!state.data) return;
+      state.data.indexes = state.data.indexes?.filter(
+        (r) => r.name !== action.payload,
+      );
+    },
+
     nameSet: (state, action: PayloadAction<string>) => {
       if (!state.data) return;
       state.data.name = action.payload;
@@ -254,6 +300,10 @@ export const {
   refRemoved,
   refsSelected,
   refsSelectionCleared,
+  indexCreated,
+  indexReplaced,
+  indexPartial,
+  indexRemoved,
   nameSet,
 } = projectSlice.actions;
 

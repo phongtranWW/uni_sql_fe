@@ -30,3 +30,8 @@ export const selectRefs = createSelector(
   selectProjectData,
   (data) => data?.refs ?? [],
 );
+
+export const selectIndexes = createSelector(
+  selectProjectData,
+  (data) => data?.indexes ?? [],
+);

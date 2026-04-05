@@ -2,6 +2,7 @@ import { z } from "zod";
 import { TableSchema } from "./table-schema";
 import { RefSchema } from "./ref.schema";
 import { ResponsePaginationSchema } from "@/features/common/schemas/response-pagination";
+import { IndexSchema } from "./index.schema";
 
 export const ProjectSchema = z
   .object({
@@ -9,9 +10,10 @@ export const ProjectSchema = z
     name: z.string(),
     tables: z.array(TableSchema),
     refs: z.array(RefSchema),
+    indexes: z.array(IndexSchema).default([]),
   })
   .superRefine((project, ctx) => {
-    const { tables, refs } = project;
+    const { tables, refs, indexes } = project;
     const tableNameSet = new Set<string>();
     tables.forEach((table, index) => {
       if (tableNameSet.has(table.name)) {
@@ -134,6 +136,87 @@ export const ProjectSchema = z
           path: ["refs", refIndex, "endpoints"],
         });
       }
+    });
+
+    const indexNameSet = new Set<string>();
+    indexes.forEach((index, i) => {
+      // Không trùng tên index
+      if (indexNameSet.has(index.name)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Duplicate index name: "${index.name}"`,
+          path: ["indexes", i, "name"],
+        });
+      }
+      indexNameSet.add(index.name);
+
+      const table = tableMap.get(index.tableName);
+
+      // Table phải tồn tại
+      if (!table) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Index "${index.name}" references non-existent table "${index.tableName}"`,
+          path: ["indexes", i, "tableName"],
+        });
+        return;
+      }
+
+      const fieldNameSet = new Set(table.fields.map((f) => f.name));
+
+      // Field phải tồn tại trong table
+      index.fields.forEach((field, j) => {
+        if (!fieldNameSet.has(field)) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Index "${index.name}" references non-existent field "${field}" in table "${index.tableName}"`,
+            path: ["indexes", i, "fields", j],
+          });
+        }
+      });
+
+      // Không trùng field trong cùng một index
+      const indexFieldSet = new Set<string>();
+      index.fields.forEach((field, j) => {
+        if (indexFieldSet.has(field)) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Duplicate field "${field}" in index "${index.name}"`,
+            path: ["indexes", i, "fields", j],
+          });
+        }
+        indexFieldSet.add(field);
+      });
+
+      // Unique index trên PK thì thừa
+      if (index.unique) {
+        const pkFields = new Set(
+          table.fields.filter((f) => f.pk).map((f) => f.name),
+        );
+        const isRedundant =
+          index.fields.length === 1 && pkFields.has(index.fields[0]);
+        if (isRedundant) {
+          ctx.addIssue({
+            code: "custom",
+            message: `Unique index "${index.name}" is redundant because "${index.fields[0]}" is already a primary key`,
+            path: ["indexes", i],
+          });
+        }
+      }
+    });
+
+    // Không trùng index signature trên cùng một table (kể cả khác thứ tự field)
+    const indexSignatureSet = new Set<string>();
+    indexes.forEach((index, i) => {
+      const signature = `${index.tableName}::${[...index.fields].sort().join(",")}`;
+      if (indexSignatureSet.has(signature)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `Duplicate index on fields (${index.fields.join(", ")}) in table "${index.tableName}"`,
+          path: ["indexes", i],
+        });
+      }
+      indexSignatureSet.add(signature);
     });
   });
 
