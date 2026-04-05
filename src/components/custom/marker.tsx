@@ -1,0 +1,77 @@
+const Marker = () => (
+  <svg style={{ position: "absolute", width: 0, height: 0 }}>
+    <defs>
+      <marker
+        id="many-marker-end"
+        markerWidth="10"
+        markerHeight="12"
+        refX="8"
+        refY="6"
+        markerUnits="strokeWidth"
+        orient="auto"
+      >
+        <line
+          x1="0"
+          y1="6"
+          x2="8"
+          y2="2"
+          stroke="context-stroke"
+          strokeWidth="1"
+        />
+        <line
+          x1="0"
+          y1="6"
+          x2="8"
+          y2="6"
+          stroke="context-stroke"
+          strokeWidth="1"
+        />
+        <line
+          x1="0"
+          y1="6"
+          x2="8"
+          y2="10"
+          stroke="context-stroke"
+          strokeWidth="1"
+        />
+      </marker>
+
+      <marker
+        id="many-marker-start"
+        markerWidth="10"
+        markerHeight="12"
+        refX="8"
+        refY="6"
+        markerUnits="strokeWidth"
+        orient="auto-start-reverse"
+      >
+        <line
+          x1="0"
+          y1="6"
+          x2="8"
+          y2="2"
+          stroke="context-stroke"
+          strokeWidth="1"
+        />
+        <line
+          x1="0"
+          y1="6"
+          x2="8"
+          y2="6"
+          stroke="context-stroke"
+          strokeWidth="1"
+        />
+        <line
+          x1="0"
+          y1="6"
+          x2="8"
+          y2="10"
+          stroke="context-stroke"
+          strokeWidth="1"
+        />
+      </marker>
+    </defs>
+  </svg>
+);
+
+export default Marker;

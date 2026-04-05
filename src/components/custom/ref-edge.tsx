@@ -9,6 +9,28 @@ import {
   type EdgeProps,
 } from "@xyflow/react";
 
+const getMarkers = (operator: RefOperator) => {
+  switch (operator) {
+    case "-":
+      return {
+        markerStart: "url(#one-marker-start)",
+        markerEnd: "url(#one-marker-end)",
+      };
+    case ">":
+      return {
+        markerStart: "url(#one-marker-start)",
+        markerEnd: "url(#many-marker-end)",
+      };
+    case "<":
+      return {
+        markerStart: "url(#many-marker-start)",
+        markerEnd: "url(#one-marker-end)",
+      };
+    default:
+      return {};
+  }
+};
+
 type RefEdge = Edge<
   {
     name: string;
@@ -44,5 +66,18 @@ export function RefEdge({
     targetPosition,
   });
 
-  return <BaseEdge id={data?.name} path={path} />;
+  const { markerStart, markerEnd } = getMarkers(data?.operator ?? "-");
+
+  return (
+    <BaseEdge
+      id={data?.name}
+      path={path}
+      markerStart={markerStart}
+      markerEnd={markerEnd}
+      style={{
+        strokeDasharray: "8 2",
+        animation: "dashdraw 0.5s linear infinite",
+      }}
+    />
+  );
 }
