@@ -11,20 +11,26 @@ import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { useEffect } from "react";
 import { useParams } from "react-router";
 import { getProject } from "@/features/project/thunks";
-import { selectFetchStatus } from "@/features/project/selectors/project.selector";
+import {
+  selectFetchStatus,
+  selectProjectIsDirty,
+} from "@/features/project/selectors/project.selector";
 import { ActionCreators } from "redux-undo";
 import LoadingScreen from "@/components/custom/loading-screen";
 import IdleScreen from "@/components/custom/idle-screen";
 import ErrorScreen from "@/components/custom/error-screen";
 import PanelIssues from "./panel-issues";
+import useUnsavedChangesGuard from "./use-unsaved-changes-guard";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const fetchStatus = useAppSelector(selectFetchStatus);
+  const isDirty = useAppSelector(selectProjectIsDirty);
   const showIssues = useAppSelector((state) => state.editorSettings.show.issuePanel);
   const showSidebar = useAppSelector((state) => state.editorSettings.show.sidebar);
   useShortcuts();
+  useUnsavedChangesGuard(isDirty);
 
   useEffect(() => {
     if (!id) return;

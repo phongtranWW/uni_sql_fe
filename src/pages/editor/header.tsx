@@ -2,7 +2,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router";
 import logo from "@/assets/logo.png";
 import HeaderMenubar from "./header-menubar";
-import HeaderThemeToggle from "./header-theme-toggle";
+import HeaderProjectStatus from "./header-project-status";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Header = () => {
         <HeaderMenubar />
       </div>
       <div className="ml-auto flex items-center gap-3">
-        <HeaderThemeToggle />
+        <HeaderProjectStatus />
       </div>
     </header>
   );

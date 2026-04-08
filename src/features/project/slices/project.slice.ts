@@ -274,9 +274,22 @@ const projectSlice = createSlice({
       .addCase(getProject.fulfilled, (state, action) => {
         state.data = action.payload;
         state.fetchStatus = "succeeded";
+        state.saveStatus = "saved";
+        state.lastSavedSnapshot = JSON.stringify(action.payload);
       })
       .addCase(getProject.rejected, (state) => {
         state.fetchStatus = "failed";
+      })
+      .addCase(upsertProject.pending, (state) => {
+        state.saveStatus = "saving";
+      })
+      .addCase(upsertProject.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.saveStatus = "saved";
+        state.lastSavedSnapshot = JSON.stringify(action.payload);
+      })
+      .addCase(upsertProject.rejected, (state) => {
+        state.saveStatus = "failed";
       });
   },
 });
