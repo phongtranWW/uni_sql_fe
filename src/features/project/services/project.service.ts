@@ -52,6 +52,14 @@ export const projectService = {
     }
   },
 
+  async delete(id: string): Promise<void> {
+    try {
+      await apiClient.delete(`/projects/${id}`);
+    } catch (error) {
+      handleServiceError(error, "Failed to delete project");
+    }
+  },
+
   async export(id: string, params: ProjectExportParams): Promise<ExportResult> {
     try {
       const { data } = await apiClient.get(`/projects/${id}/export`, {

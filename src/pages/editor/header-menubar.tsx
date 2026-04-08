@@ -19,7 +19,7 @@ import { useState } from "react";
 import CodePreview from "./code-preview";
 import { ActionCreators } from "redux-undo";
 import projectService from "@/features/project/services/project.service";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { CODE_FORMATS } from "@/constants/code-formats";
 import { type CodeFormat } from "@/types/format";
 import { toast } from "sonner";
@@ -54,6 +54,7 @@ const sanitizeProjectJsonExport = (raw: string) => {
 const HeaderMenubar = () => {
   const dispatch = useAppDispatch();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
   const showIssues = useAppSelector((state) => state.editorSettings.show.issuePanel);
   const showSidebar = useAppSelector((state) => state.editorSettings.show.sidebar);
@@ -96,6 +97,26 @@ const HeaderMenubar = () => {
     dispatch(upsertProject({ id, body: project }));
   };
 
+  const handleExit = () => {
+    navigate("/");
+  };
+
+  const handleDeleteProject = async () => {
+    if (!id) return;
+    const shouldDelete = window.confirm(
+      "Delete this project permanently? This action cannot be undone.",
+    );
+    if (!shouldDelete) return;
+
+    try {
+      await projectService.delete(id);
+      toast.success("Project deleted.");
+      navigate("/");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete project");
+    }
+  };
+
   return (
     <div>
       <Menubar className="border-0 shadow-none bg-transparent p-0">
@@ -126,6 +147,14 @@ const HeaderMenubar = () => {
                 </MenubarItem>
               </MenubarSubContent>
             </MenubarSub>
+            <MenubarSeparator />
+            <MenubarItem onClick={handleExit}>Exit</MenubarItem>
+            <MenubarItem
+              onClick={handleDeleteProject}
+              className="text-rose-600 focus:text-rose-600"
+            >
+              Delete
+            </MenubarItem>
           </MenubarContent>
         </MenubarMenu>
         <MenubarMenu>
