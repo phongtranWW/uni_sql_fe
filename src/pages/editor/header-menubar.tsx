@@ -24,6 +24,8 @@ import { CODE_FORMATS } from "@/constants/code-formats";
 import { type CodeFormat } from "@/types/format";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
+import { selectProject } from "@/features/project/selectors/project.selector";
+import { upsertProject } from "@/features/project/thunks";
 
 const HeaderMenubar = () => {
   const dispatch = useAppDispatch();
@@ -33,6 +35,7 @@ const HeaderMenubar = () => {
   const showSidebar = useAppSelector((state) => state.editorSettings.show.sidebar);
   const showMinimap = useAppSelector((state) => state.editorSettings.show.minimap);
   const showControl = useAppSelector((state) => state.editorSettings.show.control);
+  const project = useAppSelector(selectProject);
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [exportCode, setExportCode] = useState("");
   const [exportFormat, setExportFormat] = useState<CodeFormat>(
@@ -57,6 +60,11 @@ const HeaderMenubar = () => {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unknown error");
     }
+  };
+
+  const handleSave = () => {
+    if (!id || !project) return;
+    dispatch(upsertProject({ id, body: project }));
   };
 
   return (
@@ -95,7 +103,7 @@ const HeaderMenubar = () => {
             <MenubarItem onClick={() => dispatch(ActionCreators.redo())}>
               Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem>
+            <MenubarItem onClick={handleSave}>
               Save <MenubarShortcut>Ctrl + S</MenubarShortcut>
             </MenubarItem>
             <MenubarItem>
