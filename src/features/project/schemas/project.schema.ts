@@ -11,22 +11,54 @@ type RawProject = {
 };
 type TableMap = Map<string, z.infer<typeof TableSchema>>;
 type Ctx = z.RefinementCtx;
+type ProjectRuleContext = {
+  project: RawProject;
+  tableMap: TableMap;
+  ctx: Ctx;
+};
+type ProjectRule = (ruleCtx: ProjectRuleContext) => void;
+
+const addIssue = (
+  ctx: Ctx,
+  message: string,
+  path: Array<string | number>,
+) => {
+  ctx.addIssue({
+    code: "custom",
+    message,
+    path,
+  });
+};
+
+const validateUniqueBy = <T>(
+  items: T[],
+  getKey: (item: T) => string,
+  onDuplicate: (item: T, index: number) => void,
+) => {
+  const seen = new Set<string>();
+  items.forEach((item, index) => {
+    const key = getKey(item);
+    if (seen.has(key)) {
+      onDuplicate(item, index);
+      return;
+    }
+    seen.add(key);
+  });
+};
 
 // ─── Table Rules ─────────────────────────────────────────────────────────────
 
 const validateTables = (tables: RawProject["tables"], ctx: Ctx): TableMap => {
   const tableMap: TableMap = new Map();
-  const seen = new Set<string>();
+  validateUniqueBy(
+    tables,
+    (table) => table.name,
+    (table, i) => {
+      addIssue(ctx, `Duplicate table name: "${table.name}"`, ["tables", i, "name"]);
+    },
+  );
 
-  tables.forEach((table, i) => {
-    if (seen.has(table.name)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Duplicate table name: "${table.name}"`,
-        path: ["tables", i, "name"],
-      });
-    }
-    seen.add(table.name);
+  tables.forEach((table) => {
     tableMap.set(table.name, table);
   });
 
@@ -36,17 +68,11 @@ const validateTables = (tables: RawProject["tables"], ctx: Ctx): TableMap => {
 // ─── Ref Rules ───────────────────────────────────────────────────────────────
 
 const validateRefNames = (refs: RawProject["refs"], ctx: Ctx) => {
-  const seen = new Set<string>();
-  refs.forEach((ref, i) => {
-    if (seen.has(ref.name)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Duplicate ref name: "${ref.name}"`,
-        path: ["refs", i, "name"],
-      });
-    }
-    seen.add(ref.name);
-  });
+  validateUniqueBy(
+    refs,
+    (ref) => ref.name,
+    (ref, i) => addIssue(ctx, `Duplicate ref name: "${ref.name}"`, ["refs", i, "name"]),
+  );
 };
 
 const validateRefEndpoints = (
@@ -59,21 +85,23 @@ const validateRefEndpoints = (
       const table = tableMap.get(ep.tableName);
 
       if (!table) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Table "${ep.tableName}" does not exist`,
-          path: ["refs", refIndex, "endpoints", epIndex, "tableName"],
-        });
+        addIssue(ctx, `Table "${ep.tableName}" does not exist`, [
+          "refs",
+          refIndex,
+          "endpoints",
+          epIndex,
+          "tableName",
+        ]);
         return;
       }
 
       const fieldExists = table.fields.some((f) => f.name === ep.fieldName);
       if (!fieldExists) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Field "${ep.fieldName}" does not exist in table "${ep.tableName}"`,
-          path: ["refs", refIndex, "endpoints", epIndex, "fieldName"],
-        });
+        addIssue(
+          ctx,
+          `Field "${ep.fieldName}" does not exist in table "${ep.tableName}"`,
+          ["refs", refIndex, "endpoints", epIndex, "fieldName"],
+        );
       }
     });
   });
@@ -97,39 +125,35 @@ const validateRefTypeMatch = (
     if (!fieldA || !fieldB) return;
 
     if (fieldA.type !== fieldB.type) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Type mismatch: "${a.tableName}.${a.fieldName}" is ${fieldA.type} but "${b.tableName}.${b.fieldName}" is ${fieldB.type}`,
-        path: ["refs", refIndex, "endpoints"],
-      });
+      addIssue(
+        ctx,
+        `Type mismatch: "${a.tableName}.${a.fieldName}" is ${fieldA.type} but "${b.tableName}.${b.fieldName}" is ${fieldB.type}`,
+        ["refs", refIndex, "endpoints"],
+      );
     }
   });
 };
 
 const validateRefDuplicates = (refs: RawProject["refs"], ctx: Ctx) => {
-  const seen = new Set<string>();
-
-  refs.forEach((ref, i) => {
-    const [a, b] = ref.endpoints;
-    if (!a || !b) return;
-
-    const key = [
-      `${a.tableName}.${a.fieldName}`,
-      `${b.tableName}.${b.fieldName}`,
-    ]
-      .sort()
-      .join("--");
-
-    if (seen.has(key)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Duplicate relationship between "${a.tableName}.${a.fieldName}" and "${b.tableName}.${b.fieldName}"`,
-        path: ["refs", i],
-      });
-    }
-
-    seen.add(key);
-  });
+  validateUniqueBy(
+    refs,
+    (ref) => {
+      const [a, b] = ref.endpoints;
+      if (!a || !b) return `__skip__${ref.name}`;
+      return [`${a.tableName}.${a.fieldName}`, `${b.tableName}.${b.fieldName}`]
+        .sort()
+        .join("--");
+    },
+    (ref, i) => {
+      const [a, b] = ref.endpoints;
+      if (!a || !b) return;
+      addIssue(
+        ctx,
+        `Duplicate relationship between "${a.tableName}.${a.fieldName}" and "${b.tableName}.${b.fieldName}"`,
+        ["refs", i],
+      );
+    },
+  );
 };
 
 const validateRefCycles = (
@@ -161,11 +185,7 @@ const validateRefCycles = (
 
   for (const node of graph.keys()) {
     if (hasCycle(node)) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Circular relationship detected",
-        path: ["refs"],
-      });
+      addIssue(ctx, "Circular relationship detected", ["refs"]);
       break;
     }
   }
@@ -174,17 +194,16 @@ const validateRefCycles = (
 // ─── Index Rules ─────────────────────────────────────────────────────────────
 
 const validateIndexNames = (indexes: RawProject["indexes"], ctx: Ctx) => {
-  const seen = new Set<string>();
-  indexes.forEach((index, i) => {
-    if (seen.has(index.name)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Duplicate index name: "${index.name}"`,
-        path: ["indexes", i, "name"],
-      });
-    }
-    seen.add(index.name);
-  });
+  validateUniqueBy(
+    indexes,
+    (index) => index.name,
+    (index, i) =>
+      addIssue(ctx, `Duplicate index name: "${index.name}"`, [
+        "indexes",
+        i,
+        "name",
+      ]),
+  );
 };
 
 const validateIndexFields = (
@@ -196,11 +215,11 @@ const validateIndexFields = (
     const table = tableMap.get(index.tableName);
 
     if (!table) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Index "${index.name}" references non-existent table "${index.tableName}"`,
-        path: ["indexes", i, "tableName"],
-      });
+      addIssue(
+        ctx,
+        `Index "${index.name}" references non-existent table "${index.tableName}"`,
+        ["indexes", i, "tableName"],
+      );
       return;
     }
 
@@ -209,19 +228,20 @@ const validateIndexFields = (
 
     index.fields.forEach((field, j) => {
       if (!fieldNameSet.has(field)) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Index "${index.name}" references non-existent field "${field}" in table "${index.tableName}"`,
-          path: ["indexes", i, "fields", j],
-        });
+        addIssue(
+          ctx,
+          `Index "${index.name}" references non-existent field "${field}" in table "${index.tableName}"`,
+          ["indexes", i, "fields", j],
+        );
       }
 
       if (seenFields.has(field)) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Duplicate field "${field}" in index "${index.name}"`,
-          path: ["indexes", i, "fields", j],
-        });
+        addIssue(ctx, `Duplicate field "${field}" in index "${index.name}"`, [
+          "indexes",
+          i,
+          "fields",
+          j,
+        ]);
       }
       seenFields.add(field);
     });
@@ -233,30 +253,39 @@ const validateIndexFields = (
       const isRedundant =
         index.fields.length === 1 && pkFields.has(index.fields[0]);
       if (isRedundant) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Unique index "${index.name}" is redundant because "${index.fields[0]}" is already a primary key`,
-          path: ["indexes", i],
-        });
+        addIssue(
+          ctx,
+          `Unique index "${index.name}" is redundant because "${index.fields[0]}" is already a primary key`,
+          ["indexes", i],
+        );
       }
     }
   });
 };
 
 const validateIndexSignatures = (indexes: RawProject["indexes"], ctx: Ctx) => {
-  const seen = new Set<string>();
-  indexes.forEach((index, i) => {
-    const signature = `${index.tableName}::${[...index.fields].sort().join(",")}`;
-    if (seen.has(signature)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Duplicate index on fields (${index.fields.join(", ")}) in table "${index.tableName}"`,
-        path: ["indexes", i],
-      });
-    }
-    seen.add(signature);
-  });
+  validateUniqueBy(
+    indexes,
+    (index) => `${index.tableName}::${[...index.fields].sort().join(",")}`,
+    (index, i) =>
+      addIssue(
+        ctx,
+        `Duplicate index on fields (${index.fields.join(", ")}) in table "${index.tableName}"`,
+        ["indexes", i],
+      ),
+  );
 };
+
+const runProjectRules: ProjectRule[] = [
+  ({ project, ctx }) => validateRefNames(project.refs, ctx),
+  ({ project, tableMap, ctx }) => validateRefEndpoints(project.refs, tableMap, ctx),
+  ({ project, tableMap, ctx }) => validateRefTypeMatch(project.refs, tableMap, ctx),
+  ({ project, ctx }) => validateRefDuplicates(project.refs, ctx),
+  ({ project, tableMap, ctx }) => validateRefCycles(project.refs, tableMap, ctx),
+  ({ project, ctx }) => validateIndexNames(project.indexes, ctx),
+  ({ project, tableMap, ctx }) => validateIndexFields(project.indexes, tableMap, ctx),
+  ({ project, ctx }) => validateIndexSignatures(project.indexes, ctx),
+];
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 
@@ -269,19 +298,9 @@ export const ProjectSchema = z
     indexes: z.array(IndexSchema).default([]),
   })
   .superRefine((project, ctx) => {
-    const { tables, refs, indexes } = project;
-
-    const tableMap = validateTables(tables, ctx);
-
-    validateRefNames(refs, ctx);
-    validateRefEndpoints(refs, tableMap, ctx);
-    validateRefTypeMatch(refs, tableMap, ctx);
-    validateRefDuplicates(refs, ctx);
-    validateRefCycles(refs, tableMap, ctx);
-
-    validateIndexNames(indexes, ctx);
-    validateIndexFields(indexes, tableMap, ctx);
-    validateIndexSignatures(indexes, ctx);
+    const tableMap = validateTables(project.tables, ctx);
+    const ruleCtx: ProjectRuleContext = { project, tableMap, ctx };
+    runProjectRules.forEach((rule) => rule(ruleCtx));
   });
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
