@@ -18,6 +18,7 @@ import type {
   IndexPart,
   IndexReplace,
 } from "../schemas/index.schema";
+import type { Project } from "../schemas/project.schema";
 
 const projectSlice = createSlice({
   name: "project",
@@ -265,6 +266,10 @@ const projectSlice = createSlice({
       if (!state.data) return;
       state.data.name = action.payload;
     },
+    projectImported: (state, action: PayloadAction<Project>) => {
+      state.data = action.payload;
+      state.saveStatus = "idle";
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -318,6 +323,7 @@ export const {
   indexPartial,
   indexRemoved,
   nameSet,
+  projectImported,
 } = projectSlice.actions;
 
 export default undoable(projectSlice.reducer, {

@@ -107,33 +107,6 @@ const validateRefEndpoints = (
   });
 };
 
-const validateRefTypeMatch = (
-  refs: RawProject["refs"],
-  tableMap: TableMap,
-  ctx: Ctx,
-) => {
-  refs.forEach((ref, refIndex) => {
-    const [a, b] = ref.endpoints;
-    if (!a || !b) return;
-
-    const fieldA = tableMap
-      .get(a.tableName)
-      ?.fields.find((f) => f.name === a.fieldName);
-    const fieldB = tableMap
-      .get(b.tableName)
-      ?.fields.find((f) => f.name === b.fieldName);
-    if (!fieldA || !fieldB) return;
-
-    if (fieldA.type !== fieldB.type) {
-      addIssue(
-        ctx,
-        `Type mismatch: "${a.tableName}.${a.fieldName}" is ${fieldA.type} but "${b.tableName}.${b.fieldName}" is ${fieldB.type}`,
-        ["refs", refIndex, "endpoints"],
-      );
-    }
-  });
-};
-
 const validateRefDuplicates = (refs: RawProject["refs"], ctx: Ctx) => {
   validateUniqueBy(
     refs,
@@ -279,7 +252,6 @@ const validateIndexSignatures = (indexes: RawProject["indexes"], ctx: Ctx) => {
 const runProjectRules: ProjectRule[] = [
   ({ project, ctx }) => validateRefNames(project.refs, ctx),
   ({ project, tableMap, ctx }) => validateRefEndpoints(project.refs, tableMap, ctx),
-  ({ project, tableMap, ctx }) => validateRefTypeMatch(project.refs, tableMap, ctx),
   ({ project, ctx }) => validateRefDuplicates(project.refs, ctx),
   ({ project, tableMap, ctx }) => validateRefCycles(project.refs, tableMap, ctx),
   ({ project, ctx }) => validateIndexNames(project.indexes, ctx),
@@ -289,15 +261,17 @@ const runProjectRules: ProjectRule[] = [
 
 // ─── Schema ──────────────────────────────────────────────────────────────────
 
-export const ProjectSchema = z
+const ProjectBaseSchema = z
   .object({
-    id: z.string(),
     name: z.string(),
     tables: z.array(TableSchema),
     refs: z.array(RefSchema),
     indexes: z.array(IndexSchema).default([]),
-  })
-  .superRefine((project, ctx) => {
+  });
+
+export const ProjectSchema = ProjectBaseSchema;
+
+export const ProjectIssuesSchema = ProjectBaseSchema.superRefine((project, ctx) => {
     const tableMap = validateTables(project.tables, ctx);
     const ruleCtx: ProjectRuleContext = { project, tableMap, ctx };
     runProjectRules.forEach((rule) => rule(ruleCtx));

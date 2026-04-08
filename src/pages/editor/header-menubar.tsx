@@ -26,6 +26,30 @@ import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { selectProject } from "@/features/project/selectors/project.selector";
 import { upsertProject } from "@/features/project/thunks";
+import ImportProjectDialog from "./import-project-dialog";
+
+const sanitizeProjectJsonExport = (raw: string) => {
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return raw;
+    }
+
+    const { name, tables, refs, indexes } = parsed;
+    return JSON.stringify(
+      {
+        name,
+        tables,
+        refs,
+        indexes: indexes ?? [],
+      },
+      null,
+      2,
+    );
+  } catch {
+    return raw;
+  }
+};
 
 const HeaderMenubar = () => {
   const dispatch = useAppDispatch();
@@ -37,6 +61,7 @@ const HeaderMenubar = () => {
   const showControl = useAppSelector((state) => state.editorSettings.show.control);
   const project = useAppSelector(selectProject);
   const [showCodePreview, setShowCodePreview] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [exportCode, setExportCode] = useState("");
   const [exportFormat, setExportFormat] = useState<CodeFormat>(
     CODE_FORMATS.JSON,
@@ -47,7 +72,11 @@ const HeaderMenubar = () => {
     try {
       const result = await projectService.export(id, { format });
       if (result) {
-        setExportCode(result.content);
+        setExportCode(
+          format === "json"
+            ? sanitizeProjectJsonExport(result.content)
+            : result.content,
+        );
         setExportFormat(
           format === "postgresql"
             ? CODE_FORMATS.PostgreSQL
@@ -75,7 +104,14 @@ const HeaderMenubar = () => {
             File
           </MenubarTrigger>
           <MenubarContent>
-            <MenubarItem>Import from</MenubarItem>
+            <MenubarSub>
+              <MenubarSubTrigger>Import from</MenubarSubTrigger>
+              <MenubarSubContent>
+                <MenubarItem onClick={() => setShowImportDialog(true)}>
+                  JSON
+                </MenubarItem>
+              </MenubarSubContent>
+            </MenubarSub>
             <MenubarSub>
               <MenubarSubTrigger>Export to</MenubarSubTrigger>
               <MenubarSubContent>
@@ -163,6 +199,10 @@ const HeaderMenubar = () => {
         onOpenChange={setShowCodePreview}
         code={exportCode}
         format={exportFormat}
+      />
+      <ImportProjectDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
       />
     </div>
   );
