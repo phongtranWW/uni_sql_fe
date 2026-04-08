@@ -20,15 +20,19 @@ import LoadingScreen from "@/components/custom/loading-screen";
 import IdleScreen from "@/components/custom/idle-screen";
 import ErrorScreen from "@/components/custom/error-screen";
 import PanelIssues from "./panel-issues";
-import useUnsavedChangesGuard from "./use-unsaved-changes-guard";
+import useUnsavedChangesGuard from "../../hooks/use-unsaved-changes-guard";
 
 const Editor = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const fetchStatus = useAppSelector(selectFetchStatus);
   const isDirty = useAppSelector(selectProjectIsDirty);
-  const showIssues = useAppSelector((state) => state.editorSettings.show.issuePanel);
-  const showSidebar = useAppSelector((state) => state.editorSettings.show.sidebar);
+  const showIssues = useAppSelector(
+    (state) => state.editorSettings.show.issuePanel,
+  );
+  const showSidebar = useAppSelector(
+    (state) => state.editorSettings.show.sidebar,
+  );
   useShortcuts();
   useUnsavedChangesGuard(isDirty);
 
