@@ -9,10 +9,30 @@ export const useFlowNodes = (tables: Table[]) => {
     setNodes((prevNodes) =>
       tables.map((table, index) => {
         const existingNode = prevNodes.find((n) => n.id === table.name);
+        const defaultPosition = { x: index * 250, y: 100 };
+
+        if (!existingNode) {
+          return {
+            id: table.name,
+            type: "tableNode",
+            position: defaultPosition,
+            selected: table.isSelected,
+            data: {
+              name: table.name,
+              fields: table.fields,
+              alias: table.alias,
+              headerColor: table.headerColor,
+            },
+          };
+        }
+
+        const { dragging, ...preserved } = existingNode;
+        void dragging;
         return {
+          ...preserved,
           id: table.name,
           type: "tableNode",
-          position: existingNode?.position ?? { x: index * 250, y: 100 },
+          position: existingNode.position ?? defaultPosition,
           selected: table.isSelected,
           data: {
             name: table.name,
