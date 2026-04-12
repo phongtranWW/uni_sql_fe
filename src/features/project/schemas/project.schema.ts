@@ -11,6 +11,7 @@ import {
   IndexValidateSchema,
 } from "./index.schema";
 import { ResponsePaginationSchema } from "@/features/common/schemas/response-pagination";
+import { projectValidateRules } from "../rules";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const ProjectBaseSchema = z.object({
@@ -94,94 +95,9 @@ export const ProjectValidateSchema = ProjectBaseSchema.extend({
     )
     .pipe(z.record(z.string(), IndexValidateSchema)),
 }).superRefine((project, ctx) => {
-  // [REF - 01] Ensure all referenced tables exist
-  Object.entries(project.refs).forEach(([refName, ref]) => {
-    const { from, to } = ref.endpoints;
-    if (!project.tables[from.tableName]) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Table "${from.tableName}" does not exist`,
-        path: ["refs", refName, "endpoints", "from", "tableName"],
-      });
-    }
-    if (!project.tables[to.tableName]) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Table "${to.tableName}" does not exist`,
-        path: ["refs", refName, "endpoints", "to", "tableName"],
-      });
-    }
-  });
-
-  // [REF - 02] Ensure all referenced fields exist
-  Object.entries(project.refs).forEach(([refName, ref]) => {
-    const { from, to } = ref.endpoints;
-    const fromField = project.tables[from.tableName]?.fields[from.fieldName];
-    const toField = project.tables[to.tableName]?.fields[to.fieldName];
-    if (!fromField || !toField) return;
-    if (fromField.type !== toField.type) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Field types do not match: "${from.tableName}.${from.fieldName}" (${fromField.type}) and "${to.tableName}.${to.fieldName}" (${toField.type})`,
-        path: ["refs", refName],
-      });
-    }
-  });
-
-  // [INDEX - 01] Ensure all referenced tables exist
-  Object.entries(project.indexes).forEach(([indexName, index]) => {
-    if (!project.tables[index.tableName]) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Table "${index.tableName}" does not exist`,
-        path: ["indexes", indexName, "tableName"],
-      });
-    }
-  });
-
-  // [INDEX - 02] Ensure all referenced fields exist
-  Object.entries(project.indexes).forEach(([indexName, index]) => {
-    const table = project.tables[index.tableName];
-    if (!table) return;
-    index.fields.forEach((field, j) => {
-      if (!table.fields[field]) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Field "${field}" does not exist in table "${index.tableName}"`,
-          path: ["indexes", indexName, "fields", j],
-        });
-      }
-    });
-  });
-
-  // [INDEX - 03] Ensure all fields are unique
-  Object.entries(project.indexes).forEach(([indexName, index]) => {
-    const seen = new Set<string>();
-    index.fields.forEach((field, j) => {
-      if (seen.has(field)) {
-        ctx.addIssue({
-          code: "custom",
-          message: `Duplicate field "${field}" in index "${indexName}"`,
-          path: ["indexes", indexName, "fields", j],
-        });
-      }
-      seen.add(field);
-    });
-  });
-
-  // [INDEX - 04] Ensure all indexes are unique
-  const seen = new Set<string>();
-  Object.entries(project.indexes).forEach(([indexName, index]) => {
-    const signature = `${index.tableName}::${[...index.fields].sort().join(",")}`;
-    if (seen.has(signature)) {
-      ctx.addIssue({
-        code: "custom",
-        message: `Duplicate index on fields (${index.fields.join(", ")}) in table "${index.tableName}"`,
-        path: ["indexes", indexName],
-      });
-    }
-    seen.add(signature);
-  });
+  for (const rule of projectValidateRules) {
+    rule(project, ctx);
+  }
 });
 
 // ─── Exports ─────────────────────────────────────────────────────────────────

@@ -39,6 +39,14 @@ export const FieldValidateSchema = FieldBaseSchema.extend({
         "Name must start with a letter or underscore, and contain only letters, numbers, or underscores.",
     }),
   type: z.enum(FIELD_TYPES),
+}).superRefine((field, ctx) => {
+  if (field.increment && field.type !== "INT") {
+    ctx.addIssue({
+      code: "custom",
+      message: "Auto increment is only allowed for INT type",
+      path: ["increment"],
+    });
+  }
 });
 
 // ─── Types ────────────────────────────────────────────────────────────────────
