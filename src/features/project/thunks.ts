@@ -24,3 +24,7 @@ export const exportProject = createAppThunk<
   ExportResult,
   { id: string; params: ProjectExportParams }
 >("project/export", ({ id, params }) => projectService.export(id, params));
+
+export const deleteProject = createAppThunk<void, string>("project/delete", (id) =>
+  projectService.delete(id),
+);

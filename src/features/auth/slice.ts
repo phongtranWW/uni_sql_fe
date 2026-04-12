@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import type { Profile } from "./schemas/profile";
-import { initialAuth } from "./state";
+import type { Profile } from "./schemas/profile.schema";
+import { initialAuthSliceState } from "./state";
 import {
   handleAuthCallback,
   loginWithGoogle,
@@ -10,7 +10,7 @@ import {
 
 const authSlice = createSlice({
   name: "auth",
-  initialState: initialAuth,
+  initialState: initialAuthSliceState,
   reducers: {
     clearError(state) {
       state.error = null;
@@ -33,8 +33,7 @@ const authSlice = createSlice({
       .addCase(handleAuthCallback.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || null;
-      });
-    builder
+      })
       .addCase(restoreSession.pending, (state) => {
         state.status = "loading";
       })
@@ -47,21 +46,19 @@ const authSlice = createSlice({
         state.status = "failed";
         state.error = action.payload || null;
         state.profile = null;
-      });
-    builder
+      })
       .addCase(logout.pending, (state) => {
         state.status = "loading";
       })
       .addCase(logout.fulfilled, (state) => {
-        state.status = "succeeded";
+        state.status = "idle";
         state.profile = null;
         state.error = null;
       })
       .addCase(logout.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload || null;
-      });
-    builder
+      })
       .addCase(loginWithGoogle.pending, (state) => {
         state.status = "loading";
       })

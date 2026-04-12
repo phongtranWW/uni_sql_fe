@@ -1,68 +1,50 @@
 import { tokenStorage } from "@/utils/token-storage";
 import { authService } from "./service";
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Profile } from "./schemas/profile";
-import axios from "axios";
+import { createAppThunk } from "@/app/thunks";
+import type { Profile } from "./schemas/profile.schema";
 
-export const handleAuthCallback = createAsyncThunk<
-  Profile,
-  string,
-  { rejectValue: string }
->("auth/handleCallback", async (token, { rejectWithValue }) => {
-  try {
-    tokenStorage.set(token);
-    return await authService.getProfile();
-  } catch (error) {
-    tokenStorage.clear();
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || "Authentication failed",
-      );
-    }
-    return rejectWithValue("Authentication failed");
-  }
-});
-
-export const restoreSession = createAsyncThunk<
-  Profile | null,
-  void,
-  { rejectValue: string }
->("auth/restoreSession", async (_, { rejectWithValue }) => {
-  try {
-    const token = tokenStorage.get();
-    if (!token) return null;
-    return await authService.getProfile();
-  } catch (error: unknown) {
-    tokenStorage.clear();
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message ||
-          "Session expired. Please log in again.",
-      );
-    }
-    return rejectWithValue("Session expired. Please log in again.");
-  }
-});
-
-export const logout = createAsyncThunk<void, void, { rejectValue: string }>(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
+export const handleAuthCallback = createAppThunk<Profile, string>(
+  "auth/handleCallback",
+  async (token) => {
     try {
+      tokenStorage.set(token);
+      return await authService.getProfile();
+    } catch (error) {
       tokenStorage.clear();
-    } catch {
-      return rejectWithValue("Logout failed");
+      throw error;
     }
   },
 );
 
-export const loginWithGoogle = createAsyncThunk<
-  void,
-  void,
-  { rejectValue: string }
->("auth/loginWithGoogle", async (_, { rejectWithValue }) => {
+export const restoreSession = createAppThunk<Profile | null, void>(
+  "auth/restoreSession",
+  async () => {
+    const token = tokenStorage.get();
+    if (!token) return null;
+    try {
+      return await authService.getProfile();
+    } catch {
+      tokenStorage.clear();
+      throw new Error("Session expired. Please log in again.");
+    }
+  },
+);
+
+export const logout = createAppThunk<void, void>("auth/logout", async () => {
   try {
-    authService.redirectToGoogle();
+    tokenStorage.clear();
   } catch {
-    return rejectWithValue("Login with Google failed");
+    throw new Error("Logout failed");
   }
 });
+
+export const loginWithGoogle = createAppThunk<void, void>(
+  "auth/loginWithGoogle",
+  async () => {
+    try {
+      authService.redirectToGoogle();
+    } catch {
+      throw new Error("Login with Google failed");
+    }
+  },
+);

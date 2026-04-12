@@ -13,9 +13,10 @@ const projectsSlice = createSlice({
       })
       .addCase(getProjects.fulfilled, (state, action) => {
         state.fetchStatus = "succeeded";
-        state.items = action.payload.items;
+        state.items = action.payload.data;
         state.total = action.payload.total;
         state.page = action.payload.page;
+        state.limit = action.payload.limit;
         state.totalPages = action.payload.totalPages;
       })
       .addCase(getProjects.rejected, (state) => {

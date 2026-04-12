@@ -1,5 +1,31 @@
+import { ProfileSidebar } from "./profile-sidebar";
+import { ProfileTopBar } from "./profile-top-bar";
+import { ProjectsPanel } from "./projects-panel";
+import { DeleteProjectDialog } from "./delete-project-dialog";
+import { useProfileProjects } from "./use-profile-projects";
+
 export const Profile = () => {
-  return <div>Profile</div>;
+  const projects = useProfileProjects();
+
+  return (
+    <div className="dark flex min-h-screen flex-col bg-background text-foreground">
+      <ProfileTopBar />
+      <div className="flex min-h-0 flex-1">
+        <ProfileSidebar />
+        <div className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-background">
+          <ProjectsPanel projects={projects} />
+        </div>
+      </div>
+      <DeleteProjectDialog
+        open={!!projects.deleteTargetId}
+        deleting={projects.deleting}
+        onOpenChange={(open) => {
+          if (!open && !projects.deleting) projects.setDeleteTargetId(null);
+        }}
+        onConfirm={projects.confirmDelete}
+      />
+    </div>
+  );
 };
 
 export default Profile;
