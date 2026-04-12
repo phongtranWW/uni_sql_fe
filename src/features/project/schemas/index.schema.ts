@@ -1,32 +1,22 @@
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 import { z } from "zod";
 
+// ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const BaseIndexSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required.")
-    .max(63, "Name must be at most 63 characters.")
-    .regex(
-      /^[a-z_][a-z0-9_]*$/,
-      "Name must start with a letter or underscore, and contain only lowercase letters, numbers, or underscores.",
-    ),
-  tableName: z.string().min(1, "Table name is required"),
-  fields: z
-    .array(z.string().min(1, "Field name is required"))
-    .min(1, "At least one field is required")
-    .refine((fields) => new Set(fields).size === fields.length, {
-      message: "Fields must be unique",
-      path: ["fields"],
-    }),
+  name: z.string(),
+  tableName: z.string(),
+  fields: z.array(z.string()),
   unique: z.boolean(),
 });
+
+// ─── State Schema (Redux, light validation) ───────────────────────────────────
 export const IndexSchema = BaseIndexSchema;
 export const IndexCreateSchema = BaseIndexSchema.extend({
   name: z.string().default(() => `idx_${nanoidAlpabet(3)}`),
   unique: z.boolean().default(false),
 });
-export const IndexReplaceSchema = BaseIndexSchema;
-export const IndexPartSchema = BaseIndexSchema.pick({
+export const IndexReplaceSchema = IndexCreateSchema;
+export const IndexPartSchema = IndexCreateSchema.pick({
   name: true,
   fields: true,
   unique: true,
@@ -35,6 +25,20 @@ export const IndexPartSchema = BaseIndexSchema.pick({
   .refine((data) => Object.keys(data).length > 0, {
     message: "At least one field must be provided",
   });
+
+// ─── Validate Schema (strict validation) ─────────────────────────────────────
+export const IndexValidateSchema = BaseIndexSchema.extend({
+  name: z
+    .string()
+    .min(1, "Name is required.")
+    .max(63, "Name must be at most 63 characters.")
+    .regex(
+      /^[a-z_][a-z0-9_]*$/,
+      "Name must start with a letter or underscore, and contain only lowercase letters, numbers, or underscores.",
+    ),
+  tableName: z.string().min(1, "Table name is required."),
+  fields: z.array(z.string()).min(1, "Fields are required."),
+});
 
 export type Index = z.infer<typeof IndexSchema>;
 export type IndexCreate = z.infer<typeof IndexCreateSchema>;

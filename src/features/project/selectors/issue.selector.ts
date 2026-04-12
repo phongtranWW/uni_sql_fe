@@ -1,7 +1,6 @@
 import type { RootState } from "@/app/store";
 import { createSelector } from "@reduxjs/toolkit";
-import { ProjectIssuesSchema } from "../schemas/project.schema";
-import type { z } from "zod";
+import { ProjectValidateSchema } from "../schemas/project.schema";
 
 const selectProjectData = (state: RootState) => state.project.present.data;
 
@@ -10,19 +9,19 @@ export type ProjectIssue = {
   path: (string | number)[];
 };
 
+const parseProjectIssues = (
+  data: NonNullable<ReturnType<typeof selectProjectData>>,
+): ProjectIssue[] => {
+  const result = ProjectValidateSchema.safeParse(data);
+  if (result.success) return [];
+
+  return result.error.issues.map((issue) => ({
+    message: issue.message,
+    path: issue.path.filter((p): p is string | number => typeof p !== "symbol"),
+  }));
+};
+
 export const selectProjectIssues = createSelector(
   selectProjectData,
-  (data): ProjectIssue[] => {
-    if (!data) return [];
-
-    const result = ProjectIssuesSchema.safeParse(data);
-    if (result.success) return [];
-
-    return result.error.issues.map((issue: z.ZodIssue) => ({
-      message: issue.message,
-      path: issue.path.filter(
-        (p): p is string | number => typeof p !== "symbol",
-      ),
-    }));
-  },
+  (data): ProjectIssue[] => (data ? parseProjectIssues(data) : []),
 );

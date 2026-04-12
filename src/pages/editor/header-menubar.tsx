@@ -24,7 +24,11 @@ import { CODE_FORMATS } from "@/constants/code-formats";
 import { type CodeFormat } from "@/types/format";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
-import { selectProject } from "@/features/project/selectors/project.selector";
+import {
+  selectProject,
+  selectProjectIsDirty,
+} from "@/features/project/selectors/project.selector";
+import { selectProjectIssues } from "@/features/project/selectors/issue.selector";
 import { upsertProject } from "@/features/project/thunks";
 import ImportProjectDialog from "./import-project-dialog";
 
@@ -61,6 +65,11 @@ const HeaderMenubar = () => {
   const showMinimap = useAppSelector((state) => state.editorSettings.show.minimap);
   const showControl = useAppSelector((state) => state.editorSettings.show.control);
   const project = useAppSelector(selectProject);
+  const isDirty = useAppSelector(selectProjectIsDirty);
+  const issues = useAppSelector(selectProjectIssues);
+  const saveStatus = useAppSelector(
+    (state) => state.project.present.saveStatus,
+  );
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [exportCode, setExportCode] = useState("");
@@ -69,8 +78,21 @@ const HeaderMenubar = () => {
   );
 
   const handleExport = async (format: "json" | "mysql" | "postgresql") => {
-    if (!id) return;
+    if (!id || !project) return;
+    if (issues.length > 0) {
+      toast.error(
+        `Fix ${issues.length} validation issue${issues.length === 1 ? "" : "s"} before exporting.`,
+      );
+      return;
+    }
+    if (saveStatus === "saving") {
+      toast.info("Project is still saving. Try again in a moment.");
+      return;
+    }
     try {
+      if (isDirty) {
+        await dispatch(upsertProject({ id, body: project })).unwrap();
+      }
       const result = await projectService.export(id, { format });
       if (result) {
         setExportCode(
