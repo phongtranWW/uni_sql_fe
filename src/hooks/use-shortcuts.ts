@@ -51,10 +51,15 @@ const useShortcuts = () => {
 
   useHotkeys(
     "ctrl+s",
-    (e) => {
+    async (e) => {
       if (isEditableTarget(e)) return;
       if (!id || !project) return;
-      dispatch(upsertProject({ id, body: project }));
+      try {
+        await dispatch(upsertProject({ id, body: project })).unwrap();
+        dispatch(ActionCreators.clearHistory());
+      } catch {
+        /* save failed — keep undo history */
+      }
     },
     { preventDefault: true },
   );

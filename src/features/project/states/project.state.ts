@@ -4,7 +4,7 @@ export interface ProjectSliceState {
   data: Project | null;
   fetchStatus: "idle" | "loading" | "succeeded" | "failed";
   saveStatus: "idle" | "saving" | "saved" | "failed";
-  lastSavedSnapshot: string | null;
+  lastSavedSnapshot: Project | null;
 }
 
 export const initialProjectSliceState: ProjectSliceState = {

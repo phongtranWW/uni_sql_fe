@@ -1,5 +1,6 @@
 import type { RootState } from "@/app/store";
 import { createSelector } from "@reduxjs/toolkit";
+import isEqual from "lodash/isEqual";
 
 // ─── Root ─────────────────────────────────────────────
 const selectProjectSlice = (state: RootState) => state.project.present;
@@ -17,7 +18,7 @@ export const selectProjectIsDirty = createSelector(
   [selectProjectData, selectProjectLastSavedSnapshot],
   (data, lastSavedSnapshot) => {
     if (!data || !lastSavedSnapshot) return false;
-    return JSON.stringify(data) !== lastSavedSnapshot;
+    return !isEqual(data, lastSavedSnapshot);
   },
 );
 
@@ -37,10 +38,7 @@ export const selectCanRedo = (state: RootState) =>
   state.project.future.length > 0;
 
 // ─── Data ─────────────────────────────────────────────
-export const selectProject = createSelector(
-  selectProjectData,
-  (data) => data ?? null,
-);
+export const selectProject = selectProjectData;
 
 export const selectTables = createSelector(
   selectProjectData,

@@ -92,6 +92,7 @@ const HeaderMenubar = () => {
     try {
       if (isDirty) {
         await dispatch(upsertProject({ id, body: project })).unwrap();
+        dispatch(ActionCreators.clearHistory());
       }
       const result = await projectService.export(id, { format });
       if (result) {
@@ -114,9 +115,14 @@ const HeaderMenubar = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!id || !project) return;
-    dispatch(upsertProject({ id, body: project }));
+    try {
+      await dispatch(upsertProject({ id, body: project })).unwrap();
+      dispatch(ActionCreators.clearHistory());
+    } catch {
+      /* save failed — keep undo history */
+    }
   };
 
   const handleExit = () => {

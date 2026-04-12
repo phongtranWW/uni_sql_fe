@@ -280,7 +280,7 @@ const projectSlice = createSlice({
         state.data = action.payload;
         state.fetchStatus = "succeeded";
         state.saveStatus = "saved";
-        state.lastSavedSnapshot = JSON.stringify(action.payload);
+        state.lastSavedSnapshot = action.payload;
       })
       .addCase(getProject.rejected, (state) => {
         state.fetchStatus = "failed";
@@ -291,7 +291,7 @@ const projectSlice = createSlice({
       .addCase(upsertProject.fulfilled, (state, action) => {
         state.data = action.payload;
         state.saveStatus = "saved";
-        state.lastSavedSnapshot = JSON.stringify(action.payload);
+        state.lastSavedSnapshot = action.payload;
       })
       .addCase(upsertProject.rejected, (state) => {
         state.saveStatus = "failed";
@@ -328,10 +328,10 @@ export const {
 
 export default undoable(projectSlice.reducer, {
   filter: excludeAction([
-    "project/tablesSelected",
-    "project/tablesSelectionCleared",
-    "project/refsSelected",
-    "project/refsSelectionCleared",
+    tablesSelected.type,
+    tablesSelectionCleared.type,
+    refsSelected.type,
+    refsSelectionCleared.type,
     getProject.pending.type,
     getProject.fulfilled.type,
     getProject.rejected.type,
