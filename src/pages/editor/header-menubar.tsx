@@ -1,5 +1,10 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import { issuePanelSet, sidebarSet, minimapSet, controlSet } from "@/features/editor-settings/editor-settings.slice";
+import {
+  issuePanelSet,
+  sidebarSet,
+  minimapSet,
+  controlSet,
+} from "@/features/editor-settings/editor-settings.slice";
 import {
   Menubar,
   MenubarCheckboxItem,
@@ -15,7 +20,16 @@ import {
   MenubarRadioGroup,
   MenubarRadioItem,
 } from "@/components/ui/menubar";
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Kbd } from "@/components/ui/kbd";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { EDITOR_SHORTCUT_HELP } from "@/constants/editor-shortcuts";
 import CodePreview from "./code-preview";
 import { ActionCreators } from "redux-undo";
 import projectService from "@/features/project/services/project.service";
@@ -60,10 +74,18 @@ const HeaderMenubar = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { resolvedTheme, setTheme } = useTheme();
-  const showIssues = useAppSelector((state) => state.editorSettings.show.issuePanel);
-  const showSidebar = useAppSelector((state) => state.editorSettings.show.sidebar);
-  const showMinimap = useAppSelector((state) => state.editorSettings.show.minimap);
-  const showControl = useAppSelector((state) => state.editorSettings.show.control);
+  const showIssues = useAppSelector(
+    (state) => state.editorSettings.show.issuePanel,
+  );
+  const showSidebar = useAppSelector(
+    (state) => state.editorSettings.show.sidebar,
+  );
+  const showMinimap = useAppSelector(
+    (state) => state.editorSettings.show.minimap,
+  );
+  const showControl = useAppSelector(
+    (state) => state.editorSettings.show.control,
+  );
   const project = useAppSelector(selectProject);
   const isDirty = useAppSelector(selectProjectIsDirty);
   const issues = useAppSelector(selectProjectIssues);
@@ -72,6 +94,7 @@ const HeaderMenubar = () => {
   );
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
   const [exportCode, setExportCode] = useState("");
   const [exportFormat, setExportFormat] = useState<CodeFormat>(
     CODE_FORMATS.JSON,
@@ -141,7 +164,9 @@ const HeaderMenubar = () => {
       toast.success("Project deleted.");
       navigate("/");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete project");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete project",
+      );
     }
   };
 
@@ -210,16 +235,20 @@ const HeaderMenubar = () => {
           </MenubarTrigger>
           <MenubarContent>
             <MenubarCheckboxItem
+              className="justify-between gap-4 pr-2"
               checked={showSidebar}
               onCheckedChange={(checked) => dispatch(sidebarSet(checked))}
             >
               Show Sidebar
+              <MenubarShortcut>Ctrl + Alt + B</MenubarShortcut>
             </MenubarCheckboxItem>
             <MenubarCheckboxItem
+              className="justify-between gap-4 pr-2"
               checked={showIssues}
               onCheckedChange={(checked) => dispatch(issuePanelSet(checked))}
             >
               Show Issues
+              <MenubarShortcut>Ctrl + Alt + I</MenubarShortcut>
             </MenubarCheckboxItem>
             <MenubarCheckboxItem
               checked={showMinimap}
@@ -237,16 +266,25 @@ const HeaderMenubar = () => {
             <MenubarSub>
               <MenubarSubTrigger>Theme</MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarRadioGroup value={resolvedTheme} onValueChange={setTheme}>
-                  <MenubarRadioItem value="light">
-                    Light
-                  </MenubarRadioItem>
-                  <MenubarRadioItem value="dark">
-                    Dark
-                  </MenubarRadioItem>
+                <MenubarRadioGroup
+                  value={resolvedTheme}
+                  onValueChange={setTheme}
+                >
+                  <MenubarRadioItem value="light">Light</MenubarRadioItem>
+                  <MenubarRadioItem value="dark">Dark</MenubarRadioItem>
                 </MenubarRadioGroup>
               </MenubarSubContent>
             </MenubarSub>
+          </MenubarContent>
+        </MenubarMenu>
+        <MenubarMenu>
+          <MenubarTrigger className="bg-transparent hover:bg-accent data-[state=open]:bg-accent">
+            Help
+          </MenubarTrigger>
+          <MenubarContent>
+            <MenubarItem onClick={() => setShowShortcutsDialog(true)}>
+              Shortcuts
+            </MenubarItem>
           </MenubarContent>
         </MenubarMenu>
       </Menubar>
@@ -261,6 +299,52 @@ const HeaderMenubar = () => {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
       />
+
+      <Dialog open={showShortcutsDialog} onOpenChange={setShowShortcutsDialog}>
+        <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-md">
+          <DialogHeader className="space-y-1.5 border-b border-border bg-muted/20 px-6 py-5 text-left">
+            <DialogTitle className="text-base">Shortcuts</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[min(70vh,20rem)]">
+            <ul className="px-2 py-2">
+              {EDITOR_SHORTCUT_HELP.map((row) => (
+                <li
+                  key={row.id}
+                  className="flex flex-col gap-2 border-b border-border/60 px-4 py-3.5 last:border-b-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+                >
+                  <p className="text-sm text-foreground">{row.description}</p>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 sm:shrink-0 sm:justify-end">
+                    {row.chords.map((chord, ci) => (
+                      <Fragment key={ci}>
+                        {ci > 0 && (
+                          <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                            or
+                          </span>
+                        )}
+                        <div className="inline-flex items-center gap-0.5">
+                          {chord.map((key, ki) => (
+                            <Fragment key={`${key}-${ki}`}>
+                              {ki > 0 && (
+                                <span
+                                  className="px-0.5 text-xs text-muted-foreground"
+                                  aria-hidden
+                                >
+                                  +
+                                </span>
+                              )}
+                              <Kbd>{key}</Kbd>
+                            </Fragment>
+                          ))}
+                        </div>
+                      </Fragment>
+                    ))}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
