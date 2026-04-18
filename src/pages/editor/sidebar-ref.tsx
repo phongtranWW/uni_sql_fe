@@ -13,13 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { selectRefs } from "@/features/project/selectors/project.selector";
 import {
   refPartial,
   refRemoved,
+  refsSelected,
+  refsSelectionCleared,
+  tablesSelectionCleared,
 } from "@/features/project/slices/project.slice";
 import { Button } from "@/components/ui/button";
 import { Trash2Icon } from "lucide-react";
@@ -77,6 +80,24 @@ interface SidebarRefProps {
 const SidebarRef = ({ reference }: SidebarRefProps) => {
   const dispatch = useAppDispatch();
   const refs = useAppSelector(selectRefs);
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  const syncBoardSelectThisRef = useCallback(() => {
+    dispatch(tablesSelectionCleared());
+    dispatch(refsSelectionCleared());
+    dispatch(refsSelected({ name: [reference.name], value: true }));
+  }, [dispatch, reference.name]);
+
+  const handleBlurRow = useCallback(() => {
+    window.requestAnimationFrame(() => {
+      const active = document.activeElement as HTMLElement | null;
+      if (active?.closest("[data-sidebar-ref]")) return;
+      if (active?.closest('[data-slot="select-content"]')) return;
+      if (rowRef.current && active && rowRef.current.contains(active)) return;
+      dispatch(refsSelectionCleared());
+    });
+  }, [dispatch]);
+
   const handleRefPartial = useCallback(
     (data: RefPart) => {
       const result = RefPartSchema.safeParse(data);
@@ -91,10 +112,16 @@ const SidebarRef = ({ reference }: SidebarRefProps) => {
 
   return (
     <div
+      ref={rowRef}
+      data-sidebar-ref=""
+      tabIndex={-1}
       className={cn(
-        "group flex items-center justify-between gap-1 border-l-4 pl-1",
+        "group flex items-center justify-between gap-1 border-l-4 pl-1 outline-none focus-visible:ring-1 focus-visible:ring-ring",
         reference.isSelected ? "border-primary" : "border-muted-foreground/50",
       )}
+      onPointerDownCapture={syncBoardSelectThisRef}
+      onFocusCapture={syncBoardSelectThisRef}
+      onBlur={handleBlurRow}
     >
       <RefName
         value={reference.name}
