@@ -10,11 +10,13 @@ export const FieldBaseSchema = z.object({
   pk: z.boolean(),
   not_null: z.boolean(),
   increment: z.boolean(),
-  default: z.string().nullable().default(null),
+  default: z.string().nullable(),
 });
 
 // ─── State Schema (Redux, light validation) ───────────────────────────────────
-export const FieldSchema = FieldBaseSchema;
+export const FieldSchema = FieldBaseSchema.extend({
+  default: z.string().nullable().catch(null),
+});
 export const FieldCreateSchema = FieldBaseSchema.extend({
   name: z.string().default(() => `field_${nanoidAlpabet(3)}`),
   type: z.string().default(FIELD_TYPES[0]),
