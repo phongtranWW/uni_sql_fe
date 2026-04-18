@@ -32,6 +32,7 @@ export const TableCreateSchema = TableBaseSchema.extend({
       unique: false,
       not_null: true,
       increment: true,
+      default: null,
     },
   ]),
   headerColor: z.string().default(TABLE_HEADER_COLORS.SLATE),

@@ -10,6 +10,7 @@ export const FieldBaseSchema = z.object({
   pk: z.boolean(),
   not_null: z.boolean(),
   increment: z.boolean(),
+  default: z.string().nullable().default(null),
 });
 
 // ─── State Schema (Redux, light validation) ───────────────────────────────────

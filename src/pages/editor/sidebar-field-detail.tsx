@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/app/hook";
-import { useCallback, useMemo } from "react";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,19 +9,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  FieldPartSchema,
-  type Field,
-} from "@/features/project/schemas/field-schema";
+import { Textarea } from "@/components/ui/textarea";
+import { type Field } from "@/features/project/schemas/field-schema";
 import {
   fieldPartial,
   fieldRemoved,
 } from "@/features/project/slices/project.slice";
 import { ArrowUp, Ban, Fingerprint, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
 interface SidebarFieldDetailProps {
@@ -38,21 +34,54 @@ const SidebarFieldDetail = ({
   onOpenChange,
 }: SidebarFieldDetailProps) => {
   const dispatch = useAppDispatch();
+  const [defaultDraft, setDefaultDraft] = useState(() => field.default ?? "");
 
-  const handleToggle = useCallback(
-    (key: "unique" | "not_null" | "increment", value: boolean) => {
-      const result = FieldPartSchema.safeParse({
-        [key]: value,
-      });
-      if (!result.success) {
-        toast.error(result.error.issues[0].message);
-        return;
-      }
+  const commitDefault = useCallback(() => {
+    const next = defaultDraft.trim() === "" ? null : defaultDraft;
+    const prev = field.default ?? null;
+    if (next === prev) return;
+
+    dispatch(
+      fieldPartial({
+        tableName,
+        fieldName: field.name,
+        data: { default: next },
+      }),
+    );
+  }, [defaultDraft, dispatch, field.default, field.name, tableName]);
+  const handleIncrementChange = useCallback(
+    (value: boolean) => {
       dispatch(
         fieldPartial({
           tableName,
           fieldName: field.name,
-          data: { [key]: value },
+          data: { increment: value },
+        }),
+      );
+    },
+    [dispatch, tableName, field.name],
+  );
+
+  const handleUniqueChange = useCallback(
+    (value: boolean) => {
+      dispatch(
+        fieldPartial({
+          tableName,
+          fieldName: field.name,
+          data: { unique: value },
+        }),
+      );
+    },
+    [dispatch, tableName, field.name],
+  );
+
+  const handleNotNullChange = useCallback(
+    (value: boolean) => {
+      dispatch(
+        fieldPartial({
+          tableName,
+          fieldName: field.name,
+          data: { not_null: value },
         }),
       );
     },
@@ -64,72 +93,100 @@ const SidebarFieldDetail = ({
     onOpenChange(false);
   }, [dispatch, tableName, field.name, onOpenChange]);
 
-  const constraints = useMemo(
-    () => [
-      {
-        key: "increment" as const,
-        label: "Auto Increment",
-        checked: field.increment,
-        icon: <ArrowUp className="size-4" />,
-        description: "Automatically increase value",
-      },
-      {
-        key: "unique" as const,
-        label: "Unique",
-        checked: field.unique,
-        icon: <Fingerprint className="size-4" />,
-        description: "Ensure values are distinct",
-      },
-      {
-        key: "not_null" as const,
-        label: "Not Null",
-        checked: field.not_null,
-        icon: <Ban className="size-4" />,
-        description: "Prevent null values",
-      },
-    ],
-    [field.increment, field.unique, field.not_null],
-  );
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) commitDefault();
+        onOpenChange(next);
+      }}
+    >
+      <DialogContent key={`${open}-${tableName}-${field.name}`}>
         <DialogHeader>
           <DialogTitle>
             Field Settings <Badge variant="outline">{field.name}</Badge>
           </DialogTitle>
           <DialogDescription>
-            Configure constraints for this field.
+            Toggle constraints, then set an optional SQL default at the bottom.
           </DialogDescription>
         </DialogHeader>
 
-        <div>
-          {constraints.map(({ key, label, checked, icon, description }, i) => (
-            <div key={key}>
-              {i > 0 && <Separator />}
-
-              <div className="flex items-center justify-between py-3">
-                <div className="flex items-center gap-3">
-                  {icon}
-                  <div>
-                    <Label htmlFor={`switch-${key}`} className="cursor-pointer">
-                      {label}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {description}
-                    </p>
-                  </div>
-                </div>
-
-                <Switch
-                  id={`switch-${key}`}
-                  checked={checked}
-                  onCheckedChange={(val) => handleToggle(key, Boolean(val))}
-                />
+        <div className="flex flex-col divide-y divide-border">
+          {/* Auto Increment */}
+          <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <ArrowUp className="size-4" />
+              <div className="min-w-0">
+                <Label htmlFor="switch-increment" className="cursor-pointer">
+                  Auto Increment
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Automatically increase value
+                </p>
               </div>
             </div>
-          ))}
+            <Switch
+              id="switch-increment"
+              checked={field.increment}
+              onCheckedChange={handleIncrementChange}
+            />
+          </div>
+
+          {/* Unique */}
+          <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Fingerprint className="size-4" />
+              <div className="min-w-0">
+                <Label htmlFor="switch-unique" className="cursor-pointer">
+                  Unique
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ensure values are distinct
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="switch-unique"
+              checked={field.unique}
+              onCheckedChange={handleUniqueChange}
+            />
+          </div>
+
+          {/* Not Null */}
+          <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Ban className="size-4" />
+              <div className="min-w-0">
+                <Label htmlFor="switch-not-null" className="cursor-pointer">
+                  Not Null
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Prevent null values
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="switch-not-null"
+              checked={field.not_null}
+              onCheckedChange={handleNotNullChange}
+            />
+          </div>
+
+          {/* Default Value */}
+          <div className="space-y-1.5 py-3">
+            <Label htmlFor="field-default">Default value</Label>
+            <Textarea
+              id="field-default"
+              value={defaultDraft}
+              onChange={(e) => setDefaultDraft(e.target.value)}
+              onBlur={commitDefault}
+              placeholder="e.g. 0, CURRENT_TIMESTAMP, or NULL — leave empty for no default"
+              className="min-h-[88px] resize-y font-mono text-xs leading-relaxed"
+              rows={4}
+            />
+          </div>
         </div>
+
         <DialogFooter>
           <Button variant="destructive" onClick={handleDelete}>
             <Trash2 className="size-4" />
