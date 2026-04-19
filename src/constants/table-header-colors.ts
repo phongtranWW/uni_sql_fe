@@ -1,17 +1,19 @@
-export const TABLE_HEADER_COLORS = {
-  SLATE: "#64748B",
-  BLUE: "#3B82F6",
-  SKY: "#0EA5E9",
-  EMERALD: "#10B981",
-  TEAL: "#14B8A6",
-  CYAN: "#06B6D4",
-  LIME: "#84CC16",
-  AMBER: "#F59E0B",
-  YELLOW: "#EAB308",
-  ORANGE: "#F97316",
-  RED: "#EF4444",
-  ROSE: "#F43F5E",
-  PINK: "#EC4899",
-  VIOLET: "#8B5CF6",
-  FUCHSIA: "#D946EF",
-} as const;
+export const TABLE_HEADER_COLORS = [
+  "#64748B",
+  "#3B82F6",
+  "#0EA5E9",
+  "#10B981",
+  "#14B8A6",
+  "#06B6D4",
+  "#84CC16",
+  "#F59E0B",
+  "#EAB308",
+  "#F97316",
+  "#EF4444",
+  "#F43F5E",
+  "#EC4899",
+  "#8B5CF6",
+  "#D946EF",
+] as const;
+
+export type TableHeaderColor = (typeof TABLE_HEADER_COLORS)[number];

@@ -39,11 +39,9 @@ const IMPORTERS: Importer[] = [
   },
 ];
 
-const TABLE_HEADER_COLOR_VALUES = Object.values(TABLE_HEADER_COLORS);
-
 const getRandomTableHeaderColor = () =>
-  TABLE_HEADER_COLOR_VALUES[
-    Math.floor(Math.random() * TABLE_HEADER_COLOR_VALUES.length)
+  TABLE_HEADER_COLORS[
+    Math.floor(Math.random() * TABLE_HEADER_COLORS.length)
   ];
 
 const normalizeImportedProject = (raw: unknown) => {

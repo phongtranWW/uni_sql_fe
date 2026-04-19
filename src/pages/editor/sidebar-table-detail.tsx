@@ -14,7 +14,6 @@ import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import {
   TablePartSchema,
   type Table,
-  type TablePart,
 } from "@/features/project/schemas/table-schema";
 import { selectTables } from "@/features/project/selectors/project.selector";
 import {
@@ -23,7 +22,7 @@ import {
 } from "@/features/project/slices/project.slice";
 import { cn } from "@/lib/utils";
 import { Palette, Tag, Trash2, Type } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -33,9 +32,12 @@ const TableName = ({
   onBlur,
 }: {
   value: string;
-  onBlur: (name: string) => void;
+  onBlur: (name: string, reset: () => void) => void;
 }) => {
-  const [name, setName] = useState(value);
+  const ref = useRef<HTMLInputElement>(null);
+  const reset = useCallback(() => {
+    if (ref.current) ref.current.value = value;
+  }, [value]);
 
   return (
     <div className="space-y-2">
@@ -47,13 +49,18 @@ const TableName = ({
         The primary identifier for this table.
       </p>
       <Input
+        ref={ref}
         id="name"
-        value={name}
+        defaultValue={value}
         autoComplete="off"
         placeholder="Name"
-        onChange={(e) => setName(e.target.value)}
-        onBlur={(e) => onBlur(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+        onBlur={(e) => onBlur(e.target.value, reset)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onBlur((e.target as HTMLInputElement).value, reset);
+            e.currentTarget.blur();
+          }
+        }}
       />
     </div>
   );
@@ -64,9 +71,12 @@ const TableAlias = ({
   onBlur,
 }: {
   value: string;
-  onBlur: (alias: string) => void;
+  onBlur: (alias: string, reset: () => void) => void;
 }) => {
-  const [alias, setAlias] = useState(value);
+  const ref = useRef<HTMLInputElement>(null);
+  const reset = useCallback(() => {
+    if (ref.current) ref.current.value = value;
+  }, [value]);
 
   return (
     <div className="space-y-2">
@@ -76,13 +86,18 @@ const TableAlias = ({
       </div>
       <p className="text-xs text-muted-foreground">Optional display name.</p>
       <Input
+        ref={ref}
         id="alias"
-        value={alias}
+        defaultValue={value}
         autoComplete="off"
         placeholder="Alias"
-        onChange={(e) => setAlias(e.target.value)}
-        onBlur={(e) => onBlur(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+        onBlur={(e) => onBlur(e.target.value, reset)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onBlur((e.target as HTMLInputElement).value, reset);
+            e.currentTarget.blur();
+          }
+        }}
       />
     </div>
   );
@@ -102,9 +117,9 @@ const TableHeaderColorPicker = ({
     </div>
     <p className="text-xs text-muted-foreground">Theme color for the table.</p>
     <div className="flex justify-between w-full gap-2">
-      {Object.entries(TABLE_HEADER_COLORS).map(([key, color]) => (
+      {TABLE_HEADER_COLORS.map((color) => (
         <button
-          key={key}
+          key={color}
           type="button"
           onClick={() => onChange(color)}
           className={cn(
@@ -114,7 +129,7 @@ const TableHeaderColorPicker = ({
               : "border-transparent",
           )}
           style={{ backgroundColor: color }}
-          title={key}
+          title={color}
         />
       ))}
     </div>
@@ -136,14 +151,52 @@ const SidebarTableDetail = ({
 }: SidebarTableDetailProps) => {
   const dispatch = useAppDispatch();
   const tables = useAppSelector(selectTables);
-  const handleTablePartial = useCallback(
-    (data: TablePart) => {
-      const result = TablePartSchema.safeParse(data);
+  const handleUpdateName = useCallback(
+    (name: string, reset: () => void) => {
+      if (name === table.name) {
+        reset();
+        return;
+      }
+
+      const result = TablePartSchema.safeParse({ name });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        reset();
+        return;
+      }
+
+      if (tables.some((t) => t.name === result.data.name)) {
+        toast.error("Table name already exists.");
+        reset();
+        return;
+      }
+
+      dispatch(tablePartial({ tableName: table.name, data: result.data }));
+    },
+    [dispatch, table.name, tables],
+  );
+
+  const handleUpdateAlias = useCallback(
+    (alias: string, reset: () => void) => {
+      const result = TablePartSchema.safeParse({ alias });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        reset();
+        return;
+      }
+      dispatch(tablePartial({ tableName: table.name, data: result.data }));
+    },
+    [dispatch, table.name],
+  );
+
+  const handleUpdateHeaderColor = useCallback(
+    (color: string) => {
+      const result = TablePartSchema.safeParse({ headerColor: color });
       if (!result.success) {
         toast.error(result.error.issues[0].message);
         return;
       }
-      dispatch(tablePartial({ tableName: table.name, data }));
+      dispatch(tablePartial({ tableName: table.name, data: result.data }));
     },
     [dispatch, table.name],
   );
@@ -164,27 +217,13 @@ const SidebarTableDetail = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          <TableName
-            value={table.name}
-            onBlur={(name) => {
-              if (name === table.name) return;
-              if (tables.find((t) => t.name === name)) {
-                toast.error("Table name already exists.");
-                return;
-              }
-              handleTablePartial({ name });
-            }}
-          />
-          <TableAlias
-            value={table.alias ?? ""}
-            onBlur={(alias) => handleTablePartial({ alias })}
-          />
+          <TableName value={table.name} onBlur={handleUpdateName} />
+          <TableAlias value={table.alias ?? ""} onBlur={handleUpdateAlias} />
           <TableHeaderColorPicker
-            value={table.headerColor ?? TABLE_HEADER_COLORS.AMBER}
-            onChange={(color) => handleTablePartial({ headerColor: color })}
+            value={table.headerColor ?? TABLE_HEADER_COLORS[7]}
+            onChange={handleUpdateHeaderColor}
           />
         </div>
-
         <DialogFooter>
           <Button variant="destructive" onClick={handleDelete}>
             <Trash2 className="size-4 mr-2" />

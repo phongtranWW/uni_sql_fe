@@ -181,7 +181,7 @@ const SidebarFieldDetail = ({
               onChange={(e) => setDefaultDraft(e.target.value)}
               onBlur={commitDefault}
               placeholder="e.g. 0, CURRENT_TIMESTAMP, or NULL — leave empty for no default"
-              className="min-h-[88px] resize-y font-mono text-xs leading-relaxed"
+              className="min-h-22 resize-y font-mono text-xs leading-relaxed"
               rows={4}
             />
           </div>
