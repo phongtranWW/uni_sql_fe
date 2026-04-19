@@ -45,6 +45,12 @@ export const selectTables = createSelector(
   (data) => data?.tables ?? [],
 );
 
+export const selectTableFields = (tableName: string) =>
+  createSelector(
+    selectTables,
+    (tables) => tables.find((t) => t.name === tableName)?.fields ?? [],
+  );
+
 export const selectRefs = createSelector(
   selectProjectData,
   (data) => data?.refs ?? [],
