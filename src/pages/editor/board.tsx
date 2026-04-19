@@ -25,8 +25,8 @@ const Board = () => {
     (state) => state.editorSettings.show,
   );
 
-  const { nodes, setNodes, onNodesChange } = useFlowNodes(tables);
-  const { edges, setEdges, onEdgesChange } = useFlowEdges(refs);
+  const { nodes, onNodesChange } = useFlowNodes(tables);
+  const { edges, onEdgesChange } = useFlowEdges(refs);
   const {
     handleSelectionEnd,
     handleNodesChange,
@@ -34,14 +34,10 @@ const Board = () => {
     handleEdgeClick,
     handlePaneClick,
     handleConnect,
-    handleNodesDelete,
-    handleEdgesDelete,
   } = useFlowHandlers({
     nodes,
     edges,
     tables,
-    setNodes,
-    setEdges,
     onNodesChange,
   });
 
@@ -63,8 +59,6 @@ const Board = () => {
       onEdgeClick={handleEdgeClick}
       onPaneClick={handlePaneClick}
       onConnect={handleConnect}
-      onNodesDelete={handleNodesDelete}
-      onEdgesDelete={handleEdgesDelete}
     >
       <Marker />
       <Background />

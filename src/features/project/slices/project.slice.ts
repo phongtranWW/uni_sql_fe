@@ -63,40 +63,6 @@ const projectSlice = createSlice({
         ref.endpoints.every((ep) => ep.tableName !== action.payload),
       );
     },
-    tablesSelected: (
-      state,
-      action: PayloadAction<{ name: string[]; value: boolean }>,
-    ) => {
-      state.data?.tables.forEach((table) => {
-        if (action.payload.name.includes(table.name))
-          table.isSelected = action.payload.value;
-      });
-    },
-    tablesSelectionCleared: (state) => {
-      state.data?.tables.forEach((t) => (t.isSelected = false));
-    },
-
-    elementsDeleted: (
-      state,
-      action: PayloadAction<{ tableNames: string[]; refNames: string[] }>,
-    ) => {
-      if (!state.data) return;
-      const tablesToDelete = new Set(action.payload.tableNames);
-      const refsToDelete = new Set(action.payload.refNames);
-
-      state.data.tables = state.data.tables.filter(
-        (t) => !tablesToDelete.has(t.name),
-      );
-
-      state.data.refs = state.data.refs.filter((r) => {
-        if (refsToDelete.has(r.name)) return false;
-        const connectedToDeletedTable = r.endpoints.some((e) =>
-          tablesToDelete.has(e.tableName),
-        );
-        return !connectedToDeletedTable;
-      });
-    },
-
     elementsSelectionDeleted: (state) => {
       if (!state.data) return;
       const tablesToDelete = new Set(
@@ -214,18 +180,6 @@ const projectSlice = createSlice({
         (r) => r.name !== action.payload,
       );
     },
-    refsSelected: (
-      state,
-      action: PayloadAction<{ name: string[]; value: boolean }>,
-    ) => {
-      state.data?.refs.forEach((ref) => {
-        if (action.payload.name.includes(ref.name))
-          ref.isSelected = action.payload.value;
-      });
-    },
-    refsSelectionCleared: (state) => {
-      state.data?.refs.forEach((r) => (r.isSelected = false));
-    },
 
     indexCreated: (state, action: PayloadAction<IndexCreate>) => {
       state.data?.indexes?.push({ ...action.payload });
@@ -270,6 +224,31 @@ const projectSlice = createSlice({
       state.data = action.payload;
       state.saveStatus = "idle";
     },
+
+    tablesSelected: (
+      state,
+      action: PayloadAction<{ name: string[]; value: boolean }>,
+    ) => {
+      state.data?.tables.forEach((table) => {
+        if (action.payload.name.includes(table.name))
+          table.isSelected = action.payload.value;
+      });
+    },
+    refsSelected: (
+      state,
+      action: PayloadAction<{ name: string[]; value: boolean }>,
+    ) => {
+      state.data?.refs.forEach((ref) => {
+        if (action.payload.name.includes(ref.name))
+          ref.isSelected = action.payload.value;
+      });
+    },
+    refsSelectionCleared: (state) => {
+      state.data?.refs.forEach((r) => (r.isSelected = false));
+    },
+    tablesSelectionCleared: (state) => {
+      state.data?.tables.forEach((t) => (t.isSelected = false));
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -306,7 +285,6 @@ export const {
   tableDeleted,
   tablesSelected,
   tablesSelectionCleared,
-  elementsDeleted,
   elementsSelectionDeleted,
   fieldCreated,
   fieldReplaced,
