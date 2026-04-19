@@ -20,7 +20,7 @@ import {
   MenubarRadioGroup,
   MenubarRadioItem,
 } from "@/components/ui/menubar";
-import { Fragment, useState } from "react";
+import { Fragment, useCallback, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -45,6 +45,7 @@ import {
 import { selectProjectIssues } from "@/features/project/selectors/issue.selector";
 import { upsertProject } from "@/features/project/thunks";
 import ImportProjectDialog from "./import-project-dialog";
+import { elementsSelectionDeleted } from "@/features/project/slices/project.slice";
 
 const sanitizeProjectJsonExport = (raw: string) => {
   try {
@@ -100,45 +101,60 @@ const HeaderMenubar = () => {
     CODE_FORMATS.JSON,
   );
 
-  const handleExport = async (format: "json" | "mysql" | "postgresql") => {
-    if (!id || !project) return;
-    if (issues.length > 0) {
-      toast.error(
-        `Fix ${issues.length} validation issue${issues.length === 1 ? "" : "s"} before exporting.`,
-      );
-      return;
-    }
-    if (saveStatus === "saving") {
-      toast.info("Project is still saving. Try again in a moment.");
-      return;
-    }
-    try {
-      if (isDirty) {
-        await dispatch(upsertProject({ id, body: project })).unwrap();
-        dispatch(ActionCreators.clearHistory());
-      }
-      const result = await projectService.export(id, { format });
-      if (result) {
-        setExportCode(
-          format === "json"
-            ? sanitizeProjectJsonExport(result.content)
-            : result.content,
+  const handleExport = useCallback(
+    async (format: "json" | "mysql" | "postgresql") => {
+      if (!id || !project) return;
+      if (issues.length > 0) {
+        toast.error(
+          `Fix ${issues.length} validation issue${issues.length === 1 ? "" : "s"} before exporting.`,
         );
-        setExportFormat(
-          format === "postgresql"
-            ? CODE_FORMATS.PostgreSQL
-            : format === "mysql"
-              ? CODE_FORMATS.MySQL
-              : CODE_FORMATS.JSON,
-        );
-        setShowCodePreview(true);
+        return;
       }
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unknown error");
-    }
-  };
+      if (saveStatus === "saving") {
+        toast.info("Project is still saving. Try again in a moment.");
+        return;
+      }
+      try {
+        if (isDirty) {
+          await dispatch(upsertProject({ id, body: project })).unwrap();
+          dispatch(ActionCreators.clearHistory());
+        }
+        const result = await projectService.export(id, { format });
+        if (result) {
+          setExportCode(
+            format === "json"
+              ? sanitizeProjectJsonExport(result.content)
+              : result.content,
+          );
+          setExportFormat(
+            format === "postgresql"
+              ? CODE_FORMATS.PostgreSQL
+              : format === "mysql"
+                ? CODE_FORMATS.MySQL
+                : CODE_FORMATS.JSON,
+          );
+          setShowCodePreview(true);
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unknown error");
+      }
+    },
+    [dispatch, id, isDirty, issues, project, saveStatus],
+  );
 
-  const handleSave = async () => {
+  const handleExportJson = useCallback(() => {
+    void handleExport("json");
+  }, [handleExport]);
+
+  const handleExportMysql = useCallback(() => {
+    void handleExport("mysql");
+  }, [handleExport]);
+
+  const handleExportPostgresql = useCallback(() => {
+    void handleExport("postgresql");
+  }, [handleExport]);
+
+  const handleSave = useCallback(async () => {
     if (!id || !project) return;
     try {
       await dispatch(upsertProject({ id, body: project })).unwrap();
@@ -146,13 +162,13 @@ const HeaderMenubar = () => {
     } catch {
       /* save failed — keep undo history */
     }
-  };
+  }, [dispatch, id, project]);
 
-  const handleExit = () => {
+  const handleExit = useCallback(() => {
     navigate("/");
-  };
+  }, [navigate]);
 
-  const handleDeleteProject = async () => {
+  const handleDeleteProject = useCallback(async () => {
     if (!id) return;
     const shouldDelete = window.confirm(
       "Delete this project permanently? This action cannot be undone.",
@@ -168,7 +184,55 @@ const HeaderMenubar = () => {
         error instanceof Error ? error.message : "Failed to delete project",
       );
     }
-  };
+  }, [id, navigate]);
+
+  const handleDeleteSelection = useCallback(() => {
+    dispatch(elementsSelectionDeleted());
+  }, [dispatch]);
+
+  const openImportDialog = useCallback(() => {
+    setShowImportDialog(true);
+  }, []);
+
+  const openShortcutsDialog = useCallback(() => {
+    setShowShortcutsDialog(true);
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    dispatch(ActionCreators.undo());
+  }, [dispatch]);
+
+  const handleRedo = useCallback(() => {
+    dispatch(ActionCreators.redo());
+  }, [dispatch]);
+
+  const handleSidebarCheckedChange = useCallback(
+    (checked: boolean) => {
+      dispatch(sidebarSet(checked));
+    },
+    [dispatch],
+  );
+
+  const handleIssuePanelCheckedChange = useCallback(
+    (checked: boolean) => {
+      dispatch(issuePanelSet(checked));
+    },
+    [dispatch],
+  );
+
+  const handleMinimapCheckedChange = useCallback(
+    (checked: boolean) => {
+      dispatch(minimapSet(checked));
+    },
+    [dispatch],
+  );
+
+  const handleControlCheckedChange = useCallback(
+    (checked: boolean) => {
+      dispatch(controlSet(checked));
+    },
+    [dispatch],
+  );
 
   return (
     <div>
@@ -181,7 +245,7 @@ const HeaderMenubar = () => {
             <MenubarSub>
               <MenubarSubTrigger>Import from</MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarItem onClick={() => setShowImportDialog(true)}>
+                <MenubarItem onClick={openImportDialog}>
                   JSON
                 </MenubarItem>
               </MenubarSubContent>
@@ -189,13 +253,13 @@ const HeaderMenubar = () => {
             <MenubarSub>
               <MenubarSubTrigger>Export to</MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarItem onClick={() => handleExport("json")}>
+                <MenubarItem onClick={handleExportJson}>
                   JSON
                 </MenubarItem>
-                <MenubarItem onClick={() => handleExport("mysql")}>
+                <MenubarItem onClick={handleExportMysql}>
                   MySQL
                 </MenubarItem>
-                <MenubarItem onClick={() => handleExport("postgresql")}>
+                <MenubarItem onClick={handleExportPostgresql}>
                   Postgres
                 </MenubarItem>
               </MenubarSubContent>
@@ -215,16 +279,16 @@ const HeaderMenubar = () => {
             Edit
           </MenubarTrigger>
           <MenubarContent>
-            <MenubarItem onClick={() => dispatch(ActionCreators.undo())}>
+            <MenubarItem onClick={handleUndo}>
               Undo <MenubarShortcut>Ctrl + Z</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={() => dispatch(ActionCreators.redo())}>
+            <MenubarItem onClick={handleRedo}>
               Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
             </MenubarItem>
             <MenubarItem onClick={handleSave}>
               Save <MenubarShortcut>Ctrl + S</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem>
+            <MenubarItem onClick={handleDeleteSelection}>
               Delete <MenubarShortcut>Del / Bac</MenubarShortcut>
             </MenubarItem>
           </MenubarContent>
@@ -237,7 +301,7 @@ const HeaderMenubar = () => {
             <MenubarCheckboxItem
               className="justify-between gap-4 pr-2"
               checked={showSidebar}
-              onCheckedChange={(checked) => dispatch(sidebarSet(checked))}
+              onCheckedChange={handleSidebarCheckedChange}
             >
               Show Sidebar
               <MenubarShortcut>Ctrl + Alt + B</MenubarShortcut>
@@ -245,20 +309,20 @@ const HeaderMenubar = () => {
             <MenubarCheckboxItem
               className="justify-between gap-4 pr-2"
               checked={showIssues}
-              onCheckedChange={(checked) => dispatch(issuePanelSet(checked))}
+              onCheckedChange={handleIssuePanelCheckedChange}
             >
               Show Issues
               <MenubarShortcut>Ctrl + Alt + I</MenubarShortcut>
             </MenubarCheckboxItem>
             <MenubarCheckboxItem
               checked={showMinimap}
-              onCheckedChange={(checked) => dispatch(minimapSet(checked))}
+              onCheckedChange={handleMinimapCheckedChange}
             >
               Show Minimap
             </MenubarCheckboxItem>
             <MenubarCheckboxItem
               checked={showControl}
-              onCheckedChange={(checked) => dispatch(controlSet(checked))}
+              onCheckedChange={handleControlCheckedChange}
             >
               Show Controls
             </MenubarCheckboxItem>
@@ -282,7 +346,7 @@ const HeaderMenubar = () => {
             Help
           </MenubarTrigger>
           <MenubarContent>
-            <MenubarItem onClick={() => setShowShortcutsDialog(true)}>
+            <MenubarItem onClick={openShortcutsDialog}>
               Shortcuts
             </MenubarItem>
           </MenubarContent>
