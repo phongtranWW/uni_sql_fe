@@ -10,7 +10,6 @@ import {
 } from "@/features/project/schemas/project.schema";
 import { projectImported } from "@/features/project/slices/project.slice";
 import { Button } from "@/components/ui/button";
-import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import {
   Dialog,
   DialogContent,
@@ -20,105 +19,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-type Importer = {
-  id: string;
-  label: string;
-  extensions: string[];
-  accept: string;
-  parse: (content: string) => Project;
-};
+const ACCEPTED_EXTENSIONS = ["json"];
+const ACCEPTED_ACCEPT = ".json,application/json";
 
-const IMPORTERS: Importer[] = [
-  {
-    id: "json",
-    label: "JSON",
-    extensions: ["json"],
-    accept: ".json,application/json",
-    parse: (content) => {
-      const parsed = JSON.parse(content) as unknown;
-      return ProjectSchema.parse(normalizeImportedProject(parsed));
-    },
-  },
-];
-
-const getRandomTableHeaderColor = () =>
-  TABLE_HEADER_COLORS[Math.floor(Math.random() * TABLE_HEADER_COLORS.length)];
-
-const normalizeImportedProject = (raw: unknown) => {
-  const input =
-    raw && typeof raw === "object" && !Array.isArray(raw)
-      ? (raw as Record<string, unknown>)
-      : {};
-
-  const tablesRaw = Array.isArray(input.tables) ? input.tables : [];
-  const refsRaw = Array.isArray(input.refs) ? input.refs : [];
-  const indexesRaw = Array.isArray(input.indexes) ? input.indexes : [];
-
-  return {
-    name: input.name,
-    tables: tablesRaw.map((table) => {
-      const t =
-        table && typeof table === "object"
-          ? (table as Record<string, unknown>)
-          : {};
-      const fieldsRaw = Array.isArray(t.fields) ? t.fields : [];
-      return {
-        name: t.name,
-        fields: fieldsRaw.map((field) => {
-          const f =
-            field && typeof field === "object"
-              ? (field as Record<string, unknown>)
-              : {};
-          return {
-            name: f.name,
-            type: f.type,
-            unique: Boolean(f.unique),
-            pk: Boolean(f.pk),
-            not_null: Boolean(f.not_null),
-            increment: Boolean(f.increment),
-          };
-        }),
-        headerColor:
-          typeof t.headerColor === "string"
-            ? t.headerColor
-            : getRandomTableHeaderColor(),
-        alias: typeof t.alias === "string" || t.alias === null ? t.alias : null,
-        isSelected: Boolean(t.isSelected),
-      };
-    }),
-    refs: refsRaw.map((ref) => {
-      const r =
-        ref && typeof ref === "object" ? (ref as Record<string, unknown>) : {};
-      const endpointsRaw = Array.isArray(r.endpoints) ? r.endpoints : [];
-      return {
-        name: r.name,
-        isSelected: Boolean(r.isSelected),
-        operator: r.operator,
-        endpoints: endpointsRaw.map((endpoint) => {
-          const ep =
-            endpoint && typeof endpoint === "object"
-              ? (endpoint as Record<string, unknown>)
-              : {};
-          return {
-            tableName: ep.tableName,
-            fieldName: ep.fieldName,
-          };
-        }),
-      };
-    }),
-    indexes: indexesRaw.map((index) => {
-      const i =
-        index && typeof index === "object"
-          ? (index as Record<string, unknown>)
-          : {};
-      return {
-        name: i.name,
-        tableName: i.tableName,
-        fields: Array.isArray(i.fields) ? i.fields : [],
-        unique: Boolean(i.unique),
-      };
-    }),
-  };
+const parseProjectFile = async (file: File): Promise<Project> => {
+  const raw = await file.text();
+  return ProjectSchema.parse(JSON.parse(raw));
 };
 
 interface ImportProjectDialogProps {
@@ -136,47 +42,31 @@ const ImportProjectDialog = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const importer = IMPORTERS[0];
 
-  const resetDialogState = () => {
+  const closeDialog = () => {
+    onOpenChange(false);
     setSelectedFile(null);
     setIsDragOver(false);
     setIsImporting(false);
   };
 
-  const closeDialog = () => {
-    onOpenChange(false);
-    resetDialogState();
-  };
-
-  const validateFile = (file: File) => {
-    const extension = file.name.split(".").pop()?.toLowerCase();
-    if (!extension || !importer.extensions.includes(extension)) {
-      toast.error(
-        `Invalid file type. Please choose a ${importer.extensions.join(", ")} file.`,
-      );
-      return false;
-    }
-    return true;
-  };
-
-  const handleFilePicked = (file: File | null) => {
+  const validateAndPickFile = (file: File | null) => {
     if (!file) return;
-    if (!validateFile(file)) return;
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    if (!extension || !ACCEPTED_EXTENSIONS.includes(extension)) {
+      toast.error(
+        `Invalid file type. Please choose a ${ACCEPTED_EXTENSIONS.join(", ")} file.`,
+      );
+      return;
+    }
     setSelectedFile(file);
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
     if (selectedFile) return;
     setIsDragOver(false);
-    const file = event.dataTransfer.files?.[0] ?? null;
-    handleFilePicked(file);
-  };
-
-  const parseWithImporter = async (file: File) => {
-    const raw = await file.text();
-    return importer.parse(raw);
+    validateAndPickFile(e.dataTransfer.files?.[0] ?? null);
   };
 
   const handleImport = async () => {
@@ -187,7 +77,7 @@ const ImportProjectDialog = ({
 
     setIsImporting(true);
     try {
-      const project = await parseWithImporter(selectedFile);
+      const project = await parseProjectFile(selectedFile);
       dispatch(projectImported(project));
       dispatch(ActionCreators.clearHistory());
       toast.success("Project imported. Current data has been replaced.");
@@ -230,10 +120,9 @@ const ImportProjectDialog = ({
                 ? "border-cyan-500/60 bg-cyan-500/10"
                 : "border-slate-400/40 bg-slate-500/5"
           }`}
-          onDragOver={(event) => {
-            event.preventDefault();
-            if (selectedFile) return;
-            setIsDragOver(true);
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!selectedFile) setIsDragOver(true);
           }}
           onDragLeave={() => setIsDragOver(false)}
           onDrop={handleDrop}
@@ -253,17 +142,8 @@ const ImportProjectDialog = ({
               ? "You can import this file now, or cancel it to choose another."
               : "Or choose from disk. Accepted: .json"}
           </p>
-          {!selectedFile ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-3"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Choose file
-            </Button>
-          ) : (
+
+          {selectedFile ? (
             <Button
               type="button"
               variant="outline"
@@ -273,24 +153,34 @@ const ImportProjectDialog = ({
             >
               Cancel this file
             </Button>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Choose file
+            </Button>
           )}
+
           <input
             ref={fileInputRef}
             type="file"
-            accept={importer.accept}
+            accept={ACCEPTED_ACCEPT}
             className="hidden"
-            onChange={(event) =>
-              handleFilePicked(event.target.files?.[0] ?? null)
-            }
+            onChange={(e) => validateAndPickFile(e.target.files?.[0] ?? null)}
           />
-          {selectedFile ? (
+
+          {selectedFile && (
             <p className="mt-3 text-xs text-muted-foreground">
               Ready:{" "}
               <span className="font-medium text-foreground">
                 {selectedFile.name}
               </span>
             </p>
-          ) : null}
+          )}
         </div>
 
         <div className="rounded-md border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-300">

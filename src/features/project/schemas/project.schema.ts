@@ -15,10 +15,10 @@ import { projectValidateRules } from "../rules";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const ProjectBaseSchema = z.object({
-  name: z.string(),
-  tables: z.array(TableBaseSchema),
-  refs: z.array(BaseRefSchema),
-  indexes: z.array(BaseIndexSchema),
+  name: z.string().catch("New Project"),
+  tables: z.array(TableBaseSchema).catch([]),
+  refs: z.array(BaseRefSchema).catch([]),
+  indexes: z.array(BaseIndexSchema).catch([]),
 });
 
 // ─── State Schema (Redux) ─────────────────────────────────────────────────────

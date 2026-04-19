@@ -1,9 +1,10 @@
+import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 import { z } from "zod";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const BaseEndpointSchema = z.object({
-  tableName: z.string(),
-  fieldName: z.string(),
+  tableName: z.string().catch(() => `table_${nanoidAlpabet(3)}`),
+  fieldName: z.string().catch(() => `field_${nanoidAlpabet(3)}`),
 });
 
 // ─── State Schema (Redux) ─────────────────────────────────────────────────────

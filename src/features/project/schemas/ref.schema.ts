@@ -5,20 +5,21 @@ import {
   EndpointSchema,
   EndpointValidateSchema,
 } from "./endpoint.schema";
+import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 
 export type { RefOperator };
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const BaseRefSchema = z.object({
-  name: z.string(),
-  endpoints: z.array(BaseEndpointSchema),
-  operator: z.string(),
+  name: z.string().catch(() => `ref_${nanoidAlpabet(3)}`),
+  endpoints: z.array(BaseEndpointSchema).catch([]),
+  operator: z.string().catch(REF_OPERATOR[0]),
 });
 
 // ─── State Schema (Redux) ─────────────────────────────────────────────────────
 export const RefSchema = BaseRefSchema.extend({
-  isSelected: z.boolean(),
-  endpoints: z.array(EndpointSchema),
+  isSelected: z.boolean().catch(false),
+  endpoints: z.array(EndpointSchema).catch([]),
 });
 export const RefCreateSchema = BaseRefSchema.extend({
   isSelected: z.boolean().default(false),

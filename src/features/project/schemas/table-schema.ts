@@ -10,16 +10,23 @@ import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const TableBaseSchema = z.object({
-  name: z.string(),
-  fields: z.array(FieldBaseSchema),
-  alias: z.string().nullable(),
+  name: z.string().catch(() => `table_${nanoidAlpabet(3)}`),
+  fields: z.array(FieldBaseSchema).catch([]),
+  alias: z.string().nullable().catch(null),
 });
 
 // ─── State Schema (Redux) ─────────────────────────────────────────────────────
 export const TableSchema = TableBaseSchema.extend({
-  headerColor: z.string(),
-  isSelected: z.boolean(),
-  fields: z.array(FieldSchema),
+  headerColor: z
+    .string()
+    .catch(
+      () =>
+        TABLE_HEADER_COLORS[
+          Math.floor(Math.random() * TABLE_HEADER_COLORS.length)
+        ],
+    ),
+  isSelected: z.boolean().catch(false),
+  fields: z.array(FieldSchema).catch([]),
 });
 
 export const TableCreateSchema = TableBaseSchema.extend({
@@ -35,12 +42,14 @@ export const TableCreateSchema = TableBaseSchema.extend({
       default: null,
     },
   ]),
-  headerColor: z.string().default(
-    () =>
-      TABLE_HEADER_COLORS[
-        Math.floor(Math.random() * TABLE_HEADER_COLORS.length)
-      ],
-  ),
+  headerColor: z
+    .string()
+    .default(
+      () =>
+        TABLE_HEADER_COLORS[
+          Math.floor(Math.random() * TABLE_HEADER_COLORS.length)
+        ],
+    ),
   alias: z.string().nullable().default(null),
   isSelected: z.boolean().default(false),
 });

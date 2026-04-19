@@ -3,10 +3,10 @@ import { z } from "zod";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const BaseIndexSchema = z.object({
-  name: z.string(),
-  tableName: z.string(),
-  fields: z.array(z.string()),
-  unique: z.boolean(),
+  name: z.string().catch(() => `idx_${nanoidAlpabet(3)}`),
+  tableName: z.string().catch(() => `table_${nanoidAlpabet(3)}`),
+  fields: z.array(z.string()).catch([]),
+  unique: z.boolean().catch(false),
 });
 
 // ─── State Schema (Redux, light validation) ───────────────────────────────────

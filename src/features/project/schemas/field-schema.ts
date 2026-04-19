@@ -5,19 +5,17 @@ import { z } from "zod";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const FieldBaseSchema = z.object({
-  name: z.string(),
-  type: z.string(),
-  unique: z.boolean(),
-  pk: z.boolean(),
-  not_null: z.boolean(),
-  increment: z.boolean(),
-  default: z.string().nullable(),
+  name: z.string().catch(() => `field_${nanoidAlpabet(3)}`),
+  type: z.string().catch(FIELD_TYPES[0]),
+  unique: z.boolean().catch(false),
+  pk: z.boolean().catch(false),
+  not_null: z.boolean().catch(false),
+  increment: z.boolean().catch(false),
+  default: z.string().nullable().catch(null),
 });
 
 // ─── State Schema (Redux, light validation) ───────────────────────────────────
-export const FieldSchema = FieldBaseSchema.extend({
-  default: z.string().nullable().catch(null),
-});
+export const FieldSchema = FieldBaseSchema;
 export const FieldCreateSchema = FieldBaseSchema.extend({
   name: z.string().default(() => `field_${nanoidAlpabet(3)}`),
   type: z.string().default(FIELD_TYPES[0]),
