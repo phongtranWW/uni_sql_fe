@@ -13,14 +13,6 @@ import { selectTables } from "@/features/project/selectors/project.selector";
 import { tableCreated } from "@/features/project/slices/project.slice";
 import { TableCreateSchema } from "@/features/project/schemas/table-schema";
 import { toast } from "sonner";
-import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-
-const TABLE_HEADER_COLOR_VALUES = Object.values(TABLE_HEADER_COLORS);
-
-const getRandomTableHeaderColor = () =>
-  TABLE_HEADER_COLOR_VALUES[
-    Math.floor(Math.random() * TABLE_HEADER_COLOR_VALUES.length)
-  ];
 
 const SidebarTabTable = () => {
   const tables = useAppSelector(selectTables);
@@ -33,12 +25,7 @@ const SidebarTabTable = () => {
       toast.error(result.error.issues[0].message);
       return;
     }
-    dispatch(
-      tableCreated({
-        ...result.data,
-        headerColor: getRandomTableHeaderColor(),
-      }),
-    );
+    dispatch(tableCreated(result.data));
   }, [dispatch]);
 
   const filteredTables = tables.filter((t) =>

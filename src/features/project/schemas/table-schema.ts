@@ -35,7 +35,10 @@ export const TableCreateSchema = TableBaseSchema.extend({
       default: null,
     },
   ]),
-  headerColor: z.string().default(TABLE_HEADER_COLORS.SLATE),
+  headerColor: z.string().default(() => {
+    const colors = Object.values(TABLE_HEADER_COLORS);
+    return colors[Math.floor(Math.random() * colors.length)];
+  }),
   alias: z.string().nullable().default(null),
   isSelected: z.boolean().default(false),
 });

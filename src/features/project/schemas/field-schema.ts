@@ -1,5 +1,6 @@
 import { FIELD_TYPES } from "@/constants/field-types";
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
+import { validateFieldDefault } from "@/utils/validators";
 import { z } from "zod";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
@@ -49,6 +50,25 @@ export const FieldValidateSchema = FieldBaseSchema.extend({
       message: "Auto increment is only allowed for INT type",
       path: ["increment"],
     });
+  }
+
+  if (field.increment && field.default !== null) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Auto increment field must not have a default value",
+      path: ["default"],
+    });
+  }
+
+  if (field.default !== null) {
+    const result = validateFieldDefault(field.type, field.default);
+    if (!result.valid) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["default"],
+        message: result.message,
+      });
+    }
   }
 });
 
