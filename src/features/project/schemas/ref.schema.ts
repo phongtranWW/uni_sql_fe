@@ -6,6 +6,7 @@ import {
   EndpointValidateSchema,
 } from "./endpoint.schema";
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
+import { RESERVED_KEYWORDS } from "@/constants/reserved-keywords";
 
 export type { RefOperator };
 
@@ -46,7 +47,10 @@ export const RefValidateSchema = BaseRefSchema.extend({
     .regex(
       /^[a-z_][a-z0-9_]*$/,
       "Name must start with a letter or underscore, and contain only lowercase letters, numbers, or underscores.",
-    ),
+    )
+    .refine((name) => !RESERVED_KEYWORDS.includes(name.toLowerCase()), {
+      message: "Name cannot be a reserved keyword.",
+    }),
   endpoints: z.object({
     from: EndpointValidateSchema,
     to: EndpointValidateSchema,

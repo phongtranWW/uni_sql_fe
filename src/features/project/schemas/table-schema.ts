@@ -7,6 +7,7 @@ import {
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
 import { FIELD_TYPES } from "@/constants/field-types";
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
+import { RESERVED_KEYWORDS } from "@/constants/reserved-keywords";
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const TableBaseSchema = z.object({
@@ -87,7 +88,10 @@ export const TableValidateSchema = TableBaseSchema.extend({
     .regex(
       /^[a-z_][a-z0-9_]*$/,
       "Name must start with a letter or underscore, and contain only lowercase letters, numbers, or underscores.",
-    ),
+    )
+    .refine((name) => !RESERVED_KEYWORDS.includes(name.toLowerCase()), {
+      message: "Name cannot be a reserved keyword.",
+    }),
   fields: z.record(z.string(), FieldValidateSchema),
 });
 

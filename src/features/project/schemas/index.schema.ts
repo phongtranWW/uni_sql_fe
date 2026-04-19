@@ -1,3 +1,4 @@
+import { RESERVED_KEYWORDS } from "@/constants/reserved-keywords";
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 import { z } from "zod";
 
@@ -35,7 +36,10 @@ export const IndexValidateSchema = BaseIndexSchema.extend({
     .regex(
       /^[a-z_][a-z0-9_]*$/,
       "Name must start with a letter or underscore, and contain only lowercase letters, numbers, or underscores.",
-    ),
+    )
+    .refine((name) => !RESERVED_KEYWORDS.includes(name.toLowerCase()), {
+      message: "Name cannot be a reserved keyword.",
+    }),
   tableName: z.string().min(1, "Table name is required."),
   fields: z.array(z.string()).min(1, "Fields are required."),
 });

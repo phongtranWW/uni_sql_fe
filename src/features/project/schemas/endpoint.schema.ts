@@ -1,3 +1,4 @@
+import { RESERVED_KEYWORDS } from "@/constants/reserved-keywords";
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 import { z } from "zod";
 
@@ -12,8 +13,18 @@ export const EndpointSchema = BaseEndpointSchema;
 
 // ─── Validate Schema (strict validation) ─────────────────────────────────────
 export const EndpointValidateSchema = BaseEndpointSchema.extend({
-  tableName: z.string().min(1, "Table name is required."),
-  fieldName: z.string().min(1, "Field name is required."),
+  tableName: z
+    .string()
+    .min(1, "Table name is required.")
+    .refine((name) => !RESERVED_KEYWORDS.includes(name.toLowerCase()), {
+      message: "Table name cannot be a reserved keyword.",
+    }),
+  fieldName: z
+    .string()
+    .min(1, "Field name is required.")
+    .refine((name) => !RESERVED_KEYWORDS.includes(name.toLowerCase()), {
+      message: "Field name cannot be a reserved keyword.",
+    }),
 });
 
 export type Endpoint = z.infer<typeof EndpointSchema>;

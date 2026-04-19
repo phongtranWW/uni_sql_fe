@@ -1,4 +1,5 @@
 import { FIELD_TYPES } from "@/constants/field-types";
+import { RESERVED_KEYWORDS } from "@/constants/reserved-keywords";
 import { nanoidAlpabet } from "@/utils/nanoid-alpabet";
 import { validateFieldDefault } from "@/utils/validators";
 import { z } from "zod";
@@ -40,6 +41,9 @@ export const FieldValidateSchema = FieldBaseSchema.extend({
     .regex(/^[a-zA-Z_][a-zA-Z0-9_]*$/, {
       message:
         "Name must start with a letter or underscore, and contain only letters, numbers, or underscores.",
+    })
+    .refine((name) => !RESERVED_KEYWORDS.includes(name.toLowerCase()), {
+      message: "Name cannot be a reserved keyword.",
     }),
   type: z.enum(FIELD_TYPES),
 }).superRefine((field, ctx) => {
