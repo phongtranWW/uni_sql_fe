@@ -4,11 +4,13 @@ import { toast } from "sonner";
 import { ActionCreators } from "redux-undo";
 import { z } from "zod";
 import { useAppDispatch } from "@/app/hook";
-import { ProjectSchema, type Project } from "@/features/project/schemas/project.schema";
+import {
+  ProjectSchema,
+  type Project,
+} from "@/features/project/schemas/project.schema";
 import { projectImported } from "@/features/project/slices/project.slice";
 import { Button } from "@/components/ui/button";
 import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
-import { REF_OPERATOR } from "@/features/project/schemas/ref.schema";
 import {
   Dialog,
   DialogContent,
@@ -40,9 +42,7 @@ const IMPORTERS: Importer[] = [
 ];
 
 const getRandomTableHeaderColor = () =>
-  TABLE_HEADER_COLORS[
-    Math.floor(Math.random() * TABLE_HEADER_COLORS.length)
-  ];
+  TABLE_HEADER_COLORS[Math.floor(Math.random() * TABLE_HEADER_COLORS.length)];
 
 const normalizeImportedProject = (raw: unknown) => {
   const input =
@@ -57,7 +57,10 @@ const normalizeImportedProject = (raw: unknown) => {
   return {
     name: input.name,
     tables: tablesRaw.map((table) => {
-      const t = table && typeof table === "object" ? (table as Record<string, unknown>) : {};
+      const t =
+        table && typeof table === "object"
+          ? (table as Record<string, unknown>)
+          : {};
       const fieldsRaw = Array.isArray(t.fields) ? t.fields : [];
       return {
         name: t.name,
@@ -84,17 +87,13 @@ const normalizeImportedProject = (raw: unknown) => {
       };
     }),
     refs: refsRaw.map((ref) => {
-      const r = ref && typeof ref === "object" ? (ref as Record<string, unknown>) : {};
+      const r =
+        ref && typeof ref === "object" ? (ref as Record<string, unknown>) : {};
       const endpointsRaw = Array.isArray(r.endpoints) ? r.endpoints : [];
       return {
         name: r.name,
         isSelected: Boolean(r.isSelected),
-        operator:
-          r.operator === REF_OPERATOR.ONE_TO_ONE ||
-          r.operator === REF_OPERATOR.ONE_TO_MANY ||
-          r.operator === REF_OPERATOR.MANY_TO_ONE
-            ? r.operator
-            : REF_OPERATOR.ONE_TO_ONE,
+        operator: r.operator,
         endpoints: endpointsRaw.map((endpoint) => {
           const ep =
             endpoint && typeof endpoint === "object"
@@ -109,7 +108,9 @@ const normalizeImportedProject = (raw: unknown) => {
     }),
     indexes: indexesRaw.map((index) => {
       const i =
-        index && typeof index === "object" ? (index as Record<string, unknown>) : {};
+        index && typeof index === "object"
+          ? (index as Record<string, unknown>)
+          : {};
       return {
         name: i.name,
         tableName: i.tableName,
@@ -125,7 +126,10 @@ interface ImportProjectDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) => {
+const ImportProjectDialog = ({
+  open,
+  onOpenChange,
+}: ImportProjectDialogProps) => {
   const dispatch = useAppDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -148,7 +152,9 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
   const validateFile = (file: File) => {
     const extension = file.name.split(".").pop()?.toLowerCase();
     if (!extension || !importer.extensions.includes(extension)) {
-      toast.error(`Invalid file type. Please choose a ${importer.extensions.join(", ")} file.`);
+      toast.error(
+        `Invalid file type. Please choose a ${importer.extensions.join(", ")} file.`,
+      );
       return false;
     }
     return true;
@@ -188,7 +194,9 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
       closeDialog();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        toast.error(error.issues[0]?.message ?? "Invalid project file structure.");
+        toast.error(
+          error.issues[0]?.message ?? "Invalid project file structure.",
+        );
       } else if (error instanceof SyntaxError) {
         toast.error("Invalid JSON file.");
       } else {
@@ -200,7 +208,12 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
   };
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => (nextOpen ? onOpenChange(true) : closeDialog())}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) =>
+        nextOpen ? onOpenChange(true) : closeDialog()
+      }
+    >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Import project</DialogTitle>
@@ -214,8 +227,8 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
             selectedFile
               ? "border-emerald-500/50 bg-emerald-500/10"
               : isDragOver
-              ? "border-cyan-500/60 bg-cyan-500/10"
-              : "border-slate-400/40 bg-slate-500/5"
+                ? "border-cyan-500/60 bg-cyan-500/10"
+                : "border-slate-400/40 bg-slate-500/5"
           }`}
           onDragOver={(event) => {
             event.preventDefault();
@@ -266,11 +279,16 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
             type="file"
             accept={importer.accept}
             className="hidden"
-            onChange={(event) => handleFilePicked(event.target.files?.[0] ?? null)}
+            onChange={(event) =>
+              handleFilePicked(event.target.files?.[0] ?? null)
+            }
           />
           {selectedFile ? (
             <p className="mt-3 text-xs text-muted-foreground">
-              Ready: <span className="font-medium text-foreground">{selectedFile.name}</span>
+              Ready:{" "}
+              <span className="font-medium text-foreground">
+                {selectedFile.name}
+              </span>
             </p>
           ) : null}
         </div>
@@ -281,7 +299,8 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
             Warning
           </div>
           <p className="mt-1">
-            Import will overwrite all current tables, refs, indexes, and project name.
+            Import will overwrite all current tables, refs, indexes, and project
+            name.
           </p>
         </div>
 
@@ -289,7 +308,11 @@ const ImportProjectDialog = ({ open, onOpenChange }: ImportProjectDialogProps) =
           <Button type="button" variant="outline" onClick={closeDialog}>
             Cancel
           </Button>
-          <Button type="button" onClick={handleImport} disabled={!selectedFile || isImporting}>
+          <Button
+            type="button"
+            onClick={handleImport}
+            disabled={!selectedFile || isImporting}
+          >
             {isImporting ? "Importing..." : "Import and overwrite"}
           </Button>
         </DialogFooter>

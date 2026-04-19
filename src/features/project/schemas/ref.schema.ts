@@ -1,17 +1,12 @@
 import { z } from "zod";
+import { REF_OPERATOR, type RefOperator } from "@/constants/ref-operator";
 import {
   BaseEndpointSchema,
   EndpointSchema,
   EndpointValidateSchema,
 } from "./endpoint.schema";
 
-export const REF_OPERATOR = {
-  ONE_TO_ONE: "-",
-  ONE_TO_MANY: ">",
-  MANY_TO_ONE: "<",
-} as const;
-
-export type RefOperator = (typeof REF_OPERATOR)[keyof typeof REF_OPERATOR];
+export type { RefOperator };
 
 // ─── Base Schema (shared shape) ───────────────────────────────────────────────
 export const BaseRefSchema = z.object({
@@ -27,7 +22,7 @@ export const RefSchema = BaseRefSchema.extend({
 });
 export const RefCreateSchema = BaseRefSchema.extend({
   isSelected: z.boolean().default(false),
-  operator: z.string().default(REF_OPERATOR.ONE_TO_ONE),
+  operator: z.string().default(REF_OPERATOR[0]),
 });
 export const RefReplaceSchema = RefSchema;
 export const RefPartSchema = RefSchema.pick({
@@ -55,11 +50,7 @@ export const RefValidateSchema = BaseRefSchema.extend({
     from: EndpointValidateSchema,
     to: EndpointValidateSchema,
   }),
-  operator: z.enum([
-    REF_OPERATOR.ONE_TO_ONE,
-    REF_OPERATOR.ONE_TO_MANY,
-    REF_OPERATOR.MANY_TO_ONE,
-  ]),
+  operator: z.enum(REF_OPERATOR),
 });
 
 export type Ref = z.infer<typeof RefSchema>;

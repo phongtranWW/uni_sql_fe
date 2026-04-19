@@ -1,10 +1,6 @@
 import { cn } from "@/lib/utils";
-import {
-  REF_OPERATOR,
-  RefPartSchema,
-  type Ref,
-  type RefPart,
-} from "@/features/project/schemas/ref.schema";
+import { REF_OPERATOR_LABELS } from "@/constants/ref-operator";
+import { RefPartSchema, type Ref } from "@/features/project/schemas/ref.schema";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -13,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { selectRefs } from "@/features/project/selectors/project.selector";
@@ -32,18 +28,24 @@ const RefName = ({
   onBlur,
 }: {
   value: string;
-  onBlur: (v: string) => void;
+  onBlur: (v: string, reset: () => void) => void;
 }) => {
-  const [name, setName] = useState(value);
+  const ref = useRef<HTMLInputElement>(null);
+  const reset = useCallback(() => {
+    if (ref.current) ref.current.value = value;
+  }, [value]);
 
   return (
     <Input
-      className="flex-1 min-w-0 h-7 text-xs rounded-sm px-1.5 py-0"
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-      onBlur={(e) => onBlur(e.target.value)}
+      ref={ref}
+      className="flex-2 min-w-0 h-7 text-xs rounded-sm px-1.5 py-0"
+      defaultValue={value}
+      onBlur={(e) => onBlur(e.target.value, reset)}
       onKeyDown={(e) => {
-        if (e.key === "Enter") e.currentTarget.blur();
+        if (e.key === "Enter") {
+          onBlur((e.target as HTMLInputElement).value, reset);
+          e.currentTarget.blur();
+        }
       }}
     />
   );
@@ -64,9 +66,9 @@ const TypeSelect = ({
       <SelectValue />
     </SelectTrigger>
     <SelectContent position="popper" align="end">
-      {Object.entries(REF_OPERATOR).map(([key, val]) => (
-        <SelectItem key={val} value={val} className="text-xs">
-          {key}
+      {Object.entries(REF_OPERATOR_LABELS).map(([operator, label]) => (
+        <SelectItem key={operator} value={operator} className="text-xs">
+          {label}
         </SelectItem>
       ))}
     </SelectContent>
@@ -98,17 +100,46 @@ const SidebarRef = ({ reference }: SidebarRefProps) => {
     });
   }, [dispatch]);
 
-  const handleRefPartial = useCallback(
-    (data: RefPart) => {
-      const result = RefPartSchema.safeParse(data);
+  const handleUpdateName = useCallback(
+    (name: string, reset: () => void) => {
+      if (name === reference.name) {
+        reset();
+        return;
+      }
+
+      const result = RefPartSchema.safeParse({ name });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        reset();
+        return;
+      }
+
+      if (refs.some((r) => r.name === result.data.name)) {
+        toast.error("Reference name already exists");
+        reset();
+        return;
+      }
+
+      dispatch(refPartial({ refName: reference.name, data: result.data }));
+    },
+    [dispatch, reference.name, refs],
+  );
+
+  const handleUpdateOperator = useCallback(
+    (operator: string) => {
+      const result = RefPartSchema.safeParse({ operator });
       if (!result.success) {
         toast.error(result.error.issues[0].message);
         return;
       }
-      dispatch(refPartial({ refName: reference.name, data }));
+      dispatch(refPartial({ refName: reference.name, data: result.data }));
     },
     [dispatch, reference.name],
   );
+
+  const handleDelete = useCallback(() => {
+    dispatch(refRemoved(reference.name));
+  }, [dispatch, reference.name]);
 
   return (
     <div
@@ -123,29 +154,15 @@ const SidebarRef = ({ reference }: SidebarRefProps) => {
       onFocusCapture={syncBoardSelectThisRef}
       onBlur={handleBlurRow}
     >
-      <RefName
-        value={reference.name}
-        onBlur={(name) => {
-          if (refs.find((r) => r.name === name) && name !== reference.name) {
-            toast.error("Reference name already exists");
-            return;
-          }
-          handleRefPartial({ name });
-        }}
-      />
-      <TypeSelect
-        value={reference.operator}
-        onChange={(value) => {
-          handleRefPartial({ operator: value as RefPart["operator"] });
-        }}
-      />
+      <RefName value={reference.name} onBlur={handleUpdateName} />
+      <TypeSelect value={reference.operator} onChange={handleUpdateOperator} />
       <Button
         variant="ghost"
         size="icon"
         className="shrink-0 size-7"
         onClick={(e) => {
           e.stopPropagation();
-          dispatch(refRemoved(reference.name));
+          handleDelete();
         }}
       >
         <Trash2Icon className="size-4" />
