@@ -25,6 +25,7 @@ export const FieldCreateSchema = FieldBaseSchema.extend({
   pk: z.boolean().default(false),
   not_null: z.boolean().default(false),
   increment: z.boolean().default(false),
+  default: z.string().nullable().default(null),
 });
 export const FieldReplaceSchema = FieldSchema;
 export const FieldPartSchema = FieldSchema.partial().refine(
