@@ -20,13 +20,15 @@ const SidebarTabTable = () => {
   const dispatch = useAppDispatch();
 
   const handleCreateTable = useCallback(() => {
-    const result = TableCreateSchema.safeParse({});
+    const result = TableCreateSchema.safeParse({
+      position: { x: tables.length * 250, y: 100 },
+    });
     if (!result.success) {
       toast.error(result.error.issues[0].message);
       return;
     }
     dispatch(tableCreated(result.data));
-  }, [dispatch]);
+  }, [dispatch, tables]);
 
   const filteredTables = tables.filter((t) =>
     t.name?.toLowerCase().includes(keyword.trim().toLowerCase()),

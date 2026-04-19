@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { object, z } from "zod";
 import {
   FieldBaseSchema,
   FieldSchema,
@@ -27,6 +27,13 @@ export const TableSchema = TableBaseSchema.extend({
     ),
   isSelected: z.boolean().catch(false),
   fields: z.array(FieldSchema).catch([]),
+  position: object({
+    x: z.number().catch(() => Math.floor(Math.random() * 100)),
+    y: z.number().catch(() => Math.floor(Math.random() * 100)),
+  }).catch({
+    x: Math.floor(Math.random() * 100),
+    y: Math.floor(Math.random() * 100),
+  }),
 });
 
 export const TableCreateSchema = TableBaseSchema.extend({
@@ -52,12 +59,19 @@ export const TableCreateSchema = TableBaseSchema.extend({
     ),
   alias: z.string().nullable().default(null),
   isSelected: z.boolean().default(false),
+  position: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+    })
+    .default({ x: 0, y: 100 }),
 });
 export const TableReplaceSchema = TableSchema;
 export const TablePartSchema = TableSchema.pick({
   name: true,
   alias: true,
   headerColor: true,
+  position: true,
 })
   .partial()
   .refine((data) => Object.keys(data).length > 0, {

@@ -7,15 +7,15 @@ export const useFlowNodes = (tables: Table[]) => {
 
   useEffect(() => {
     setNodes((prevNodes) =>
-      tables.map((table, index) => {
+      tables.map((table) => {
         const existingNode = prevNodes.find((n) => n.id === table.name);
-        const defaultPosition = { x: index * 250, y: 100 };
+        const fromStore = table.position;
 
         if (!existingNode) {
           return {
             id: table.name,
             type: "tableNode",
-            position: defaultPosition,
+            position: { x: fromStore.x, y: fromStore.y },
             selected: table.isSelected,
             data: {
               name: table.name,
@@ -32,7 +32,9 @@ export const useFlowNodes = (tables: Table[]) => {
           ...preserved,
           id: table.name,
           type: "tableNode",
-          position: existingNode.position ?? defaultPosition,
+          position: existingNode.dragging
+            ? existingNode.position
+            : { x: fromStore.x, y: fromStore.y },
           selected: table.isSelected,
           data: {
             name: table.name,

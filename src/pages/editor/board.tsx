@@ -29,20 +29,28 @@ const Board = () => {
   const { edges, setEdges, onEdgesChange } = useFlowEdges(refs);
   const {
     handleSelectionEnd,
+    handleNodesChange,
     handleNodeClick,
     handleEdgeClick,
     handlePaneClick,
     handleConnect,
     handleNodesDelete,
     handleEdgesDelete,
-  } = useFlowHandlers({ nodes, edges, setNodes, setEdges });
+  } = useFlowHandlers({
+    nodes,
+    edges,
+    tables,
+    setNodes,
+    setEdges,
+    onNodesChange,
+  });
 
   return (
     <ReactFlow
       nodes={nodes}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
-      onNodesChange={onNodesChange}
+      onNodesChange={handleNodesChange}
       edges={edges}
       onEdgesChange={onEdgesChange}
       connectionMode={ConnectionMode.Loose}
