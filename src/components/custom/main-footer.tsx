@@ -1,6 +1,6 @@
 import { Github, Linkedin } from "lucide-react";
 
-export function HomeFooter() {
+export function MainFooter() {
   const year = new Date().getFullYear();
 
   return (

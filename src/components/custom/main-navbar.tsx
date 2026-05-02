@@ -21,7 +21,7 @@ import {
 import logo from "@/assets/logo.png";
 import ThemeToggle from "@/components/custom/theme-toggle";
 
-export function HomeNavbar() {
+export function MainNavbar() {
   const { profile, status } = useAppSelector(selectAuthState);
   const dispatch = useAppDispatch();
   const isLoggedIn = !!profile;
