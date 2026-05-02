@@ -4,6 +4,7 @@ import authReducer from "@/features/auth/slice";
 import projectReducer from "@/features/project/slices/project.slice";
 import projectsReucer from "@/features/project/slices/projects.slice";
 import editorSettingsReducer from "@/features/editor-settings/editor-settings.slice";
+import templateReducer from "@/features/template/slice";
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     projects: projectsReucer,
     auth: authReducer,
     editorSettings: editorSettingsReducer,
+    template: templateReducer,
   },
 });
 
