@@ -5,9 +5,21 @@ import { Button } from "@/components/ui/button";
 export function HomeHero() {
   return (
     <section className="relative flex h-svh flex-col items-center justify-center px-6 pt-16 text-center">
-      {/* Decorative gradient blob */}
+      {/* Decorative Abstract Shapes */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-primary/8 blur-3xl" />
+        {/* Large Circle Top Right */}
+        <div className="absolute top-[15%] right-[10%] size-32 rounded-full bg-orange-500 opacity-70 shadow-2xl lg:size-48" />
+        {/* Medium Circle Middle Left */}
+        <div className="absolute top-[45%] left-[5%] size-24 rounded-full bg-blue-500 opacity-60 shadow-xl lg:size-32" />
+        
+        {/* Small Circle Top Center-Left */}
+        <div className="absolute top-[25%] left-[20%] size-16 rounded-full bg-purple-500 opacity-60 shadow-lg lg:size-20" />
+        
+        {/* Medium Circle Bottom Right */}
+        <div className="absolute bottom-[20%] right-[25%] size-16 rounded-full bg-emerald-500 opacity-80 shadow-xl lg:size-24" />
+        
+        {/* Small dot */}
+        <div className="absolute top-[35%] right-[35%] size-6 rounded-full bg-amber-400 shadow-md" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-3xl">
@@ -18,7 +30,7 @@ export function HomeHero() {
 
         <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
           Design Your Database{" "}
-          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <span className="text-primary">
             Visually
           </span>
         </h1>

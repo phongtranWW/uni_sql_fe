@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import logo from "@/assets/logo.png";
+import ThemeToggle from "@/components/custom/theme-toggle";
 
 export function HomeNavbar() {
   const { profile, status } = useAppSelector(selectAuthState);
@@ -56,6 +57,8 @@ export function HomeNavbar() {
 
         {/* Auth area */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+          
           {status === "loading" ? (
             <div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
           ) : isLoggedIn ? (
