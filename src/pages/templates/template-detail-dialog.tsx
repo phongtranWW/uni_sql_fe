@@ -1,4 +1,6 @@
 import { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router";
+import ObjectID from "bson-objectid";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { fetchTemplate } from "@/features/template/thunks";
 import { clearTemplate } from "@/features/template/slice";
@@ -14,6 +16,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +29,7 @@ import {
   User,
   Link2,
   BookOpen,
-  Info,
+  CopyPlus,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -150,6 +153,7 @@ export function TemplateDetailDialog({
   const template = useAppSelector(selectTemplate);
   const status = useAppSelector(selectTemplateStatus);
   const error = useAppSelector(selectTemplateError);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (open && templateId) {
@@ -176,6 +180,16 @@ export function TemplateDetailDialog({
         year: "numeric",
       })
     : "";
+
+  const handleUseTemplate = () => {
+    if (!template) return;
+    
+    const newProjectId = ObjectID().toHexString();
+    
+    navigate(`/editor/projects/${newProjectId}`, {
+      state: { project: template.project },
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -325,10 +339,16 @@ export function TemplateDetailDialog({
                   </div>
                 )}
 
-                {/* Hint */}
-                <div className="mt-auto pt-2 flex items-start gap-1.5 text-[11px] text-muted-foreground">
-                  <Info className="size-3 shrink-0 mt-px" />
-                  <span>You can drag tables to explore the schema.</span>
+                {/* Use Template Action */}
+                <div className="mt-auto pt-4">
+                  <Button 
+                    className="w-full" 
+                    onClick={handleUseTemplate} 
+                    disabled={status !== "succeeded" || !template}
+                  >
+                    <CopyPlus className="size-4 mr-2" />
+                    Use this template
+                  </Button>
                 </div>
               </>
             )}

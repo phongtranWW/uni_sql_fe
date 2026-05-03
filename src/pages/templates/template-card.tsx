@@ -42,10 +42,10 @@ export function TemplateCard({ template, onClick }: TemplateCardProps) {
         </div>
       </div>
       <CardHeader>
-        <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors duration-150">
+        <CardTitle className="truncate leading-normal group-hover:text-primary transition-colors duration-150">
           {template.name}
         </CardTitle>
-        <CardDescription className="line-clamp-3">
+        <CardDescription className="line-clamp-2 mt-1">
           {template.description || "No description provided."}
         </CardDescription>
         <div className="flex items-center justify-between pt-1">
