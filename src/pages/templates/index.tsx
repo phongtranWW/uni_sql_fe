@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TemplateDetailDialog } from "./template-detail-dialog";
 import { useAppDispatch, useAppSelector } from "@/app/hook";
 import { fetchTemplates } from "@/features/template/thunks";
 import {
@@ -32,6 +33,8 @@ export default function TemplatesPage() {
     "createdAt",
   );
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -104,7 +107,11 @@ export default function TemplatesPage() {
           {status === "succeeded" && templates.length > 0 && (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {templates.map((template) => (
-                <TemplateCard key={template.id} template={template} />
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  onClick={setSelectedTemplateId}
+                />
               ))}
             </div>
           )}
@@ -120,6 +127,14 @@ export default function TemplatesPage() {
       </main>
 
       <MainFooter />
+
+      <TemplateDetailDialog
+        templateId={selectedTemplateId}
+        open={selectedTemplateId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTemplateId(null);
+        }}
+      />
     </div>
   );
 }

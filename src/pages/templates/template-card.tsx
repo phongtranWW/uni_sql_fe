@@ -10,9 +10,10 @@ import type { TemplateSummary } from "@/features/template/schemas";
 
 interface TemplateCardProps {
   template: TemplateSummary;
+  onClick: (id: string) => void;
 }
 
-export function TemplateCard({ template }: TemplateCardProps) {
+export function TemplateCard({ template, onClick }: TemplateCardProps) {
   const imageUrl = template.image
     ? `${import.meta.env.VITE_URL_BACKEND}/${template.image}`
     : undefined;
@@ -23,14 +24,27 @@ export function TemplateCard({ template }: TemplateCardProps) {
   );
 
   return (
-    <Card className="flex flex-col overflow-hidden pt-0">
-      <img
-        src={imageUrl}
-        alt={template.name}
-        className="w-full aspect-video object-cover"
-      />
+    <Card
+      className="flex flex-col overflow-hidden pt-0 cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 hover:border-primary/50 group"
+      onClick={() => onClick(template.id)}
+    >
+      <div className="relative overflow-hidden">
+        <img
+          src={imageUrl}
+          alt={template.name}
+          className="w-full aspect-video object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+          <span className="bg-background/90 backdrop-blur-sm text-foreground text-xs font-medium px-3 py-1.5 rounded-full border shadow-sm">
+            View Details
+          </span>
+        </div>
+      </div>
       <CardHeader>
-        <CardTitle className="line-clamp-1">{template.name}</CardTitle>
+        <CardTitle className="line-clamp-1 group-hover:text-primary transition-colors duration-150">
+          {template.name}
+        </CardTitle>
         <CardDescription className="line-clamp-3">
           {template.description || "No description provided."}
         </CardDescription>
