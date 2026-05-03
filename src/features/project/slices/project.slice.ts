@@ -222,6 +222,7 @@ const projectSlice = createSlice({
     },
     projectImported: (state, action: PayloadAction<Project>) => {
       state.data = action.payload;
+      state.fetchStatus = "succeeded";
       state.saveStatus = "idle";
     },
 

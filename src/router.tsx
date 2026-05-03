@@ -25,16 +25,16 @@ const router = createBrowserRouter([
     element: <AuthCallback />,
   },
   {
+    path: "/editor/projects/:id",
+    element: <Editor />,
+  },
+  {
     element: <ProtectedRoute />,
     children: [
       {
         path: "/profile",
         element: <Profile />,
-      },
-      {
-        path: "/editor/projects/:id",
-        element: <Editor />,
-      },
+      }
     ],
   },
 ]);
