@@ -4,6 +4,7 @@ import type { ProjectIssue } from "@/features/project/selectors/issue.selector";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { AlertTriangle, CheckCircle2, X } from "lucide-react";
 import { issuePanelSet } from "@/features/editor-settings/editor-settings.slice";
 
@@ -21,10 +22,18 @@ const issueRowKey = (issue: ProjectIssue, index: number): string => {
 
 const PanelIssues = () => {
   const issues = useAppSelector(selectProjectIssues);
+  const showIssues = useAppSelector(
+    (state) => state.editorSettings.show.issuePanel,
+  );
   const dispatch = useAppDispatch();
 
+  if (!showIssues) return null;
+
   return (
-    <div className="flex h-full flex-col border-l border-border bg-background">
+    <>
+      <ResizableHandle />
+      <ResizablePanel defaultSize="20%" minSize="15%" maxSize="35%">
+        <div className="flex h-full flex-col border-l border-border bg-background">
       <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2">
           <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-amber-500/10">
@@ -105,7 +114,9 @@ const PanelIssues = () => {
           </ul>
         )}
       </ScrollArea>
-    </div>
+        </div>
+      </ResizablePanel>
+    </>
   );
 };
 

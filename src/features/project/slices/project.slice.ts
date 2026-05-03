@@ -220,6 +220,11 @@ const projectSlice = createSlice({
       if (!state.data) return;
       state.data.name = action.payload;
     },
+    projectSet: (state, action: PayloadAction<Project>) => {
+      state.data = action.payload;
+      state.fetchStatus = "succeeded";
+      state.saveStatus = "idle";
+    },
     projectImported: (state, action: PayloadAction<Project>) => {
       state.data = action.payload;
       state.fetchStatus = "succeeded";
@@ -302,6 +307,7 @@ export const {
   indexPartial,
   indexRemoved,
   nameSet,
+  projectSet,
   projectImported,
 } = projectSlice.actions;
 

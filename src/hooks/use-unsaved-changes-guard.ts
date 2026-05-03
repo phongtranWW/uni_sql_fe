@@ -1,14 +1,13 @@
 import { useEffect } from "react";
 import { useBeforeUnload, useBlocker } from "react-router";
+import { useAppSelector } from "@/app/hook";
+import { selectProjectIsDirty } from "@/features/project/selectors/project.selector";
 
-const LEAVE_PAGE_MESSAGE =
-  "You have unsaved changes. Are you sure you want to leave this page?";
-
-const useUnsavedChangesGuard = (isDirty: boolean) => {
+const useUnsavedChangesGuard = () => {
+  const isDirty = useAppSelector(selectProjectIsDirty);
   useBeforeUnload((event) => {
     if (!isDirty) return;
     event.preventDefault();
-    event.returnValue = LEAVE_PAGE_MESSAGE;
   });
 
   const blocker = useBlocker(isDirty);
@@ -16,7 +15,7 @@ const useUnsavedChangesGuard = (isDirty: boolean) => {
   useEffect(() => {
     if (blocker.state !== "blocked") return;
 
-    const shouldLeave = window.confirm(LEAVE_PAGE_MESSAGE);
+    const shouldLeave = window.confirm("You have unsaved changes. Are you sure you want to leave this page?");
     if (shouldLeave) {
       blocker.proceed();
       return;

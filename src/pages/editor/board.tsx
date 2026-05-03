@@ -1,4 +1,5 @@
 import { useAppSelector } from "@/app/hook";
+import { ResizablePanel } from "@/components/ui/resizable";
 import Marker from "@/components/custom/marker";
 import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
@@ -24,6 +25,9 @@ const Board = () => {
   const { minimap, control } = useAppSelector(
     (state) => state.editorSettings.show,
   );
+  const showIssues = useAppSelector(
+    (state) => state.editorSettings.show.issuePanel,
+  );
 
   const { nodes, onNodesChange } = useFlowNodes(tables);
   const { edges, onEdgesChange } = useFlowEdges(refs);
@@ -42,7 +46,8 @@ const Board = () => {
   });
 
   return (
-    <ReactFlow
+    <ResizablePanel defaultSize={showIssues ? "55%" : "75%"}>
+      <ReactFlow
       nodes={nodes}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
@@ -65,6 +70,7 @@ const Board = () => {
       {minimap && <MiniMap />}
       {control && <Controls />}
     </ReactFlow>
+    </ResizablePanel>
   );
 };
 
