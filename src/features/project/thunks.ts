@@ -1,40 +1,56 @@
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { Database } from "./schemas/database";
-import axios from "axios";
-import { projectService } from "./service";
+import { createAppThunk } from "@/app/thunks";
+import projectService, {
+  type ProjectExportParams,
+  type ProjectGetManyParams,
+  type ShareUpdateParams,
+} from "./services/project.service";
+import type { Project, ProjectSummaryPage } from "./schemas/project.schema";
+import type { ExportResult } from "./schemas/export-result.schema";
+import type { ShareList } from "./schemas/share.schema";
 
-export const getProject = createAsyncThunk<
-  Database,
-  string,
-  { rejectValue: string }
->("project/get", async (id, { rejectWithValue }) => {
-  try {
-    const dto = await projectService.getById(id);
-    return { ...dto };
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to load database",
-      );
-    }
-    return rejectWithValue("Failed to load database");
-  }
-});
+export const getProjects = createAppThunk<
+  ProjectSummaryPage,
+  { params: ProjectGetManyParams }
+>("project/getAll", ({ params }) => projectService.getManyBy(params));
 
-export const upsertProject = createAsyncThunk<
-  Database,
-  { id: string; database: Database },
-  { rejectValue: string }
->("project/upsert", async ({ id, database }, { rejectWithValue }) => {
-  try {
-    const dto = await projectService.upsert(id, { ...database });
-    return { ...dto };
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to save database",
-      );
-    }
-    return rejectWithValue("Failed to save database");
-  }
-});
+export const getSharedProjects = createAppThunk<
+  ProjectSummaryPage,
+  { params: ProjectGetManyParams }
+>("project/getShared", ({ params }) => projectService.getSharedWithMe(params));
+
+export const getProject = createAppThunk<Project, string>("project/get", (id) =>
+  projectService.getOneBy(id),
+);
+
+export const upsertProject = createAppThunk<
+  Project,
+  { id: string; body: object }
+>("project/upsert", ({ id, body }) => projectService.upsert(id, body));
+
+export const exportProject = createAppThunk<
+  ExportResult,
+  { id: string; params: ProjectExportParams }
+>("project/export", ({ id, params }) => projectService.export(id, params));
+
+export const deleteProject = createAppThunk<void, string>("project/delete", (id) =>
+  projectService.delete(id),
+);
+
+export const getShares = createAppThunk<ShareList, string>(
+  "project/shares/get",
+  (projectId) => projectService.getShares(projectId),
+);
+
+export const updateShares = createAppThunk<
+  ShareList,
+  { projectId: string; params: ShareUpdateParams }
+>("project/shares/update", ({ projectId, params }) =>
+  projectService.updateShares(projectId, params),
+);
+
+export const revokeShares = createAppThunk<
+  ShareList,
+  { projectId: string; userIds: string[] }
+>("project/shares/revoke", ({ projectId, userIds }) =>
+  projectService.revokeShares(projectId, userIds),
+);

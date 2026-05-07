@@ -5,11 +5,16 @@ import Login from "@/pages/login";
 import AuthCallback from "./pages/callback";
 import ProtectedRoute from "./components/custom/protected-route";
 import Profile from "./pages/profile";
+import TemplatesPage from "./pages/templates";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
+  },
+  {
+    path: "/templates",
+    element: <TemplatesPage />,
   },
   {
     path: "/login",
@@ -20,16 +25,16 @@ const router = createBrowserRouter([
     element: <AuthCallback />,
   },
   {
+    path: "/editor/projects/:id",
+    element: <Editor />,
+  },
+  {
     element: <ProtectedRoute />,
     children: [
       {
         path: "/profile",
         element: <Profile />,
-      },
-      {
-        path: "/editor/projects/:id",
-        element: <Editor />,
-      },
+      }
     ],
   },
 ]);

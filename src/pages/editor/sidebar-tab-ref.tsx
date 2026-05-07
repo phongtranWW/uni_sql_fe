@@ -7,10 +7,10 @@ import {
 } from "@/components/ui/input-group";
 import { useState } from "react";
 import { SearchIcon } from "lucide-react";
-import { selectDatabaseRefs } from "@/features/project/selectors";
+import { selectRefs } from "@/features/project/selectors/project.selector";
 
 const SidebarTabRef = () => {
-  const refs = useAppSelector(selectDatabaseRefs);
+  const refs = useAppSelector(selectRefs);
   const [key, setKey] = useState("");
 
   const filteredRefs = refs.filter((ref) =>
@@ -30,7 +30,7 @@ const SidebarTabRef = () => {
           <SearchIcon className="text-muted-foreground" />
         </InputGroupAddon>
       </InputGroup>
-      <div className="flex flex-col divide-border">
+      <div className="flex flex-col gap-2 divider-y devider-border">
         {filteredRefs.map((ref) => (
           <SidebarRef key={ref.name} reference={ref} />
         ))}

@@ -1,5 +1,6 @@
 import apiClient from "@/lib/api-client";
-import type { Profile } from "./schemas/profile";
+import { ProfileSchema, type Profile } from "./schemas/profile.schema";
+import { handleServiceError } from "@/lib/handle-service-error";
 
 export const authService = {
   redirectToGoogle(): void {
@@ -7,7 +8,11 @@ export const authService = {
     window.location.href = `${backendUrl}/auth/google`;
   },
   async getProfile(): Promise<Profile> {
-    const { data } = await apiClient.get<Profile>("/users/profile");
-    return data;
+    try {
+      const { data } = await apiClient.get("/users/profile");
+      return ProfileSchema.parse(data);
+    } catch (error) {
+      handleServiceError(error, "Failed to load profile");
+    }
   },
 };

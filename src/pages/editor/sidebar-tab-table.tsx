@@ -2,60 +2,37 @@ import { useAppDispatch, useAppSelector } from "@/app/hook";
 import SidebarTable from "./sidebar-table";
 import { Button } from "@/components/ui/button";
 import { Plus, SearchIcon } from "lucide-react";
-import type { TableCreate } from "@/features/project/schemas/table";
-import {
-  generateTableHeaderColor,
-  generateTableName,
-} from "@/utils/generators/tables";
-import {
-  isTableAliasValid,
-  isTableNameUnique,
-  isTableNameValid,
-} from "@/utils/rules/tables";
-import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { selectDatabaseTables } from "@/features/project/selectors";
-import { addTable } from "@/features/project/slices/database";
+import { selectTables } from "@/features/project/selectors/project.selector";
+import { tableCreated } from "@/features/project/slices/project.slice";
+import { TableCreateSchema } from "@/features/project/schemas/table-schema";
+import { toast } from "sonner";
 
 const SidebarTabTable = () => {
-  const tables = useAppSelector(selectDatabaseTables);
-  const [key, setKey] = useState("");
-
+  const tables = useAppSelector(selectTables);
+  const [keyword, setKeyword] = useState("");
   const dispatch = useAppDispatch();
 
-  const handleCreateTable = () => {
-    const tableCreate: TableCreate = {
-      name: generateTableName(),
-      headerColor: generateTableHeaderColor(),
-    };
-
-    try {
-      isTableNameValid(tableCreate.name);
-      isTableNameUnique(tables, tableCreate.name);
-      isTableAliasValid(tableCreate.name);
-
-      dispatch(addTable(tableCreate));
-
-      toast.success("Table created successfully");
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Something went wrong");
-      }
+  const handleCreateTable = useCallback(() => {
+    const result = TableCreateSchema.safeParse({
+      position: { x: tables.length * 250, y: 100 },
+    });
+    if (!result.success) {
+      toast.error(result.error.issues[0].message);
+      return;
     }
-  };
+    dispatch(tableCreated(result.data));
+  }, [dispatch, tables]);
 
   const filteredTables = tables.filter((t) =>
-    t.name?.toLowerCase().includes(key.trim().toLowerCase()),
+    t.name?.toLowerCase().includes(keyword.trim().toLowerCase()),
   );
-
   return (
     <div className="h-full flex flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -64,7 +41,7 @@ const SidebarTabTable = () => {
             id="search"
             type="search"
             placeholder="Search table..."
-            onChange={(e) => setKey(e.target.value)}
+            onChange={(e) => setKeyword(e.target.value)}
           />
           <InputGroupAddon align="inline-start">
             <SearchIcon className="text-muted-foreground" />

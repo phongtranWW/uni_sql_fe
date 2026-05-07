@@ -1,0 +1,42 @@
+import { createSlice } from "@reduxjs/toolkit";
+import { initialProjectsSliceState } from "../states/projects.state";
+import { getProjects, getSharedProjects } from "../thunks";
+
+const projectsSlice = createSlice({
+  name: "projects",
+  initialState: initialProjectsSliceState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(getProjects.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(getProjects.fulfilled, (state, action) => {
+        state.fetchStatus = "succeeded";
+        state.items = action.payload.data;
+        state.total = action.payload.total;
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.totalPages = action.payload.totalPages;
+      })
+      .addCase(getProjects.rejected, (state) => {
+        state.fetchStatus = "failed";
+      })
+      .addCase(getSharedProjects.pending, (state) => {
+        state.fetchStatus = "loading";
+      })
+      .addCase(getSharedProjects.fulfilled, (state, action) => {
+        state.fetchStatus = "succeeded";
+        state.items = action.payload.data;
+        state.total = action.payload.total;
+        state.page = action.payload.page;
+        state.limit = action.payload.limit;
+        state.totalPages = action.payload.totalPages;
+      })
+      .addCase(getSharedProjects.rejected, (state) => {
+        state.fetchStatus = "failed";
+      });
+  },
+});
+
+export default projectsSlice.reducer;

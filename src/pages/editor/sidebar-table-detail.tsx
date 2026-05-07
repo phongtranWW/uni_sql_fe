@@ -1,127 +1,234 @@
 import { useAppDispatch, useAppSelector } from "@/app/hook";
-import ColorPicker from "@/components/custom/color-picker";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import type { Table, TableHeaderColor } from "@/features/project/schemas/table";
-import { selectDatabaseTables } from "@/features/project/selectors";
-import { removeTable, updateTable } from "@/features/project/slices/database";
-import { isTableNameUnique, isTableNameValid } from "@/utils/rules/tables";
-import { MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { TABLE_HEADER_COLORS } from "@/constants/table-header-colors";
+import {
+  TablePartSchema,
+  type Table,
+} from "@/features/project/schemas/table-schema";
+import { selectTables } from "@/features/project/selectors/project.selector";
+import {
+  tableDeleted,
+  tablePartial,
+} from "@/features/project/slices/project.slice";
+import { cn } from "@/lib/utils";
+import { Palette, Tag, Trash2, Type } from "lucide-react";
+import { useCallback, useRef } from "react";
 import { toast } from "sonner";
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const TableName = ({
+  value,
+  onBlur,
+}: {
+  value: string;
+  onBlur: (name: string, reset: () => void) => void;
+}) => {
+  const ref = useRef<HTMLInputElement>(null);
+  const reset = useCallback(() => {
+    if (ref.current) ref.current.value = value;
+  }, [value]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Type className="size-4 text-muted-foreground" />
+        <Label htmlFor="name">Table Name</Label>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        The primary identifier for this table.
+      </p>
+      <Input
+        ref={ref}
+        id="name"
+        defaultValue={value}
+        autoComplete="off"
+        placeholder="Name"
+        onBlur={(e) => onBlur(e.target.value, reset)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onBlur((e.target as HTMLInputElement).value, reset);
+            e.currentTarget.blur();
+          }
+        }}
+      />
+    </div>
+  );
+};
+
+const TableAlias = ({
+  value,
+  onBlur,
+}: {
+  value: string;
+  onBlur: (alias: string, reset: () => void) => void;
+}) => {
+  const ref = useRef<HTMLInputElement>(null);
+  const reset = useCallback(() => {
+    if (ref.current) ref.current.value = value;
+  }, [value]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Tag className="size-4 text-muted-foreground" />
+        <Label htmlFor="alias">Alias</Label>
+      </div>
+      <p className="text-xs text-muted-foreground">Optional display name.</p>
+      <Input
+        ref={ref}
+        id="alias"
+        defaultValue={value}
+        autoComplete="off"
+        placeholder="Alias"
+        onBlur={(e) => onBlur(e.target.value, reset)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            onBlur((e.target as HTMLInputElement).value, reset);
+            e.currentTarget.blur();
+          }
+        }}
+      />
+    </div>
+  );
+};
+
+const TableHeaderColorPicker = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (color: string) => void;
+}) => (
+  <div className="space-y-2">
+    <div className="flex items-center gap-2">
+      <Palette className="size-4 text-muted-foreground" />
+      <Label>Header Color</Label>
+    </div>
+    <p className="text-xs text-muted-foreground">Theme color for the table.</p>
+    <div className="flex justify-between w-full gap-2">
+      {TABLE_HEADER_COLORS.map((color) => (
+        <button
+          key={color}
+          type="button"
+          onClick={() => onChange(color)}
+          className={cn(
+            "h-8 flex-1 rounded-md border-2 transition-all hover:scale-105",
+            value === color
+              ? "border-white ring-2 ring-offset-1 ring-gray-400 scale-105"
+              : "border-transparent",
+          )}
+          style={{ backgroundColor: color }}
+          title={color}
+        />
+      ))}
+    </div>
+  </div>
+);
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 interface SidebarTableDetailProps {
   table: Table;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const SidebarTableDetail = ({ table }: SidebarTableDetailProps) => {
-  const tables = useAppSelector(selectDatabaseTables);
+const SidebarTableDetail = ({
+  table,
+  open,
+  onOpenChange,
+}: SidebarTableDetailProps) => {
   const dispatch = useAppDispatch();
+  const tables = useAppSelector(selectTables);
+  const handleUpdateName = useCallback(
+    (name: string, reset: () => void) => {
+      if (name === table.name) {
+        reset();
+        return;
+      }
 
-  const [name, setName] = useState<string>(table.name);
-  const [alias, setAlias] = useState<string>(table.alias || "");
-  const [headerColor, setHeaderColor] = useState<TableHeaderColor>(
-    table.headerColor,
+      const result = TablePartSchema.safeParse({ name });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        reset();
+        return;
+      }
+
+      if (tables.some((t) => t.name === result.data.name)) {
+        toast.error("Table name already exists.");
+        reset();
+        return;
+      }
+
+      dispatch(tablePartial({ tableName: table.name, data: result.data }));
+    },
+    [dispatch, table.name, tables],
   );
 
-  const handleSave = () => {
-    try {
-      if (name !== table.name) {
-        isTableNameValid(name);
-        isTableNameUnique(tables, name);
+  const handleUpdateAlias = useCallback(
+    (alias: string, reset: () => void) => {
+      const result = TablePartSchema.safeParse({ alias });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        reset();
+        return;
       }
+      dispatch(tablePartial({ tableName: table.name, data: result.data }));
+    },
+    [dispatch, table.name],
+  );
 
-      dispatch(
-        updateTable({
-          name: table.name,
-          tableUpdate: {
-            name,
-            headerColor,
-            alias: alias || undefined,
-          },
-        }),
-      );
-
-      toast.success("Table updated successfully");
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
+  const handleUpdateHeaderColor = useCallback(
+    (color: string) => {
+      const result = TablePartSchema.safeParse({ headerColor: color });
+      if (!result.success) {
+        toast.error(result.error.issues[0].message);
+        return;
       }
-    }
-  };
+      dispatch(tablePartial({ tableName: table.name, data: result.data }));
+    },
+    [dispatch, table.name],
+  );
 
-  const handleDelete = () => {
-    dispatch(removeTable(table.name));
-    toast.success("Table deleted successfully");
-  };
+  const handleDelete = useCallback(() => {
+    dispatch(tableDeleted(table.name));
+    onOpenChange(false);
+  }, [dispatch, table.name, onOpenChange]);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={(e) => e.stopPropagation()}
-          className="opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <MoreHorizontal />
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Table Info</DialogTitle>
-          <DialogDescription>
-            You can update the name, head color and alias of the table.
-          </DialogDescription>
+          <DialogTitle className="flex items-center gap-2">
+            Table
+            <Badge variant="outline">{table.name}</Badge>
+          </DialogTitle>
         </DialogHeader>
-        <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="name">Name</FieldLabel>
-            <Input
-              id="name"
-              autoComplete="off"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Field>
-          <div className="grid grid-cols-2 gap-4">
-            <Field>
-              <FieldLabel htmlFor="name">Alias</FieldLabel>
-              <Input
-                id="name"
-                autoComplete="off"
-                placeholder="Name"
-                value={alias || ""}
-                onChange={(e) => setAlias(e.target.value)}
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="type">Head Color</FieldLabel>
-              <ColorPicker value={headerColor} onChange={setHeaderColor} />
-            </Field>
-          </div>
-        </FieldGroup>
+
+        <div className="space-y-4">
+          <TableName value={table.name} onBlur={handleUpdateName} />
+          <TableAlias value={table.alias ?? ""} onBlur={handleUpdateAlias} />
+          <TableHeaderColorPicker
+            value={table.headerColor ?? TABLE_HEADER_COLORS[7]}
+            onChange={handleUpdateHeaderColor}
+          />
+        </div>
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
           <Button variant="destructive" onClick={handleDelete}>
+            <Trash2 className="size-4 mr-2" />
             Delete
           </Button>
-          <Button onClick={handleSave}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

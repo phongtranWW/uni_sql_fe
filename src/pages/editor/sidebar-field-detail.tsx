@@ -1,167 +1,197 @@
 import { useAppDispatch } from "@/app/hook";
+import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { type Field } from "@/features/project/schemas/field-schema";
 import {
-  Field as FieldShadcn,
-  FieldLabel,
-  FieldGroup,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import type { Field } from "@/features/project/schemas/field";
-import { removeField, updateField } from "@/features/project/slices/database";
-import {
-  ArrowUp,
-  Ban,
-  Fingerprint,
-  KeyRound,
-  MoreHorizontal,
-} from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+  fieldPartial,
+  fieldRemoved,
+} from "@/features/project/slices/project.slice";
+import { ArrowUp, Ban, Fingerprint, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface SidebarFieldDetailProps {
   tableName: string;
   field: Field;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const SidebarFieldDetail = ({ field, tableName }: SidebarFieldDetailProps) => {
+const SidebarFieldDetail = ({
+  field,
+  tableName,
+  open,
+  onOpenChange,
+}: SidebarFieldDetailProps) => {
   const dispatch = useAppDispatch();
+  const [defaultDraft, setDefaultDraft] = useState(() => field.default ?? "");
 
-  const [name, setName] = useState(field.name);
-  const [type, setType] = useState(field.type);
-  const [pk, setPk] = useState(field.pk);
-  const [unique, setUnique] = useState(field.unique);
-  const [notNull, setNotNull] = useState(field.not_null);
-  const [increment, setIncrement] = useState(field.increment);
+  const commitDefault = useCallback(() => {
+    const next = defaultDraft.trim() === "" ? null : defaultDraft;
+    const prev = field.default ?? null;
+    if (next === prev) return;
 
-  const handleSave = () => {
-    try {
+    dispatch(
+      fieldPartial({
+        tableName,
+        fieldName: field.name,
+        data: { default: next },
+      }),
+    );
+  }, [defaultDraft, dispatch, field.default, field.name, tableName]);
+  const handleIncrementChange = useCallback(
+    (value: boolean) => {
       dispatch(
-        updateField({
+        fieldPartial({
           tableName,
           fieldName: field.name,
-          fieldUpdate: { name, type, pk, unique, not_null: notNull, increment },
+          data: { increment: value },
         }),
       );
-      toast.success("Field updated successfully");
-    } catch (error) {
-      if (error instanceof Error) toast.error(error.message);
-    }
-  };
+    },
+    [dispatch, tableName, field.name],
+  );
 
-  const handleDelete = () => {
-    dispatch(removeField({ tableName, fieldName: field.name }));
-    toast.success("Field deleted successfully");
-  };
+  const handleUniqueChange = useCallback(
+    (value: boolean) => {
+      dispatch(
+        fieldPartial({
+          tableName,
+          fieldName: field.name,
+          data: { unique: value },
+        }),
+      );
+    },
+    [dispatch, tableName, field.name],
+  );
+
+  const handleNotNullChange = useCallback(
+    (value: boolean) => {
+      dispatch(
+        fieldPartial({
+          tableName,
+          fieldName: field.name,
+          data: { not_null: value },
+        }),
+      );
+    },
+    [dispatch, tableName, field.name],
+  );
+
+  const handleDelete = useCallback(() => {
+    dispatch(fieldRemoved({ tableName, fieldName: field.name }));
+    onOpenChange(false);
+  }, [dispatch, tableName, field.name, onOpenChange]);
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreHorizontal className="size-3.5" />
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) commitDefault();
+        onOpenChange(next);
+      }}
+    >
+      <DialogContent key={`${open}-${tableName}-${field.name}`}>
         <DialogHeader>
-          <DialogTitle>Field Info</DialogTitle>
+          <DialogTitle>
+            Field Settings <Badge variant="outline">{field.name}</Badge>
+          </DialogTitle>
           <DialogDescription>
-            You can update the name, type and constraints of the field.
+            Toggle constraints, then set an optional SQL default at the bottom.
           </DialogDescription>
         </DialogHeader>
 
-        <FieldGroup>
-          <div className="grid grid-cols-2 gap-4">
-            <FieldShadcn>
-              <FieldLabel htmlFor="name">Name</FieldLabel>
-              <Input
-                id="name"
-                autoComplete="off"
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </FieldShadcn>
-            <FieldShadcn>
-              <FieldLabel htmlFor="type">Type</FieldLabel>
-              <Input
-                id="type"
-                autoComplete="off"
-                placeholder="Type"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              />
-            </FieldShadcn>
+        <div className="flex flex-col divide-y divide-border">
+          {/* Auto Increment */}
+          <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <ArrowUp className="size-4" />
+              <div className="min-w-0">
+                <Label htmlFor="switch-increment" className="cursor-pointer">
+                  Auto Increment
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Automatically increase value
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="switch-increment"
+              checked={field.increment}
+              onCheckedChange={handleIncrementChange}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[
-              {
-                id: "pk",
-                label: "Primary Key",
-                checked: pk,
-                onChange: setPk,
-                icon: <KeyRound className="size-3.5 text-amber-500" />,
-              },
-              {
-                id: "increment",
-                label: "Auto Increment",
-                checked: increment,
-                onChange: setIncrement,
-                icon: <ArrowUp className="size-3.5 text-blue-500" />,
-              },
-              {
-                id: "unique",
-                label: "Unique",
-                checked: unique,
-                onChange: setUnique,
-                icon: <Fingerprint className="size-3.5 text-green-500" />,
-              },
-              {
-                id: "not_null",
-                label: "Not Null",
-                checked: notNull,
-                onChange: setNotNull,
-                icon: <Ban className="size-3.5 text-red-500" />,
-              },
-            ].map(({ id, label, checked, onChange, icon }) => (
-              <FieldShadcn key={id} orientation="horizontal">
-                <Checkbox
-                  id={id}
-                  checked={checked}
-                  onCheckedChange={(val) => onChange(Boolean(val))}
-                />
-                {icon}
-                <FieldLabel htmlFor={id} className="font-normal">
-                  {label}
-                </FieldLabel>
-              </FieldShadcn>
-            ))}
+
+          {/* Unique */}
+          <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Fingerprint className="size-4" />
+              <div className="min-w-0">
+                <Label htmlFor="switch-unique" className="cursor-pointer">
+                  Unique
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Ensure values are distinct
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="switch-unique"
+              checked={field.unique}
+              onCheckedChange={handleUniqueChange}
+            />
           </div>
-        </FieldGroup>
+
+          {/* Not Null */}
+          <div className="flex items-center justify-between gap-3 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Ban className="size-4" />
+              <div className="min-w-0">
+                <Label htmlFor="switch-not-null" className="cursor-pointer">
+                  Not Null
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Prevent null values
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="switch-not-null"
+              checked={field.not_null}
+              onCheckedChange={handleNotNullChange}
+            />
+          </div>
+
+          {/* Default Value */}
+          <div className="space-y-1.5 py-3">
+            <Label htmlFor="field-default">Default value</Label>
+            <Textarea
+              id="field-default"
+              value={defaultDraft}
+              onChange={(e) => setDefaultDraft(e.target.value)}
+              onBlur={commitDefault}
+              placeholder="e.g. 0, CURRENT_TIMESTAMP, or NULL — leave empty for no default"
+              className="min-h-22 resize-y font-mono text-xs leading-relaxed"
+              rows={4}
+            />
+          </div>
+        </div>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
           <Button variant="destructive" onClick={handleDelete}>
+            <Trash2 className="size-4" />
             Delete
           </Button>
-          <Button onClick={handleSave}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

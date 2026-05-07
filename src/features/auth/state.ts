@@ -1,13 +1,13 @@
-import type { Profile } from "./schemas/profile";
+import type { Profile } from "./schemas/profile.schema";
 
-export interface AuthState {
+export interface AuthSliceState {
   profile: Profile | null;
-  status: "loading" | "succeeded" | "failed";
+  status: "idle" | "loading" | "succeeded" | "failed";
   error: string | null;
 }
 
-export const initialAuth: AuthState = {
+export const initialAuthSliceState: AuthSliceState = {
   profile: null,
-  status: "loading",
+  status: "loading", // Vẫn để loading vì khi mount app thường sẽ restore session ngay lập tức, nhưng đã bổ sung "idle" vào type.
   error: null,
 };
