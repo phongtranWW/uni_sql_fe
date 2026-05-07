@@ -29,7 +29,7 @@ export function MainNavbar() {
 
   return (
     <nav className="fixed top-0 inset-x-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 w-full items-center justify-between px-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
           <img

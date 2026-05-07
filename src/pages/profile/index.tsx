@@ -1,5 +1,5 @@
 import { ProfileSidebar } from "./profile-sidebar";
-import { ProfileTopBar } from "./profile-top-bar";
+import { MainNavbar } from "@/components/custom/main-navbar";
 import { ProjectsPanel } from "./projects-panel";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { useProfileProjects } from "./use-profile-projects";
@@ -9,8 +9,8 @@ export const Profile = () => {
 
   return (
     <div className="dark flex min-h-screen flex-col bg-background text-foreground">
-      <ProfileTopBar />
-      <div className="flex min-h-0 flex-1">
+      <MainNavbar />
+      <div className="flex min-h-0 flex-1 pt-16">
         <ProfileSidebar />
         <div className="flex min-w-0 flex-1 flex-col overflow-y-auto bg-background">
           <ProjectsPanel projects={projects} />

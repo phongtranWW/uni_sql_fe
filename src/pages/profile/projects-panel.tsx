@@ -48,10 +48,7 @@ export function ProjectsPanel({ projects }: ProjectsPanelProps) {
           totalPages={totalPages}
           fetchPage={fetchPage}
           fetchStatus={fetchStatus}
-          onPrev={() => setFetchPage((p) => Math.max(1, p - 1))}
-          onNext={() =>
-            setFetchPage((p) => Math.min(Math.max(1, totalPages), p + 1))
-          }
+          onPageChange={setFetchPage}
         />
       </div>
     </div>

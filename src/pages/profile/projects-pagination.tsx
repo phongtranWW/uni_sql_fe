@@ -1,54 +1,47 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+} from "@/components/ui/pagination";
 
 export interface ProjectsPaginationProps {
   totalPages: number;
   fetchPage: number;
   fetchStatus: "idle" | "loading" | "succeeded" | "failed";
-  onPrev: () => void;
-  onNext: () => void;
+  onPageChange: (page: number) => void;
 }
 
 export function ProjectsPagination({
   totalPages,
   fetchPage,
   fetchStatus,
-  onPrev,
-  onNext,
+  onPageChange,
 }: ProjectsPaginationProps) {
-  if (fetchStatus === "failed") return null;
+  if (fetchStatus === "failed" || totalPages <= 1) return null;
   const safeTotalPages = Math.max(1, totalPages);
-  const pageLabel = `${fetchPage}/${safeTotalPages}`;
-  const busy = fetchStatus === "loading";
+
   return (
-    <div className="flex border-t border-border pt-4 justify-end">
-      <div className="flex items-center gap-1">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 px-2"
-          disabled={fetchPage <= 1 || busy}
-          onClick={onPrev}
-        >
-          <ChevronLeft className="size-4" />
-          Prev
-        </Button>
-        <span className="min-w-[3rem] px-2 text-center text-sm tabular-nums text-muted-foreground">
-          {pageLabel}
-        </span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1 px-2"
-          disabled={fetchPage >= safeTotalPages || busy}
-          onClick={onNext}
-        >
-          Next
-          <ChevronRight className="size-4" />
-        </Button>
-      </div>
-    </div>
+    <Pagination className="mt-4">
+      <PaginationContent>
+        {[...Array(safeTotalPages)].map((_, i) => {
+          const p = i + 1;
+          return (
+            <PaginationItem key={p}>
+              <PaginationLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (fetchStatus !== "loading") onPageChange(p);
+                }}
+                isActive={fetchPage === p}
+              >
+                {p}
+              </PaginationLink>
+            </PaginationItem>
+          );
+        })}
+      </PaginationContent>
+    </Pagination>
   );
 }
