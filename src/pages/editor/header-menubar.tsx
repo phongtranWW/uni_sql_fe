@@ -46,6 +46,7 @@ import {
 import { selectProjectIssues } from "@/features/project/selectors/issue.selector";
 import { upsertProject } from "@/features/project/thunks";
 import ImportProjectDialog from "./import-project-dialog";
+import ImportSqlDialog from "./import-sql-dialog";
 import { elementsSelectionDeleted } from "@/features/project/slices/project.slice";
 
 const sanitizeProjectJsonExport = (raw: string) => {
@@ -97,6 +98,7 @@ const HeaderMenubar = () => {
   );
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showImportSqlDialog, setShowImportSqlDialog] = useState(false);
   const [showShortcutsDialog, setShowShortcutsDialog] = useState(false);
   const [exportCode, setExportCode] = useState("");
   const [exportFormat, setExportFormat] = useState<CodeFormat>(
@@ -196,6 +198,10 @@ const HeaderMenubar = () => {
     setShowImportDialog(true);
   }, []);
 
+  const openImportSqlDialog = useCallback(() => {
+    setShowImportSqlDialog(true);
+  }, []);
+
   const openShortcutsDialog = useCallback(() => {
     setShowShortcutsDialog(true);
   }, []);
@@ -249,8 +255,10 @@ const HeaderMenubar = () => {
                 Import from
               </MenubarSubTrigger>
               <MenubarSubContent>
-                <MenubarItem onClick={openImportDialog}>
-                  JSON
+                <MenubarItem onClick={openImportDialog}>JSON</MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem onClick={openImportSqlDialog}>
+                  PostgreSQL / MySQL
                 </MenubarItem>
               </MenubarSubContent>
             </MenubarSub>
@@ -370,6 +378,10 @@ const HeaderMenubar = () => {
       <ImportProjectDialog
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
+      />
+      <ImportSqlDialog
+        open={showImportSqlDialog}
+        onOpenChange={setShowImportSqlDialog}
       />
 
       <Dialog open={showShortcutsDialog} onOpenChange={setShowShortcutsDialog}>
