@@ -17,7 +17,50 @@ import {
   Controls,
   MiniMap,
   ReactFlow,
+  useOnSelectionChange,
+  useReactFlow,
 } from "@xyflow/react";
+
+const AutoFocusHandler = () => {
+  const autoFocus = useAppSelector(
+    (state) => state.editorSettings.show.autoFocus,
+  );
+  const { fitView, getNode } = useReactFlow();
+
+  useOnSelectionChange({
+    onChange: ({ nodes, edges }) => {
+      if (!autoFocus) return;
+
+      const nodesToFit = [...nodes];
+      
+      // Include source and target nodes for any selected edges
+      if (edges.length > 0) {
+        edges.forEach((edge) => {
+          const sourceNode = getNode(edge.source);
+          const targetNode = getNode(edge.target);
+          if (sourceNode && !nodesToFit.some(n => n.id === sourceNode.id)) {
+            nodesToFit.push(sourceNode);
+          }
+          if (targetNode && !nodesToFit.some(n => n.id === targetNode.id)) {
+            nodesToFit.push(targetNode);
+          }
+        });
+      }
+
+      if (nodesToFit.length > 0) {
+        requestAnimationFrame(() => {
+          void fitView({ nodes: nodesToFit, duration: 800, padding: 0.2 });
+        });
+      } else {
+        requestAnimationFrame(() => {
+          void fitView({ duration: 800 });
+        });
+      }
+    },
+  });
+
+  return null;
+};
 
 const Board = () => {
   const tables = useAppSelector(selectTables);
@@ -69,6 +112,7 @@ const Board = () => {
       <Background />
       {minimap && <MiniMap />}
       {control && <Controls />}
+      <AutoFocusHandler />
     </ReactFlow>
     </ResizablePanel>
   );
