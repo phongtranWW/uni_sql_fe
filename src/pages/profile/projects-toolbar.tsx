@@ -1,6 +1,9 @@
-import { Search, SlidersHorizontal } from "lucide-react";
+import { Search, SlidersHorizontal, Plus } from "lucide-react";
 import type { ProjectGetManyParams } from "@/features/project/services/project.service";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router";
+import ObjectId from "bson-objectid";
 import {
   Select,
   SelectContent,
@@ -16,6 +19,7 @@ export interface ProjectsToolbarProps {
   onSortByChange: (value: ProjectGetManyParams["sortBy"]) => void;
   sortOrder: ProjectGetManyParams["sortOrder"];
   onSortOrderChange: (value: ProjectGetManyParams["sortOrder"]) => void;
+  isShared?: boolean;
 }
 
 export function ProjectsToolbar({
@@ -25,7 +29,9 @@ export function ProjectsToolbar({
   onSortByChange,
   sortOrder,
   onSortOrderChange,
+  isShared,
 }: ProjectsToolbarProps) {
+  const navigate = useNavigate();
   const handleSortChange = (value: string) => {
     const [by, order] = value.split("-");
     onSortByChange(by as ProjectGetManyParams["sortBy"]);
@@ -33,8 +39,9 @@ export function ProjectsToolbar({
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="relative w-full sm:w-72">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative w-full sm:w-72">
         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           placeholder="Search projects..."
@@ -62,6 +69,19 @@ export function ProjectsToolbar({
           <SelectItem value="name-desc">Name (Z-A)</SelectItem>
         </SelectContent>
       </Select>
+      </div>
+      {!isShared && (
+        <Button
+          onClick={() => {
+            const id = ObjectId().toHexString();
+            navigate(`/editor/projects/${id}`);
+          }}
+          className="w-full sm:w-auto"
+        >
+          <Plus className="mr-2 size-4" />
+          Create Project
+        </Button>
+      )}
     </div>
   );
 }

@@ -38,6 +38,7 @@ export function ProjectsPanel({ projects }: ProjectsPanelProps) {
           onSortByChange={setSortByAndResetPage}
           sortOrder={sortOrder}
           onSortOrderChange={setSortOrderAndResetPage}
+          isShared={projects.tab === "shared-with-me"}
         />
         <ProjectsTableSection
           items={items}
