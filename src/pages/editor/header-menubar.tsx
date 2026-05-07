@@ -39,6 +39,7 @@ import { type CodeFormat } from "@/types/format";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import {
+  selectIsOwner,
   selectProject,
   selectProjectIsDirty,
 } from "@/features/project/selectors/project.selector";
@@ -89,6 +90,7 @@ const HeaderMenubar = () => {
   );
   const project = useAppSelector(selectProject);
   const isDirty = useAppSelector(selectProjectIsDirty);
+  const isOwner = useAppSelector(selectIsOwner);
   const issues = useAppSelector(selectProjectIssues);
   const saveStatus = useAppSelector(
     (state) => state.project.present.saveStatus,
@@ -243,7 +245,9 @@ const HeaderMenubar = () => {
           </MenubarTrigger>
           <MenubarContent>
             <MenubarSub>
-              <MenubarSubTrigger>Import from</MenubarSubTrigger>
+              <MenubarSubTrigger disabled={isOwner === false}>
+                Import from
+              </MenubarSubTrigger>
               <MenubarSubContent>
                 <MenubarItem onClick={openImportDialog}>
                   JSON
@@ -268,7 +272,8 @@ const HeaderMenubar = () => {
             <MenubarItem onClick={handleExit}>Exit</MenubarItem>
             <MenubarItem
               onClick={handleDeleteProject}
-              className="text-rose-600 focus:text-rose-600"
+              disabled={isOwner === false}
+              className="text-rose-600 focus:text-rose-600 data-disabled:text-rose-600/40 data-disabled:pointer-events-none"
             >
               Delete
             </MenubarItem>
@@ -279,16 +284,19 @@ const HeaderMenubar = () => {
             Edit
           </MenubarTrigger>
           <MenubarContent>
-            <MenubarItem onClick={handleUndo}>
+            <MenubarItem onClick={handleUndo} disabled={isOwner === false}>
               Undo <MenubarShortcut>Ctrl + Z</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={handleRedo}>
+            <MenubarItem onClick={handleRedo} disabled={isOwner === false}>
               Redo <MenubarShortcut>Ctrl + Y</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={handleSave}>
+            <MenubarItem onClick={handleSave} disabled={isOwner === false}>
               Save <MenubarShortcut>Ctrl + S</MenubarShortcut>
             </MenubarItem>
-            <MenubarItem onClick={handleDeleteSelection}>
+            <MenubarItem
+              onClick={handleDeleteSelection}
+              disabled={isOwner === false}
+            >
               Delete <MenubarShortcut>Del / Bac</MenubarShortcut>
             </MenubarItem>
           </MenubarContent>

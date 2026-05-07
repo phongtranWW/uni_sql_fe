@@ -37,8 +37,17 @@ export const selectCanUndo = (state: RootState) =>
 export const selectCanRedo = (state: RootState) =>
   state.project.future.length > 0;
 
+// ─── Ownership ────────────────────────────────────────
+export const selectIsOwner = (state: RootState) =>
+  selectProjectSlice(state).isOwner;
+
 // ─── Data ─────────────────────────────────────────────
 export const selectProject = selectProjectData;
+
+export const selectProjectId = createSelector(
+  selectProjectData,
+  (data) => data?.id ?? null,
+);
 
 export const selectTables = createSelector(
   selectProjectData,

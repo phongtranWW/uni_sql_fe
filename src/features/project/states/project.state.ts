@@ -5,6 +5,8 @@ export interface ProjectSliceState {
   fetchStatus: "idle" | "loading" | "succeeded" | "failed";
   saveStatus: "idle" | "saving" | "saved" | "failed";
   lastSavedSnapshot: Project | null;
+  /** null = chưa xác định (đang load), true = owner, false = collaborator */
+  isOwner: boolean | null;
 }
 
 export const initialProjectSliceState: ProjectSliceState = {
@@ -12,4 +14,5 @@ export const initialProjectSliceState: ProjectSliceState = {
   fetchStatus: "idle",
   saveStatus: "idle",
   lastSavedSnapshot: null,
+  isOwner: null,
 };

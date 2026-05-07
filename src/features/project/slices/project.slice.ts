@@ -231,6 +231,10 @@ const projectSlice = createSlice({
       state.saveStatus = "idle";
     },
 
+    isOwnerSet: (state, action: PayloadAction<boolean>) => {
+      state.isOwner = action.payload;
+    },
+
     tablesSelected: (
       state,
       action: PayloadAction<{ name: string[]; value: boolean }>,
@@ -260,6 +264,7 @@ const projectSlice = createSlice({
     builder
       .addCase(getProject.pending, (state) => {
         state.fetchStatus = "loading";
+        state.isOwner = null;
       })
       .addCase(getProject.fulfilled, (state, action) => {
         state.data = action.payload;
@@ -309,6 +314,7 @@ export const {
   nameSet,
   projectSet,
   projectImported,
+  isOwnerSet,
 } = projectSlice.actions;
 
 export default undoable(projectSlice.reducer, {
@@ -317,6 +323,7 @@ export default undoable(projectSlice.reducer, {
     tablesSelectionCleared.type,
     refsSelected.type,
     refsSelectionCleared.type,
+    isOwnerSet.type,
     getProject.pending.type,
     getProject.fulfilled.type,
     getProject.rejected.type,

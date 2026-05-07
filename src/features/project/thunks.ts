@@ -2,9 +2,11 @@ import { createAppThunk } from "@/app/thunks";
 import projectService, {
   type ProjectExportParams,
   type ProjectGetManyParams,
+  type ShareUpdateParams,
 } from "./services/project.service";
 import type { Project, ProjectSummaryPage } from "./schemas/project.schema";
 import type { ExportResult } from "./schemas/export-result.schema";
+import type { ShareList } from "./schemas/share.schema";
 
 export const getProjects = createAppThunk<
   ProjectSummaryPage,
@@ -27,4 +29,23 @@ export const exportProject = createAppThunk<
 
 export const deleteProject = createAppThunk<void, string>("project/delete", (id) =>
   projectService.delete(id),
+);
+
+export const getShares = createAppThunk<ShareList, string>(
+  "project/shares/get",
+  (projectId) => projectService.getShares(projectId),
+);
+
+export const updateShares = createAppThunk<
+  ShareList,
+  { projectId: string; params: ShareUpdateParams }
+>("project/shares/update", ({ projectId, params }) =>
+  projectService.updateShares(projectId, params),
+);
+
+export const revokeShares = createAppThunk<
+  ShareList,
+  { projectId: string; userIds: string[] }
+>("project/shares/revoke", ({ projectId, userIds }) =>
+  projectService.revokeShares(projectId, userIds),
 );
