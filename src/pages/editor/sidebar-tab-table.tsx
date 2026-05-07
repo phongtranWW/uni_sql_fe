@@ -9,13 +9,14 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
-import { selectTables } from "@/features/project/selectors/project.selector";
+import { selectIsOwner, selectTables } from "@/features/project/selectors/project.selector";
 import { tableCreated } from "@/features/project/slices/project.slice";
 import { TableCreateSchema } from "@/features/project/schemas/table-schema";
 import { toast } from "sonner";
 
 const SidebarTabTable = () => {
   const tables = useAppSelector(selectTables);
+  const isOwner = useAppSelector(selectIsOwner);
   const [keyword, setKeyword] = useState("");
   const dispatch = useAppDispatch();
 
@@ -47,9 +48,11 @@ const SidebarTabTable = () => {
             <SearchIcon className="text-muted-foreground" />
           </InputGroupAddon>
         </InputGroup>
-        <Button className="rounded-xs" onClick={handleCreateTable}>
-          <Plus /> New
-        </Button>
+        {isOwner !== false && (
+          <Button className="rounded-xs" onClick={handleCreateTable}>
+            <Plus /> New
+          </Button>
+        )}
       </div>
 
       <ScrollArea className="flex-1 min-h-0">

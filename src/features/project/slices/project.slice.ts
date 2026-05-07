@@ -1,7 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { initialProjectSliceState } from "../states/project.state";
 import undoable, { excludeAction } from "redux-undo";
-import { getProject, upsertProject } from "../thunks";
+import { getProject, getSharedProject, upsertProject } from "../thunks";
 import type {
   TableCreate,
   TablePart,
@@ -285,6 +285,20 @@ const projectSlice = createSlice({
       })
       .addCase(upsertProject.rejected, (state) => {
         state.saveStatus = "failed";
+      })
+      .addCase(getSharedProject.pending, (state) => {
+        state.fetchStatus = "loading";
+        state.isOwner = false;
+      })
+      .addCase(getSharedProject.fulfilled, (state, action) => {
+        state.data = action.payload;
+        state.fetchStatus = "succeeded";
+        state.saveStatus = "saved";
+        state.lastSavedSnapshot = action.payload;
+        state.isOwner = false;
+      })
+      .addCase(getSharedProject.rejected, (state) => {
+        state.fetchStatus = "failed";
       });
   },
 });
@@ -327,6 +341,9 @@ export default undoable(projectSlice.reducer, {
     getProject.pending.type,
     getProject.fulfilled.type,
     getProject.rejected.type,
+    getSharedProject.pending.type,
+    getSharedProject.fulfilled.type,
+    getSharedProject.rejected.type,
     upsertProject.pending.type,
     upsertProject.fulfilled.type,
     upsertProject.rejected.type,

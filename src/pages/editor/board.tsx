@@ -4,6 +4,7 @@ import Marker from "@/components/custom/marker";
 import edgeTypes from "@/data/edge-types";
 import nodeTypes from "@/data/node-types";
 import {
+  selectIsOwner,
   selectRefs,
   selectTables,
 } from "@/features/project/selectors/project.selector";
@@ -65,6 +66,7 @@ const AutoFocusHandler = () => {
 const Board = () => {
   const tables = useAppSelector(selectTables);
   const refs = useAppSelector(selectRefs);
+  const isOwner = useAppSelector(selectIsOwner);
   const { minimap, control } = useAppSelector(
     (state) => state.editorSettings.show,
   );
@@ -106,7 +108,7 @@ const Board = () => {
       onNodeClick={handleNodeClick}
       onEdgeClick={handleEdgeClick}
       onPaneClick={handlePaneClick}
-      onConnect={handleConnect}
+      onConnect={isOwner === false ? undefined : handleConnect}
     >
       <Marker />
       <Background />
