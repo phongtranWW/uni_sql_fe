@@ -49,6 +49,15 @@ export const projectService = {
     }
   },
 
+  async getSharedWithMe(params: ProjectGetManyParams): Promise<ProjectSummaryPage> {
+    try {
+      const { data } = await apiClient.get("/projects/shared-with-me", { params });
+      return ResponsePaginationSchema(ProjectSummarySchema).parse(data);
+    } catch (error) {
+      handleServiceError(error, "Failed to load shared projects");
+    }
+  },
+
   async upsert(id: string, body: object): Promise<Project> {
     try {
       const { data } = await apiClient.put(`/projects/${id}`, body);

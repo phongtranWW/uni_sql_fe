@@ -5,11 +5,15 @@ import { store } from "@/app/store";
 import {
   deleteProject,
   getProjects,
+  getSharedProjects,
 } from "@/features/project/thunks";
+
+export type ProjectTab = "my-projects" | "shared-with-me";
 import type { ProjectGetManyParams } from "@/features/project/services/project.service";
 
 export function useProfileProjects() {
   const dispatch = useAppDispatch();
+  const [tab, setTab] = useState<ProjectTab>("my-projects");
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] =
@@ -40,11 +44,12 @@ export function useProfileProjects() {
   }, [debouncedSearch]);
 
   useEffect(() => {
+    const action = tab === "my-projects" ? getProjects : getSharedProjects;
     void dispatch(
-      getProjects({
+      action({
         params: {
           page: fetchPage,
-          limit: 10,
+          limit: 6,
           sortBy,
           sortOrder,
           ...(debouncedSearch ? { search: debouncedSearch } : {}),
@@ -58,6 +63,7 @@ export function useProfileProjects() {
     sortBy,
     sortOrder,
     debouncedSearch,
+    tab,
   ]);
 
   const refreshAfterDelete = useCallback(() => {
@@ -101,7 +107,16 @@ export function useProfileProjects() {
 
 
 
+  const setTabAndReset = useCallback((newTab: ProjectTab) => {
+    if (newTab === tab) return;
+    setTab(newTab);
+    setFetchPage(1);
+    setSearchInput("");
+  }, [tab]);
+
   return {
+    tab,
+    setTab: setTabAndReset,
     searchInput,
     setSearchInput,
     sortBy,

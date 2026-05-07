@@ -13,6 +13,11 @@ export const getProjects = createAppThunk<
   { params: ProjectGetManyParams }
 >("project/getAll", ({ params }) => projectService.getManyBy(params));
 
+export const getSharedProjects = createAppThunk<
+  ProjectSummaryPage,
+  { params: ProjectGetManyParams }
+>("project/getShared", ({ params }) => projectService.getSharedWithMe(params));
+
 export const getProject = createAppThunk<Project, string>("project/get", (id) =>
   projectService.getOneBy(id),
 );

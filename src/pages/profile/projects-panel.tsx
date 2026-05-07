@@ -1,6 +1,6 @@
 
 import { useAppSelector } from "@/app/hook";
-import type { ProfileProjectsHandle } from "./use-profile-projects";
+import type { ProfileProjectsHandle } from "../../hooks/use-profile-projects";
 import { ProjectsToolbar } from "./projects-toolbar";
 import { ProjectsTableSection } from "./projects-table-section";
 import { ProjectsPagination } from "./projects-pagination";
@@ -43,6 +43,7 @@ export function ProjectsPanel({ projects }: ProjectsPanelProps) {
           items={items}
           fetchStatus={fetchStatus}
           onDeleteRequest={setDeleteTargetId}
+          isShared={projects.tab === "shared-with-me"}
         />
         <ProjectsPagination
           totalPages={totalPages}

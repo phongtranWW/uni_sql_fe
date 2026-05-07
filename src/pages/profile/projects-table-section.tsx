@@ -4,13 +4,13 @@ import type { ProjectSummary } from "@/features/project/schemas/project.schema";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardAction,
+  CardFooter,
+} from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
@@ -22,12 +22,14 @@ export interface ProjectsTableSectionProps {
   items: ProjectSummary[];
   fetchStatus: "idle" | "loading" | "succeeded" | "failed";
   onDeleteRequest: (id: string) => void;
+  isShared?: boolean;
 }
 
 export function ProjectsTableSection({
   items,
   fetchStatus,
   onDeleteRequest,
+  isShared,
 }: ProjectsTableSectionProps) {
   const navigate = useNavigate();
 
@@ -49,27 +51,18 @@ export function ProjectsTableSection({
           No projects yet, or no results match your search.
         </p>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden sm:table-cell">Created</TableHead>
-              <TableHead className="hidden md:table-cell">Updated</TableHead>
-              <TableHead className="w-[140px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {items.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="font-medium">{row.name}</TableCell>
-                <TableCell className="hidden text-muted-foreground sm:table-cell">
-                  {dateFmt.format(new Date(row.createdAt))}
-                </TableCell>
-                <TableCell className="hidden text-muted-foreground md:table-cell">
-                  {formatDistanceToNow(new Date(row.updatedAt), { addSuffix: true })}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+          {items.map((row) => (
+            <Card key={row.id}>
+              <CardHeader>
+                <CardTitle className="truncate" title={row.name}>
+                  {row.name}
+                </CardTitle>
+                <CardDescription>
+                  Created: {dateFmt.format(new Date(row.createdAt))}
+                </CardDescription>
+                <CardAction>
+                  <div className="flex gap-1">
                     <Button
                       type="button"
                       size="icon-sm"
@@ -79,22 +72,27 @@ export function ProjectsTableSection({
                     >
                       <Pencil className="size-4" />
                     </Button>
-                    <Button
-                      type="button"
-                      size="icon-sm"
-                      variant="ghost"
-                      className="text-destructive hover:text-destructive"
-                      title="Delete project"
-                      onClick={() => onDeleteRequest(row.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    {!isShared && (
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        title="Delete project"
+                        onClick={() => onDeleteRequest(row.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </CardAction>
+              </CardHeader>
+              <CardFooter className="text-xs text-muted-foreground">
+                Updated {formatDistanceToNow(new Date(row.updatedAt), { addSuffix: true })}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       )}
     </div>
   );

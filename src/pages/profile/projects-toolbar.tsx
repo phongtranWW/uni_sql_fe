@@ -1,6 +1,6 @@
+import { Search, SlidersHorizontal } from "lucide-react";
 import type { ProjectGetManyParams } from "@/features/project/services/project.service";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -26,54 +26,42 @@ export function ProjectsToolbar({
   sortOrder,
   onSortOrderChange,
 }: ProjectsToolbarProps) {
+  const handleSortChange = (value: string) => {
+    const [by, order] = value.split("-");
+    onSortByChange(by as ProjectGetManyParams["sortBy"]);
+    onSortOrderChange(order as ProjectGetManyParams["sortOrder"]);
+  };
+
   return (
-    <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
-      <div className="grid w-full gap-2 sm:max-w-xs lg:max-w-md lg:flex-1">
-        <Label htmlFor="project-search">Search by name</Label>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="relative w-full sm:w-72">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          id="project-search"
-          placeholder="Filter projects…"
+          placeholder="Search projects..."
+          className="pl-9"
           value={searchInput}
           onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
-      <div className="flex flex-wrap gap-4">
-        <div className="grid gap-2">
-          <Label>Sort by</Label>
-          <Select
-            value={sortBy}
-            onValueChange={(v) =>
-              onSortByChange(v as ProjectGetManyParams["sortBy"])
-            }
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="updatedAt">Last updated</SelectItem>
-              <SelectItem value="createdAt">Created</SelectItem>
-              <SelectItem value="name">Name</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Label>Order</Label>
-          <Select
-            value={sortOrder}
-            onValueChange={(v) =>
-              onSortOrderChange(v as ProjectGetManyParams["sortOrder"])
-            }
-          >
-            <SelectTrigger className="w-[140px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="desc">Descending</SelectItem>
-              <SelectItem value="asc">Ascending</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <Select
+        value={`${sortBy}-${sortOrder}`}
+        onValueChange={handleSortChange}
+      >
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="size-4" />
+            <SelectValue placeholder="Sort by" />
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="updatedAt-desc">Recently Updated</SelectItem>
+          <SelectItem value="updatedAt-asc">Oldest Updated</SelectItem>
+          <SelectItem value="createdAt-desc">Newest First</SelectItem>
+          <SelectItem value="createdAt-asc">Oldest First</SelectItem>
+          <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+          <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
