@@ -197,7 +197,19 @@ const Editor = () => {
       if (!parsed.success) return;
       dispatch(projectSet(parsed.data));
     } else {
-      dispatch(getProject(id));
+      dispatch(getProject(id))
+        .unwrap()
+        .catch(() => {
+          dispatch(
+            projectSet({
+              id,
+              name: "New Project",
+              tables: [],
+              refs: [],
+              indexes: [],
+            }),
+          );
+        });
     }
 
     dispatch(ActionCreators.clearHistory());
