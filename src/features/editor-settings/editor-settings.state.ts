@@ -6,5 +6,6 @@ export const initialEditorSettingsSliceState: EditorSettings = {
     sidebar: true,
     minimap: false,
     control: false,
+    autoFocus: false,
   },
 };

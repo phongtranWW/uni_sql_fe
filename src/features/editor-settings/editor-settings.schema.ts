@@ -6,6 +6,7 @@ export const EditorSettingsSchema = z.object({
     sidebar: z.boolean(),
     minimap: z.boolean(),
     control: z.boolean(),
+    autoFocus: z.boolean().default(false),
   }),
 });
 

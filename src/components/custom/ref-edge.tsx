@@ -46,6 +46,7 @@ export function RefEdge({
   sourceHandleId,
   targetHandleId,
   data,
+  selected,
 }: EdgeProps<RefEdge>) {
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
@@ -77,6 +78,10 @@ export function RefEdge({
       style={{
         strokeDasharray: "8 2",
         animation: "dashdraw 0.5s linear infinite",
+        ...(selected && {
+          stroke: "var(--primary)",
+          strokeWidth: 2.5,
+        }),
       }}
     />
   );

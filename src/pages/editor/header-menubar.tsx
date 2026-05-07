@@ -4,6 +4,7 @@ import {
   sidebarSet,
   minimapSet,
   controlSet,
+  autoFocusSet,
 } from "@/features/editor-settings/editor-settings.slice";
 import {
   Menubar,
@@ -17,8 +18,6 @@ import {
   MenubarSubContent,
   MenubarSubTrigger,
   MenubarTrigger,
-  MenubarRadioGroup,
-  MenubarRadioItem,
 } from "@/components/ui/menubar";
 import { Fragment, useCallback, useState } from "react";
 import {
@@ -87,6 +86,9 @@ const HeaderMenubar = () => {
   );
   const showControl = useAppSelector(
     (state) => state.editorSettings.show.control,
+  );
+  const autoFocus = useAppSelector(
+    (state) => state.editorSettings.show.autoFocus,
   );
   const project = useAppSelector(selectProject);
   const isDirty = useAppSelector(selectProjectIsDirty);
@@ -236,6 +238,13 @@ const HeaderMenubar = () => {
     [dispatch],
   );
 
+  const handleAutoFocusCheckedChange = useCallback(
+    (checked: boolean) => {
+      dispatch(autoFocusSet(checked));
+    },
+    [dispatch],
+  );
+
   return (
     <div>
       <Menubar className="border-0 shadow-none bg-transparent p-0">
@@ -335,18 +344,18 @@ const HeaderMenubar = () => {
               Show Controls
             </MenubarCheckboxItem>
             <MenubarSeparator />
-            <MenubarSub>
-              <MenubarSubTrigger>Theme</MenubarSubTrigger>
-              <MenubarSubContent>
-                <MenubarRadioGroup
-                  value={resolvedTheme}
-                  onValueChange={setTheme}
-                >
-                  <MenubarRadioItem value="light">Light</MenubarRadioItem>
-                  <MenubarRadioItem value="dark">Dark</MenubarRadioItem>
-                </MenubarRadioGroup>
-              </MenubarSubContent>
-            </MenubarSub>
+            <MenubarCheckboxItem
+              checked={autoFocus}
+              onCheckedChange={handleAutoFocusCheckedChange}
+            >
+              Auto Focus
+            </MenubarCheckboxItem>
+            <MenubarCheckboxItem
+              checked={resolvedTheme === "dark"}
+              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+            >
+              Dark Theme
+            </MenubarCheckboxItem>
           </MenubarContent>
         </MenubarMenu>
         <MenubarMenu>

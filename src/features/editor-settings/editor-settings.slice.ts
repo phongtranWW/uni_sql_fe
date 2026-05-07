@@ -17,9 +17,12 @@ const editorSettingsSlice = createSlice({
     controlSet: (state, action: PayloadAction<boolean>) => {
       state.show.control = action.payload;
     },
+    autoFocusSet: (state, action: PayloadAction<boolean>) => {
+      state.show.autoFocus = action.payload;
+    },
   },
 });
 
-export const { issuePanelSet, sidebarSet, minimapSet, controlSet } =
+export const { issuePanelSet, sidebarSet, minimapSet, controlSet, autoFocusSet } =
   editorSettingsSlice.actions;
 export default editorSettingsSlice.reducer;
