@@ -12,8 +12,24 @@ const AuthCallback = () => {
   useEffect(() => {
     if (hasHandled.current) return;
     hasHandled.current = true;
+
+    const token = searchParams.get("accessToken");
+    const isPopup = !!window.opener;
+
+    if (isPopup) {
+      // Opened from a popup (e.g. editor login) — send token back & close
+      if (token) {
+        window.opener.postMessage(
+          { type: "AUTH_CALLBACK", token },
+          window.location.origin,
+        );
+      }
+      window.close();
+      return;
+    }
+
+    // Normal redirect flow
     (async () => {
-      const token = searchParams.get("accessToken");
       if (!token) return navigate("/login", { replace: true });
       try {
         await dispatch(handleAuthCallback(token)).unwrap();
