@@ -43,6 +43,7 @@ export function ProjectsPanel({ projects }: ProjectsPanelProps) {
           items={items}
           fetchStatus={fetchStatus}
           onDeleteRequest={setDeleteTargetId}
+          onRevokeShare={projects.revokeShare}
           isShared={projects.tab === "shared-with-me"}
         />
         <ProjectsPagination

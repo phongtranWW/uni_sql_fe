@@ -6,6 +6,7 @@ import {
   deleteProject,
   getProjects,
   getSharedProjects,
+  revokeShares,
 } from "@/features/project/thunks";
 
 export type ProjectTab = "my-projects" | "shared-with-me";
@@ -89,6 +90,16 @@ export function useProfileProjects() {
     }
   }, [deleteTargetId, dispatch, refreshAfterDelete]);
 
+  const revokeShare = useCallback(async (projectId: string, userId: string) => {
+    try {
+      await dispatch(revokeShares({ projectId, userIds: [userId] })).unwrap();
+      toast.success("Share revoked");
+      setRefetchKey((k) => k + 1);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to revoke share");
+    }
+  }, [dispatch]);
+
   const setSortByAndResetPage = useCallback(
     (v: ProjectGetManyParams["sortBy"]) => {
       setSortBy(v);
@@ -129,6 +140,7 @@ export function useProfileProjects() {
     setDeleteTargetId,
     deleting,
     confirmDelete,
+    revokeShare,
     debouncedSearch,
   };
 }

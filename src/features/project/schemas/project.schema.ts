@@ -102,11 +102,18 @@ export const ProjectValidateSchema = ProjectBaseSchema.extend({
 });
 
 // ─── Exports ─────────────────────────────────────────────────────────────────
+export const SharedUserSummarySchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  avatar: z.string().optional(),
+});
+
 export const ProjectSummarySchema = z.object({
   id: z.string(),
   name: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
+  sharedUsers: z.array(SharedUserSummarySchema).optional(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;
