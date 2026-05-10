@@ -85,31 +85,103 @@ export class PgliteEngine implements SqlEngine {
     await this.init(nextSeed);
   }
 
+  async executeScript(sql: string) {
+    if (!this.db) throw new Error("Engine not initialised");
+    const startedAt = performance.now();
+    try {
+      const results = await this.db.exec(sql);
+      const durationMs = Math.round(performance.now() - startedAt);
+      const affectedRows = results.reduce(
+        (acc, r) => acc + (r.affectedRows ?? 0),
+        0,
+      );
+      return { success: true, affectedRows, durationMs };
+    } catch (err) {
+      throw normalisePgError(err, sql.slice(0, 200));
+    }
+  }
+
   async getSchema(): Promise<SchemaTable[]> {
     if (!this.db) throw new Error("Engine not initialised");
 
-    // Pull tables + columns + PK info from information_schema in one query
-    // to avoid N+1 round-trips. Limited to user schemas (skip pg_catalog,
-    // information_schema themselves).
+    // Single round-trip query that fetches everything the seed-data feature
+    // needs:
+    //   - column basics (name, type, nullable, default, identity, max length)
+    //   - whether the column belongs to the table's PRIMARY KEY
+    //   - whether the column is covered by a single-column UNIQUE index
+    //   - foreign key target (table + column) for single-column FKs
+    //
+    // Aggregated PK / UNIQUE / FK info is built via correlated subqueries so
+    // we keep a flat row-per-column shape that's easy to parse.
     const sql = `
+      WITH single_col_constraints AS (
+        SELECT
+          tc.table_schema,
+          tc.table_name,
+          tc.constraint_name,
+          tc.constraint_type,
+          MIN(kcu.column_name) AS column_name,
+          COUNT(*)             AS col_count
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON kcu.constraint_name = tc.constraint_name
+         AND kcu.table_schema    = tc.table_schema
+         AND kcu.table_name      = tc.table_name
+        GROUP BY tc.table_schema, tc.table_name, tc.constraint_name, tc.constraint_type
+      ),
+      fks AS (
+        SELECT
+          scc.table_schema,
+          scc.table_name,
+          scc.column_name,
+          ccu.table_schema AS ref_schema,
+          ccu.table_name   AS ref_table,
+          ccu.column_name  AS ref_column
+        FROM single_col_constraints scc
+        JOIN information_schema.referential_constraints rc
+          ON rc.constraint_name    = scc.constraint_name
+         AND rc.constraint_schema  = scc.table_schema
+        JOIN information_schema.constraint_column_usage ccu
+          ON ccu.constraint_name   = rc.unique_constraint_name
+         AND ccu.constraint_schema = rc.unique_constraint_schema
+        WHERE scc.constraint_type = 'FOREIGN KEY'
+          AND scc.col_count = 1
+      )
       SELECT
-        c.table_schema AS schema,
-        c.table_name   AS table,
-        c.column_name  AS column,
-        c.data_type    AS data_type,
-        c.is_nullable  AS is_nullable,
+        c.table_schema           AS schema,
+        c.table_name             AS table,
+        c.column_name            AS column,
+        c.data_type              AS data_type,
+        c.is_nullable            AS is_nullable,
+        c.column_default         AS column_default,
+        c.is_identity            AS is_identity,
+        c.character_maximum_length AS max_length,
         EXISTS (
-          SELECT 1
-          FROM information_schema.table_constraints tc
-          JOIN information_schema.key_column_usage kcu
-            ON kcu.constraint_name = tc.constraint_name
-           AND kcu.table_schema    = tc.table_schema
-           AND kcu.table_name      = tc.table_name
-          WHERE tc.constraint_type = 'PRIMARY KEY'
-            AND tc.table_schema    = c.table_schema
-            AND tc.table_name      = c.table_name
-            AND kcu.column_name    = c.column_name
-        ) AS is_pk
+          SELECT 1 FROM single_col_constraints scc
+          WHERE scc.constraint_type = 'PRIMARY KEY'
+            AND scc.table_schema    = c.table_schema
+            AND scc.table_name      = c.table_name
+            AND scc.column_name     = c.column_name
+            AND scc.col_count       = 1
+        ) AS is_pk,
+        EXISTS (
+          SELECT 1 FROM single_col_constraints scc
+          WHERE scc.constraint_type = 'UNIQUE'
+            AND scc.table_schema    = c.table_schema
+            AND scc.table_name      = c.table_name
+            AND scc.column_name     = c.column_name
+            AND scc.col_count       = 1
+        ) AS is_unique,
+        (SELECT ref_table FROM fks
+          WHERE fks.table_schema = c.table_schema
+            AND fks.table_name   = c.table_name
+            AND fks.column_name  = c.column_name
+          LIMIT 1) AS fk_table,
+        (SELECT ref_column FROM fks
+          WHERE fks.table_schema = c.table_schema
+            AND fks.table_name   = c.table_name
+            AND fks.column_name  = c.column_name
+          LIMIT 1) AS fk_column
       FROM information_schema.columns c
       WHERE c.table_schema NOT IN ('pg_catalog', 'information_schema')
       ORDER BY c.table_schema, c.table_name, c.ordinal_position;
@@ -121,7 +193,13 @@ export class PgliteEngine implements SqlEngine {
       column: string;
       data_type: string;
       is_nullable: string;
+      column_default: string | null;
+      is_identity: string;
+      max_length: number | null;
       is_pk: boolean;
+      is_unique: boolean;
+      fk_table: string | null;
+      fk_column: string | null;
     }
 
     const result = await this.db.query<Row>(sql);
@@ -139,6 +217,14 @@ export class PgliteEngine implements SqlEngine {
         dataType: row.data_type,
         nullable: row.is_nullable === "YES",
         isPrimaryKey: row.is_pk,
+        isUnique: row.is_unique || row.is_pk,
+        isIdentity: row.is_identity === "YES",
+        hasDefault: row.column_default !== null,
+        fk:
+          row.fk_table && row.fk_column
+            ? { table: row.fk_table, column: row.fk_column }
+            : null,
+        maxLength: row.max_length,
       });
     }
 

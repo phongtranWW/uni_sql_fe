@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, Database, KeyRound, Table as TableIcon } from "lucide-react";
+import { ChevronRight, Database, KeyRound, Link2, Table as TableIcon } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
@@ -74,9 +74,18 @@ const SchemaTableNode = ({ table }: SchemaTableNodeProps) => {
             <li
               key={col.name}
               className="flex items-center gap-1.5 py-0.5 text-[11px] font-mono"
+              title={
+                col.fk
+                  ? `FK → ${col.fk.table}.${col.fk.column}`
+                  : col.isPrimaryKey
+                    ? "Primary key"
+                    : undefined
+              }
             >
               {col.isPrimaryKey ? (
                 <KeyRound className="size-3 shrink-0 text-amber-500" />
+              ) : col.fk ? (
+                <Link2 className="size-3 shrink-0 text-cyan-500" />
               ) : (
                 <span className="size-3 shrink-0" aria-hidden />
               )}

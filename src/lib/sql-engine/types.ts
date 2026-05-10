@@ -55,12 +55,26 @@ export interface QueryError {
 
 /**
  * One column inside a table, as exposed by `getSchema()`.
+ *
+ * The fake-data feature relies on every flag below being accurate:
+ * - `isIdentity` drives whether to omit the column from generated INSERTs
+ * - `hasDefault` lets us also omit columns with sensible DB-side defaults
+ * - `isUnique` switches generators into "guaranteed unique" mode
+ * - `fk` makes the row picker reuse parent PKs to keep referential integrity
+ * - `maxLength` is honoured by string generators so VARCHAR(n) doesn't overflow
  */
 export interface SchemaColumn {
   name: string;
   dataType: string;
   nullable: boolean;
   isPrimaryKey: boolean;
+  isUnique: boolean;
+  isIdentity: boolean;
+  hasDefault: boolean;
+  /** `null` when the column is not a foreign key. */
+  fk: { table: string; column: string } | null;
+  /** Defined for VARCHAR(n) / CHAR(n); null for unbounded text types. */
+  maxLength: number | null;
 }
 
 /**
@@ -96,6 +110,21 @@ export interface SqlEngine {
    * batch and is rejected with a `QueryError`.
    */
   execute(sql: string): Promise<QueryResult[]>;
+
+  /**
+   * Run an arbitrary multi-statement script as a single execution context.
+   *
+   * Differs from `execute()` in two important ways:
+   * - it does NOT split or introspect statements, so `BEGIN; … COMMIT;`
+   *   wrappers behave as a real transaction
+   * - it does NOT return per-row results — only success/failure + total
+   *   affected rows. Intended for batched DDL / large INSERT scripts.
+   */
+  executeScript(sql: string): Promise<{
+    success: boolean;
+    affectedRows: number;
+    durationMs: number;
+  }>;
 
   /**
    * Tear down the current DB and re-`init()` with the given (or last) seed.

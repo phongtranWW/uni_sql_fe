@@ -10,7 +10,11 @@ import {
 import { selectPlaygroundSeed } from "@/features/playground/selectors/playground.selector";
 import { playgroundHistoryAppended } from "@/features/playground/playground.slice";
 import { useSqlEngine } from "@/hooks/use-sql-engine";
-import { isQueryError, type QueryError, type QueryResult } from "@/lib/sql-engine";
+import {
+  isQueryError,
+  type QueryError,
+  type QueryResult,
+} from "@/lib/sql-engine";
 import {
   PlaygroundContext,
   type PlaygroundContextValue,
@@ -21,6 +25,7 @@ import PlaygroundEmptyState from "./playground-empty-state";
 import PlaygroundHeader from "./playground-header";
 import PlaygroundResults from "./playground-results";
 import PlaygroundSchemaPanel from "./playground-schema-panel";
+import PlaygroundSeedDialog from "./playground-seed-dialog";
 import PlaygroundToolbar from "./playground-toolbar";
 
 const DEFAULT_BUFFER = `-- Try a query against your schema, e.g.:
@@ -58,6 +63,7 @@ const PlaygroundWorkspace = () => {
     error: null,
     finishedAt: null,
   });
+  const [seedDialogOpen, setSeedDialogOpen] = useState(false);
 
   const recordHistory = useCallback(
     (sql: string, ok: boolean, summary: string) => {
@@ -86,7 +92,12 @@ const PlaygroundWorkspace = () => {
         return;
       }
 
-      setRunState({ status: "running", results: [], error: null, finishedAt: null });
+      setRunState({
+        status: "running",
+        results: [],
+        error: null,
+        finishedAt: null,
+      });
 
       try {
         const results: QueryResult[] = await engine.run(trimmed);
@@ -133,7 +144,12 @@ const PlaygroundWorkspace = () => {
 
   const resetDb = useCallback(() => {
     void engine.reset().then(() => {
-      setRunState({ status: "idle", results: [], error: null, finishedAt: null });
+      setRunState({
+        status: "idle",
+        results: [],
+        error: null,
+        finishedAt: null,
+      });
       toast.success("Database reset to the original schema.");
     });
   }, [engine]);
@@ -181,7 +197,9 @@ const PlaygroundWorkspace = () => {
               <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel defaultSize={45} minSize={20}>
                   <div className="flex h-full flex-col">
-                    <PlaygroundToolbar />
+                    <PlaygroundToolbar
+                      onOpenSeedDialog={() => setSeedDialogOpen(true)}
+                    />
                     <div className="flex-1 overflow-hidden">
                       <PlaygroundEditor />
                     </div>
@@ -197,6 +215,11 @@ const PlaygroundWorkspace = () => {
             </ResizablePanel>
           </ResizablePanelGroup>
         )}
+
+        <PlaygroundSeedDialog
+          open={seedDialogOpen}
+          onOpenChange={setSeedDialogOpen}
+        />
       </div>
     </PlaygroundContext.Provider>
   );

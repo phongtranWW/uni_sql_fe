@@ -14,6 +14,7 @@
     "@codemirror/lang-sql": "^6.10.0",
     "@dbml/core": "^6.3.0",
     "@electric-sql/pglite": "^0.4.5",
+    "@faker-js/faker": "^10.4.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.1.18",
     "@types/lodash": "^4.17.24",

@@ -24,6 +24,13 @@ export interface UseSqlEngineResult {
 
   /** Run arbitrary SQL. Resolves with one entry per top-level statement. */
   run: (sql: string) => Promise<QueryResult[]>;
+  /**
+   * Run a multi-statement script as a single transaction-aware unit.
+   * Used by the seed-data dialog so `BEGIN; ... COMMIT;` is atomic.
+   */
+  runScript: (
+    sql: string,
+  ) => Promise<{ success: boolean; affectedRows: number; durationMs: number }>;
   /** Tear down + re-init with the original seed. */
   reset: () => Promise<void>;
   /** Force-refresh the schema snapshot. Called automatically after run/reset. */
@@ -138,6 +145,22 @@ export function useSqlEngine(
     [refreshSchema],
   );
 
+  const runScript = useCallback(
+    async (sql: string) => {
+      const engine = engineRef.current;
+      if (!engine) throw new Error("Engine is not ready yet");
+      try {
+        const result = await engine.executeScript(sql);
+        void refreshSchema();
+        return result;
+      } catch (err) {
+        void refreshSchema();
+        throw err;
+      }
+    },
+    [refreshSchema],
+  );
+
   const reset = useCallback(async () => {
     const engine = engineRef.current;
     if (!engine) return;
@@ -160,6 +183,7 @@ export function useSqlEngine(
     schema,
     schemaLoading,
     run,
+    runScript,
     reset,
     refreshSchema,
   };

@@ -1,10 +1,14 @@
-import { Play, RotateCcw, SquarePlay } from "lucide-react";
+import { Play, RotateCcw, Sparkles, SquarePlay } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Kbd } from "@/components/ui/kbd";
 import { usePlayground } from "./playground-context";
 
-const PlaygroundToolbar = () => {
+interface PlaygroundToolbarProps {
+  onOpenSeedDialog: () => void;
+}
+
+const PlaygroundToolbar = ({ onOpenSeedDialog }: PlaygroundToolbarProps) => {
   const { runState, runAll, runSelection, resetDb, selection, engine } =
     usePlayground();
 
@@ -61,6 +65,17 @@ const PlaygroundToolbar = () => {
       >
         <RotateCcw className="size-3.5" />
         Reset DB
+      </Button>
+
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={onOpenSeedDialog}
+        disabled={!isReady || isRunning || engine.schema.length === 0}
+        title="Generate fake INSERT statements with faker"
+      >
+        <Sparkles className="size-3.5" />
+        Seed data
       </Button>
 
       <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
