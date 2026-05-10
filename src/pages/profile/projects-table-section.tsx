@@ -89,8 +89,14 @@ export function ProjectsTableSection({
                       type="button"
                       size="icon-sm"
                       variant="ghost"
-                      title="Open in editor"
-                      onClick={() => navigate(`/editor/projects/${row.id}`)}
+                      title={isShared ? "Open viewer" : "Open in editor"}
+                      onClick={() =>
+                        navigate(
+                          isShared
+                            ? `/shared/projects/${row.id}`
+                            : `/editor/projects/${row.id}`,
+                        )
+                      }
                     >
                       <Pencil className="size-4" />
                     </Button>
@@ -110,25 +116,35 @@ export function ProjectsTableSection({
                 </CardAction>
               </CardHeader>
               <CardFooter className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Updated {formatDistanceToNow(new Date(row.updatedAt), { addSuffix: true })}</span>
-                {row.sharedUsers && row.sharedUsers.length > 0 && (
-                  isShared ? (
+                <span>
+                  Updated{" "}
+                  {formatDistanceToNow(new Date(row.updatedAt), {
+                    addSuffix: true,
+                  })}
+                </span>
+                {row.sharedUsers &&
+                  row.sharedUsers.length > 0 &&
+                  (isShared ? (
                     <AvatarGroup>
                       {row.sharedUsers.slice(0, 3).map((user) => (
                         <Tooltip key={user.id}>
                           <TooltipTrigger asChild>
                             <Avatar size="sm">
                               <AvatarImage src={user.avatar} alt={user.name} />
-                              <AvatarFallback>{user.name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                              <AvatarFallback>
+                                {user.name?.charAt(0).toUpperCase() || "U"}
+                              </AvatarFallback>
                             </Avatar>
                           </TooltipTrigger>
                           <TooltipContent>
-                            {user.name || 'Unknown User'}
+                            {user.name || "Unknown User"}
                           </TooltipContent>
                         </Tooltip>
                       ))}
                       {row.sharedUsers.length > 3 && (
-                        <AvatarGroupCount>+{row.sharedUsers.length - 3}</AvatarGroupCount>
+                        <AvatarGroupCount>
+                          +{row.sharedUsers.length - 3}
+                        </AvatarGroupCount>
                       )}
                     </AvatarGroup>
                   ) : (
@@ -140,17 +156,25 @@ export function ProjectsTableSection({
                               <Tooltip key={user.id}>
                                 <TooltipTrigger asChild>
                                   <Avatar size="sm">
-                                    <AvatarImage src={user.avatar} alt={user.name} />
-                                    <AvatarFallback>{user.name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                                    <AvatarImage
+                                      src={user.avatar}
+                                      alt={user.name}
+                                    />
+                                    <AvatarFallback>
+                                      {user.name?.charAt(0).toUpperCase() ||
+                                        "U"}
+                                    </AvatarFallback>
                                   </Avatar>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  {user.name || 'Unknown User'}
+                                  {user.name || "Unknown User"}
                                 </TooltipContent>
                               </Tooltip>
                             ))}
                             {row.sharedUsers.length > 3 && (
-                              <AvatarGroupCount>+{row.sharedUsers.length - 3}</AvatarGroupCount>
+                              <AvatarGroupCount>
+                                +{row.sharedUsers.length - 3}
+                              </AvatarGroupCount>
                             )}
                           </AvatarGroup>
                         </button>
@@ -162,21 +186,17 @@ export function ProjectsTableSection({
                           <DropdownMenuItem
                             key={user.id}
                             className="group/item flex items-center justify-between"
-                            onSelect={(e) => {
-                              // Prevent closing immediately if we just want to remove one,
-                              // but let's keep default behavior for now so it closes.
-                              // Actually, if we use a button inside, maybe we prevent default on the button?
-                            }}
+                            onSelect={() => undefined}
                           >
                             <div className="flex items-center gap-2 overflow-hidden">
                               <Avatar size="sm" className="size-6">
                                 <AvatarImage src={user.avatar} />
                                 <AvatarFallback>
-                                  {user.name?.charAt(0).toUpperCase() || 'U'}
+                                  {user.name?.charAt(0).toUpperCase() || "U"}
                                 </AvatarFallback>
                               </Avatar>
                               <span className="truncate text-sm">
-                                {user.name || 'Unknown User'}
+                                {user.name || "Unknown User"}
                               </span>
                             </div>
                             <Button
@@ -195,8 +215,7 @@ export function ProjectsTableSection({
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )
-                )}
+                  ))}
               </CardFooter>
             </Card>
           ))}
