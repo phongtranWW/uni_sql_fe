@@ -7,6 +7,7 @@ import AuthCallback from "./pages/callback";
 import ProtectedRoute from "./components/custom/protected-route";
 import Profile from "./pages/profile";
 import TemplatesPage from "./pages/templates";
+import Playground from "./pages/playground";
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: "/shared/projects/:id",
     element: <SharedEditor />,
+  },
+  {
+    path: "/playground",
+    element: <Playground />,
   },
   {
     element: <ProtectedRoute />,
