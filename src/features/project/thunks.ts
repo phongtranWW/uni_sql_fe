@@ -22,6 +22,11 @@ export const getProject = createAppThunk<Project, string>("project/get", (id) =>
   projectService.getOneBy(id),
 );
 
+export const getSharedProject = createAppThunk<Project, string>(
+  "project/getShared",
+  (id) => projectService.getSharedOneBy(id),
+);
+
 export const upsertProject = createAppThunk<
   Project,
   { id: string; body: object }

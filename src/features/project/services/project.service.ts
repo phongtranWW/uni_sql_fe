@@ -40,6 +40,15 @@ export const projectService = {
     }
   },
 
+  async getSharedOneBy(id: string): Promise<Project> {
+    try {
+      const { data } = await apiClient.get(`/projects/shared-with-me/${id}`);
+      return ProjectSchema.parse(data);
+    } catch (error) {
+      handleServiceError(error, "Failed to load shared project");
+    }
+  },
+
   async getManyBy(params: ProjectGetManyParams): Promise<ProjectSummaryPage> {
     try {
       const { data } = await apiClient.get("/projects", { params });

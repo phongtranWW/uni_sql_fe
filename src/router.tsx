@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { Home } from "./pages/home";
 import Editor from "./pages/editor";
+import SharedEditor from "./pages/shared-editor";
 import Login from "@/pages/login";
 import AuthCallback from "./pages/callback";
 import ProtectedRoute from "./components/custom/protected-route";
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
   {
     path: "/editor/projects/:id",
     element: <Editor />,
+  },
+  {
+    path: "/shared/projects/:id",
+    element: <SharedEditor />,
   },
   {
     element: <ProtectedRoute />,
