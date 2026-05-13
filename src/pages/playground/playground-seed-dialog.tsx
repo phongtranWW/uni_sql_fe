@@ -34,12 +34,13 @@ import {
   type FakeDataResult,
   type SeedTableConfig,
 } from "@/lib/fake-data";
-import { usePlayground } from "./playground-context";
+import type { UseSqlEngineResult } from "@/hooks/use-sql-engine";
 import PlaygroundSeedTableRow from "./playground-seed-table-row";
 
 interface PlaygroundSeedDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  engine: UseSqlEngineResult;
 }
 
 const DEFAULT_ROW_COUNT = 10;
@@ -58,8 +59,8 @@ const PREVIEW_DEBOUNCE_MS = 200;
 const PlaygroundSeedDialog = ({
   open,
   onOpenChange,
+  engine,
 }: PlaygroundSeedDialogProps) => {
-  const { engine } = usePlayground();
   const { resolvedTheme } = useTheme();
 
   // Per-table config: undefined means "not selected".
@@ -232,8 +233,11 @@ const PlaygroundSeedDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[80vw] max-w-none sm:max-w-none flex h-[85vh] flex-col gap-3">
-        <DialogHeader>
+      <DialogContent
+        className="flex flex-col gap-3 p-0 overflow-hidden"
+        style={{ width: "90vw", maxWidth: "90vw", height: "90vh", maxHeight: "90vh" }}
+      >
+        <div className="px-4 py-3 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="size-5 text-amber-500" />
             Generate fake data
@@ -242,7 +246,7 @@ const PlaygroundSeedDialog = ({
             Pick the tables you want to seed. Foreign keys are resolved
             automatically using previously inserted rows.
           </DialogDescription>
-        </DialogHeader>
+        </div>
 
         {noTables ? (
           <div className="flex flex-1 items-center justify-center">
@@ -251,22 +255,10 @@ const PlaygroundSeedDialog = ({
             </p>
           </div>
         ) : (
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+            <div className="grid min-h-0 flex-1 grid-cols-[300px_1fr] gap-4 p-4">
             {/* ── Left: table list + options ── */}
             <div className="flex min-h-0 flex-col gap-3">
-              <div className="flex items-center justify-between gap-2">
-                <label className="flex items-center gap-2 text-sm font-medium">
-                  <Checkbox
-                    checked={allSelected}
-                    onCheckedChange={(c) => handleToggleAll(c === true)}
-                  />
-                  Select all ({engine.schema.length})
-                </label>
-                <span className="text-xs text-muted-foreground">
-                  {selected.size} selected · ~{totalSelectedRows} rows
-                </span>
-              </div>
-
               <ScrollArea className="flex-1 rounded-md border border-border">
                 <ul className="space-y-1 p-2">
                   {engine.schema.map((t) => (
@@ -289,17 +281,10 @@ const PlaygroundSeedDialog = ({
                     checked={autoIncludeParents}
                     onCheckedChange={(c) => setAutoIncludeParents(c === true)}
                   />
-                  <span>
-                    Auto-include FK parents
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      (recommended)
-                    </span>
-                  </span>
+                  <span className="text-xs">Auto-include FK parents</span>
                 </label>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    Random seed
-                  </span>
+                  <span className="text-xs text-muted-foreground">Seed</span>
                   <Input
                     type="number"
                     value={seed}
@@ -362,84 +347,73 @@ const PlaygroundSeedDialog = ({
                 </Collapsible>
               )}
 
-              <Collapsible
-                open={previewOpen}
-                onOpenChange={setPreviewOpen}
-                className="flex min-h-0 flex-1 flex-col"
-              >
-                <CollapsibleTrigger asChild>
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-between rounded-md border border-border bg-muted/30 px-3 py-2 text-sm transition-colors hover:bg-muted/50"
-                  >
-                    <span className="flex items-center gap-2 font-medium">
-                      Preview SQL
-                      {isGenerating && <Spinner className="size-3" />}
-                      {result?.plan && result.plan.length > 0 && (
-                        <span className="text-xs text-muted-foreground">
-                          · {result.plan.length} INSERT
-                          {result.plan.length === 1 ? "" : "s"}
-                        </span>
-                      )}
+              <div className="flex min-h-0 flex-1 flex-col">
+                <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-muted/30 px-3 py-2">
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    Preview SQL
+                    {isGenerating && <Spinner className="size-3" />}
+                  </span>
+                  {result?.plan && result.plan.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {result.plan.length} INSERT
+                      {result.plan.length === 1 ? "" : "s"}
                     </span>
-                    <ChevronDown
-                      className={`size-4 transition-transform ${previewOpen ? "rotate-180" : ""}`}
+                  )}
+                </div>
+                <div className="min-h-0 flex-1 overflow-hidden rounded-b-md border border-border">
+                  {result?.sql ? (
+                    <CodeMirror
+                      value={result.sql}
+                      height="100%"
+                      extensions={[sql({ dialect: PostgreSQL })]}
+                      theme={resolvedTheme === "dark" ? githubDark : githubLight}
+                      key={resolvedTheme}
+                      editable={false}
+                      basicSetup={{
+                        lineNumbers: true,
+                        foldGutter: true,
+                        highlightActiveLine: false,
+                      }}
+                      className="h-full text-xs"
                     />
-                  </button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="mt-2 flex min-h-0 flex-1 flex-col">
-                  <div className="min-h-0 flex-1 overflow-hidden rounded-md border border-border">
-                    {result?.sql ? (
-                      <CodeMirror
-                        value={result.sql}
-                        height="100%"
-                        extensions={[sql({ dialect: PostgreSQL })]}
-                        theme={resolvedTheme === "dark" ? githubDark : githubLight}
-                        key={resolvedTheme}
-                        editable={false}
-                        basicSetup={{
-                          lineNumbers: true,
-                          foldGutter: true,
-                          highlightActiveLine: false,
-                        }}
-                        className="h-full text-xs"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center p-4">
-                        <p className="text-sm italic text-muted-foreground">
-                          {selected.size === 0
-                            ? "Pick at least one table to preview the INSERT script."
-                            : "Generating…"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+                  ) : (
+                    <div className="flex h-full items-center justify-center p-4">
+                      <p className="text-sm italic text-muted-foreground">
+                        {selected.size === 0
+                          ? "Pick at least one table to preview the INSERT script."
+                          : "Generating…"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
             </div>
           </div>
         )}
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleCopy}
-            disabled={!result?.sql}
-          >
-            <Copy className="size-3.5" />
-            Copy SQL
-          </Button>
-          <Button
-            onClick={handleRun}
-            disabled={!result?.sql || isRunning || isGenerating}
-          >
-            {isRunning ? <Spinner className="size-3.5" /> : <Sparkles className="size-3.5" />}
-            Run insert
-          </Button>
-        </DialogFooter>
+        <div className="px-4 py-3 border-t shrink-0">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleCopy}
+              disabled={!result?.sql}
+            >
+              <Copy className="size-3.5" />
+              Copy SQL
+            </Button>
+            <Button
+              onClick={handleRun}
+              disabled={!result?.sql || isRunning || isGenerating}
+            >
+              {isRunning ? <Spinner className="size-3.5" /> : <Sparkles className="size-3.5" />}
+              Run insert
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

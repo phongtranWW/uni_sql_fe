@@ -47,10 +47,10 @@ export const FieldValidateSchema = FieldBaseSchema.extend({
     }),
   type: z.enum(FIELD_TYPES),
 }).superRefine((field, ctx) => {
-  if (field.increment && field.type !== "INT") {
+  if (field.increment && !["int", "bigint", "smallint"].includes(field.type)) {
     ctx.addIssue({
       code: "custom",
-      message: "Auto increment is only allowed for INT type",
+      message: "Auto increment is only allowed for integer types (int, bigint, smallint)",
       path: ["increment"],
     });
   }

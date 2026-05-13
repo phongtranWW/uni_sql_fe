@@ -1,16 +1,28 @@
-import { Play, RotateCcw, Sparkles, SquarePlay } from "lucide-react";
+import { Play, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Kbd } from "@/components/ui/kbd";
-import { usePlayground } from "./playground-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useAppSelector } from "@/app/hook";
+import {
+  selectPlaygroundSelection,
+  selectPlaygroundRunState,
+} from "@/features/playground/selectors/playground.selector";
+import type { UseSqlEngineResult } from "@/hooks/use-sql-engine";
+import { usePlaygroundActions } from "./use-playground-actions";
 
 interface PlaygroundToolbarProps {
+  engine: UseSqlEngineResult;
   onOpenSeedDialog: () => void;
 }
 
-const PlaygroundToolbar = ({ onOpenSeedDialog }: PlaygroundToolbarProps) => {
-  const { runState, runAll, runSelection, resetDb, selection, engine } =
-    usePlayground();
+const PlaygroundToolbar = ({ engine, onOpenSeedDialog }: PlaygroundToolbarProps) => {
+  const selection = useAppSelector(selectPlaygroundSelection);
+  const runState = useAppSelector(selectPlaygroundRunState);
+  const { runAll, runSelection, resetDb } = usePlaygroundActions(engine);
 
   const isReady = engine.status === "ready";
   const isRunning = runState.status === "running";
@@ -19,66 +31,83 @@ const PlaygroundToolbar = ({ onOpenSeedDialog }: PlaygroundToolbarProps) => {
   const handleReset = () => {
     if (
       window.confirm(
-        "Reset the database? All changes you made in this session will be lost; the original schema will be re-applied.",
+        "Reset the database? All changes will be lost and the original schema will be re-applied.",
       )
     ) {
       resetDb();
     }
   };
 
+  const handleRun = () => {
+    if (hasSelection) {
+      runSelection();
+    } else {
+      runAll();
+    }
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/20 px-3 py-2">
-      <Button
-        size="sm"
-        onClick={runAll}
-        disabled={!isReady || isRunning}
-        title="Run the entire buffer"
-      >
-        {isRunning ? <Spinner className="size-3.5" /> : <Play className="size-3.5" />}
-        Run
-        <Kbd className="ml-1 hidden sm:inline-flex">Ctrl</Kbd>
-        <Kbd className="hidden sm:inline-flex">Enter</Kbd>
-      </Button>
+    <div className="flex items-center justify-between border-b bg-muted/20 px-3 py-2">
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              onClick={handleRun}
+              disabled={!isReady || isRunning}
+              className="gap-1.5"
+            >
+              {isRunning ? (
+                <Spinner className="size-3.5" />
+              ) : (
+                <Play className="size-3.5" />
+              )}
+              {hasSelection ? "Run Selection" : "Run"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">
+              {hasSelection ? "Ctrl+Shift+Enter" : "Ctrl+Enter"}
+            </p>
+          </TooltipContent>
+        </Tooltip>
 
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={runSelection}
-        disabled={!isReady || isRunning || !hasSelection}
-        title="Run only the highlighted text"
-      >
-        <SquarePlay className="size-3.5" />
-        Run selection
-        <Kbd className="ml-1 hidden sm:inline-flex">Ctrl</Kbd>
-        <Kbd className="hidden sm:inline-flex">Shift</Kbd>
-        <Kbd className="hidden sm:inline-flex">Enter</Kbd>
-      </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleReset}
+              disabled={!isReady || isRunning}
+            >
+              <RotateCcw className="size-3.5" />
+              Reset
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Re-apply original schema</p>
+          </TooltipContent>
+        </Tooltip>
 
-      <div className="mx-1 h-5 w-px bg-border" aria-hidden />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onOpenSeedDialog}
+              disabled={!isReady || isRunning || engine.schema.length === 0}
+            >
+              <Sparkles className="size-3.5" />
+              Seed
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Generate fake data</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
 
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={handleReset}
-        disabled={!isReady || isRunning}
-        title="Re-apply the original seed and discard everything else"
-      >
-        <RotateCcw className="size-3.5" />
-        Reset DB
-      </Button>
-
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={onOpenSeedDialog}
-        disabled={!isReady || isRunning || engine.schema.length === 0}
-        title="Generate fake INSERT statements with faker"
-      >
-        <Sparkles className="size-3.5" />
-        Seed data
-      </Button>
-
-      <div className="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
         {runState.status === "ok" && runState.results.length > 0 && (
           <span>
             {runState.results.length} statement
@@ -87,7 +116,9 @@ const PlaygroundToolbar = ({ onOpenSeedDialog }: PlaygroundToolbarProps) => {
           </span>
         )}
         {runState.status === "error" && runState.error && (
-          <span className="text-destructive">Error: {runState.error.message}</span>
+          <span className="text-destructive">
+            {runState.error.message}
+          </span>
         )}
       </div>
     </div>

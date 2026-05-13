@@ -5,26 +5,27 @@ import { keymap } from "@codemirror/view";
 import { Compartment, Prec } from "@codemirror/state";
 import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
 import { useTheme } from "next-themes";
-import { usePlayground } from "./playground-context";
+import { useAppDispatch, useAppSelector } from "@/app/hook";
+import { selectPlaygroundBuffer } from "@/features/playground/selectors/playground.selector";
+import {
+  playgroundBufferSet,
+  playgroundSelectionSet,
+} from "@/features/playground/playground.slice";
+import type { UseSqlEngineResult } from "@/hooks/use-sql-engine";
+import { usePlaygroundActions } from "./use-playground-actions";
 
-/**
- * SQL editor backed by CodeMirror, the same component the rest of the app
- * uses (see CodePreview). Differences:
- * - editable
- * - hooks Ctrl/Cmd+Enter and Ctrl/Cmd+Shift+Enter into the toolbar actions
- * - reports the selected text up to the page so "Run selection" can use it
- *
- * The keymap is wrapped in a {@link Compartment} so we can swap in fresh
- * `runAll` / `runSelection` closures via `view.dispatch(reconfigure())`
- * whenever the parent re-renders, without re-creating the entire editor.
- */
-const PlaygroundEditor = () => {
+interface PlaygroundEditorProps {
+  engine: UseSqlEngineResult;
+}
+
+const PlaygroundEditor = ({ engine }: PlaygroundEditorProps) => {
   const { resolvedTheme } = useTheme();
-  const { buffer, setBuffer, setSelection, runAll, runSelection } =
-    usePlayground();
+  const dispatch = useAppDispatch();
+  const buffer = useAppSelector(selectPlaygroundBuffer);
+
+  const { runAll, runSelection } = usePlaygroundActions(engine);
 
   const editorRef = useRef<ReactCodeMirrorRef | null>(null);
-  // One Compartment per editor instance; persists across renders.
   const keymapCompartment = useMemo(() => new Compartment(), []);
 
   const buildKeymap = useCallback(
@@ -55,19 +56,12 @@ const PlaygroundEditor = () => {
   const extensions = useMemo(
     () => [
       sql({ dialect: PostgreSQL, upperCaseKeywords: true }),
-      // Initial keymap; reconfigured by the effect below as runAll/runSelection
-      // identities change.
       keymapCompartment.of(buildKeymap(runAll, runSelection)),
     ],
-    // Intentionally empty: we never want to re-create the extensions array
-    // (that would re-mount the editor). The keymap is updated via the
-    // Compartment in the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
-  // Swap in fresh callbacks whenever they change. View access in an effect
-  // is safe (the editor is mounted by then).
   useEffect(() => {
     const view = editorRef.current?.view;
     if (!view) return;
@@ -85,12 +79,12 @@ const PlaygroundEditor = () => {
     }) => {
       const { from, to } = vu.state.selection.main;
       if (from === to) {
-        setSelection("");
+        dispatch(playgroundSelectionSet(""));
         return;
       }
-      setSelection(vu.state.doc.sliceString(from, to));
+      dispatch(playgroundSelectionSet(vu.state.doc.sliceString(from, to)));
     },
-    [setSelection],
+    [dispatch],
   );
 
   return (
@@ -98,7 +92,7 @@ const PlaygroundEditor = () => {
       <CodeMirror
         ref={editorRef}
         value={buffer}
-        onChange={setBuffer}
+        onChange={(value) => dispatch(playgroundBufferSet(value))}
         height="100%"
         extensions={extensions}
         theme={resolvedTheme === "dark" ? githubDark : githubLight}

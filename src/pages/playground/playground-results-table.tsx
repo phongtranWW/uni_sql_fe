@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { CheckCircle2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -7,22 +8,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import type { QueryResult } from "@/lib/sql-engine";
 
 interface Props {
   result: QueryResult;
 }
 
-const MAX_ROWS = 500; // Render cap; full row count still shown in the footer.
+const MAX_ROWS = 500;
 const NULL_LABEL = "NULL";
-
-/**
- * Renders one statement's rows as an HTML table.
- *
- * For non-DML statements (CREATE TABLE, INSERT without RETURNING, …) pglite
- * still returns a Results object — usually with no fields and no rows. We
- * fall back to a friendly "OK" badge in that case.
- */
 const PlaygroundResultsTable = ({ result }: Props) => {
   const visibleRows = useMemo(
     () => result.rows.slice(0, MAX_ROWS),
@@ -31,37 +25,49 @@ const PlaygroundResultsTable = ({ result }: Props) => {
 
   if (result.fields.length === 0) {
     return (
-      <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300">
-        <span className="font-medium">OK</span>
-        {result.command && <span className="ml-2 font-mono">{result.command}</span>}
+      <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5 text-sm">
+        <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
+        <span className="font-medium text-emerald-700 dark:text-emerald-300">
+          {result.command || "Success"}
+        </span>
         {typeof result.rowCount === "number" && result.rowCount > 0 && (
-          <span className="ml-2">{result.rowCount} row{result.rowCount === 1 ? "" : "s"} affected</span>
+          <span className="text-emerald-600/80 dark:text-emerald-400/80">
+            {result.rowCount} row{result.rowCount === 1 ? "" : "s"} affected
+          </span>
         )}
-        <span className="ml-2 text-emerald-600/70 dark:text-emerald-400/70">
-          · {result.durationMs}ms
+        <span className="ml-auto text-xs text-emerald-600/60 dark:text-emerald-400/60">
+          {result.durationMs}ms
         </span>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border border-border">
-      <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-1.5 text-xs text-muted-foreground">
-        <span>
-          <span className="font-mono text-foreground">{result.command ?? "RESULT"}</span>
-          {" · "}
-          {result.rows.length} row{result.rows.length === 1 ? "" : "s"}
-          {result.rows.length > MAX_ROWS && ` (showing ${MAX_ROWS})`}
+    <div className="overflow-hidden rounded-md border">
+      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-3 py-2">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="font-mono text-xs">
+            {result.command || "RESULT"}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {result.rows.length} row{result.rows.length === 1 ? "" : "s"}
+            {result.rows.length > MAX_ROWS && ` (showing ${MAX_ROWS})`}
+          </span>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {result.durationMs}ms
         </span>
-        <span>{result.durationMs}ms</span>
       </div>
 
-      <div className="max-h-72 overflow-auto">
+      <div className="max-h-80 overflow-auto">
         <Table>
-          <TableHeader className="bg-muted/20">
+          <TableHeader className="sticky top-0 bg-muted/50">
             <TableRow>
               {result.fields.map((field, i) => (
-                <TableHead key={`${field.name}-${i}`} className="font-mono text-xs">
+                <TableHead
+                  key={`${field.name}-${i}`}
+                  className="h-8 font-mono text-xs font-medium"
+                >
                   {field.name}
                 </TableHead>
               ))}
@@ -72,16 +78,19 @@ const PlaygroundResultsTable = ({ result }: Props) => {
               <TableRow>
                 <TableCell
                   colSpan={result.fields.length}
-                  className="text-center text-xs italic text-muted-foreground"
+                  className="h-20 text-center text-xs text-muted-foreground"
                 >
-                  (no rows)
+                  No rows returned
                 </TableCell>
               </TableRow>
             ) : (
               visibleRows.map((row, ri) => (
-                <TableRow key={ri}>
+                <TableRow key={ri} className="hover:bg-muted/30">
                   {result.fields.map((field, fi) => (
-                    <TableCell key={`${field.name}-${fi}`} className="font-mono text-xs">
+                    <TableCell
+                      key={`${field.name}-${fi}`}
+                      className="font-mono text-xs"
+                    >
                       {formatCell(row[field.name])}
                     </TableCell>
                   ))}
@@ -98,7 +107,11 @@ const PlaygroundResultsTable = ({ result }: Props) => {
 function formatCell(value: unknown): string {
   if (value === null || value === undefined) return NULL_LABEL;
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") {
+  if (
+    typeof value === "number" ||
+    typeof value === "boolean" ||
+    typeof value === "bigint"
+  ) {
     return String(value);
   }
   if (value instanceof Date) return value.toISOString();

@@ -1,4 +1,4 @@
-import type { SqlDialect } from "@/lib/sql-engine";
+import type { SqlDialect, QueryResult, QueryError } from "@/lib/sql-engine";
 
 /**
  * One snippet the user has executed in the playground. Lives in-memory only.
@@ -26,12 +26,51 @@ export interface PlaygroundSeed {
   createdAt: string;
 }
 
+/**
+ * Engine status and initialization state
+ */
+export type EngineStatus = "idle" | "initializing" | "ready" | "error";
+
+/**
+ * Run state for query execution
+ */
+export interface RunState {
+  status: "idle" | "running" | "ok" | "error";
+  results: QueryResult[];
+  error: QueryError | null;
+  finishedAt: string | null;
+}
+
 export interface PlaygroundSliceState {
   seed: PlaygroundSeed | null;
   history: PlaygroundHistoryEntry[];
+
+  // Engine state
+  engineStatus: EngineStatus;
+  engineError: string | null;
+
+  // Editor buffer
+  buffer: string;
+  selection: string;
+
+  // Run state
+  runState: RunState;
 }
 
 export const initialPlaygroundSliceState: PlaygroundSliceState = {
   seed: null,
   history: [],
+  engineStatus: "idle",
+  engineError: null,
+  buffer: `-- Try a query against your schema, e.g.:
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public';
+`,
+  selection: "",
+  runState: {
+    status: "idle",
+    results: [],
+    error: null,
+    finishedAt: null,
+  },
 };

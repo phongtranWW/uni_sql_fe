@@ -1,25 +1,45 @@
 import { useState } from "react";
-import { ChevronRight, Database, KeyRound, Link2, Table as TableIcon } from "lucide-react";
+import {
+  ChevronRight,
+  KeyRound,
+  Link2,
+  Search,
+  Table as TableIcon,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Spinner } from "@/components/ui/spinner";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { SchemaTable } from "@/lib/sql-engine";
-import { usePlayground } from "./playground-context";
+import type { UseSqlEngineResult } from "@/hooks/use-sql-engine";
 
-const PlaygroundSchemaPanel = () => {
-  const { engine } = usePlayground();
-  const { schema, schemaLoading, status } = engine;
+interface PlaygroundSchemaPanelProps {
+  engine: UseSqlEngineResult;
+}
+
+const PlaygroundSchemaPanel = ({ engine }: PlaygroundSchemaPanelProps) => {
+  const { schema, status } = engine;
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredSchema = schema.filter((table) =>
+    table.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <aside className="flex h-full flex-col bg-muted/10">
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        <Database className="size-3.5" />
-        <span>Schema</span>
-        {schemaLoading && <Spinner className="size-3" />}
-        <span className="ml-auto text-[10px] normal-case">
-          {schema.length} table{schema.length === 1 ? "" : "s"}
-        </span>
-      </div>
+      {status === "ready" && schema.length > 0 && (
+        <div className="border-b px-3 py-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search tables..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-8 text-xs"
+            />
+          </div>
+        </div>
+      )}
 
       <ScrollArea className="flex-1">
         {status !== "ready" ? (
@@ -30,9 +50,13 @@ const PlaygroundSchemaPanel = () => {
           <p className="p-3 text-xs italic text-muted-foreground">
             No user tables yet.
           </p>
+        ) : filteredSchema.length === 0 ? (
+          <p className="p-3 text-xs italic text-muted-foreground">
+            No tables match "{searchQuery}".
+          </p>
         ) : (
           <ul>
-            {schema.map((t) => (
+            {filteredSchema.map((t) => (
               <SchemaTableNode key={`${t.schema}.${t.name}`} table={t} />
             ))}
           </ul>
@@ -50,30 +74,30 @@ const SchemaTableNode = ({ table }: SchemaTableNodeProps) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <li className="border-b border-border/60 last:border-b-0">
+    <li className="border-b border-border/40 last:border-b-0">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-full items-center gap-1.5 px-3 py-1.5 text-left text-xs transition-colors hover:bg-muted/40"
+        className="flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-muted/40"
       >
         <ChevronRight
           className={cn(
-            "size-3 shrink-0 text-muted-foreground transition-transform",
+            "size-3.5 shrink-0 text-muted-foreground transition-transform",
             expanded && "rotate-90",
           )}
         />
         <TableIcon className="size-3.5 shrink-0 text-muted-foreground" />
-        <span className="font-mono">{table.name}</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">
+        <span className="flex-1 truncate font-mono text-xs">{table.name}</span>
+        <span className="text-xs text-muted-foreground">
           {table.columns.length}
         </span>
       </button>
       {expanded && (
-        <ul className="border-t border-border/60 bg-muted/10 px-3 py-1">
+        <ul className="border-t border-border/40 bg-muted/20 py-1">
           {table.columns.map((col) => (
             <li
               key={col.name}
-              className="flex items-center gap-1.5 py-0.5 text-[11px] font-mono"
+              className="flex items-center gap-2 px-3 py-1 text-xs font-mono hover:bg-muted/40"
               title={
                 col.fk
                   ? `FK → ${col.fk.table}.${col.fk.column}`
@@ -83,18 +107,16 @@ const SchemaTableNode = ({ table }: SchemaTableNodeProps) => {
               }
             >
               {col.isPrimaryKey ? (
-                <KeyRound className="size-3 shrink-0 text-amber-500" />
+                <KeyRound className="size-3.5 shrink-0 text-amber-500" />
               ) : col.fk ? (
-                <Link2 className="size-3 shrink-0 text-cyan-500" />
+                <Link2 className="size-3.5 shrink-0 text-cyan-500" />
               ) : (
-                <span className="size-3 shrink-0" aria-hidden />
+                <span className="size-3.5 shrink-0" aria-hidden />
               )}
-              <span>{col.name}</span>
+              <span className="flex-1 truncate">{col.name}</span>
               <span className="text-muted-foreground">{col.dataType}</span>
               {!col.nullable && (
-                <span className="ml-auto text-[10px] text-muted-foreground">
-                  NN
-                </span>
+                <span className="text-[10px] text-muted-foreground">NN</span>
               )}
             </li>
           ))}

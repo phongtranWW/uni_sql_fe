@@ -24,48 +24,52 @@ export function generateValueForColumn(
 
   const tryGenerate = (): unknown => {
     switch (fieldType) {
-      case "INT": {
+      case "int":
+      case "smallint": {
         if (enforceUnique) return seenValues.size + 1;
         return faker.number.int({ min: 1, max: 100_000 });
       }
-      case "FLOAT":
+      case "bigint": {
+        if (enforceUnique) return seenValues.size + 1;
+        return faker.number.int({ min: 1, max: 1_000_000_000 });
+      }
+      case "float":
         return faker.number.float({ min: 0, max: 1000, fractionDigits: 2 });
-      case "DOUBLE":
+      case "double":
         return faker.number.float({ min: 0, max: 1_000_000, fractionDigits: 4 });
-      case "DECIMAL":
+      case "decimal":
         return faker.finance.amount({ min: 1, max: 10000, dec: 2 });
 
-      case "BOOLEAN":
+      case "boolean":
         return faker.datatype.boolean();
 
-      case "DATE":
+      case "date":
         return faker.date.past({ years: 5 }).toISOString().slice(0, 10);
-      case "TIME":
-        return faker.date.recent().toTimeString().slice(0, 8);
-      case "DATETIME":
+      case "datetime":
         return faker.date
           .recent({ days: 365 })
           .toISOString()
           .slice(0, 19)
           .replace("T", " ");
-      case "TIMESTAMP":
+      case "timestamp":
         return faker.date.recent({ days: 365 }).toISOString();
 
-      case "UUID":
+      case "uuid":
         return faker.string.uuid();
 
-      case "CHAR":
-        // CHAR(n) — pad/trim to exactly `cap` chars when we know it.
-        if (cap && cap > 0) return faker.string.alpha({ length: cap });
-        return faker.string.alpha({ length: 1 });
-
-      case "VARCHAR":
-      case "TEXT": {
+      case "varchar":
+      case "text": {
         const hint = pickColumnHint(column.name);
         const raw = hint ? hint.generate(faker) : faker.lorem.words({ min: 2, max: 4 });
         if (cap && raw.length > cap) return raw.slice(0, cap);
         return raw;
       }
+
+      case "json":
+        return JSON.stringify({
+          id: faker.string.uuid(),
+          value: faker.lorem.words({ min: 1, max: 3 }),
+        });
     }
   };
 

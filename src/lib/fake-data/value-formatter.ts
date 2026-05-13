@@ -16,26 +16,27 @@ export function toSqlLiteral(value: unknown, fieldType: FieldType): string {
   if (value === null || value === undefined) return "NULL";
 
   switch (fieldType) {
-    case "BOOLEAN":
+    case "boolean":
       return value ? "TRUE" : "FALSE";
 
-    case "INT":
-    case "FLOAT":
-    case "DOUBLE":
-    case "DECIMAL":
+    case "int":
+    case "bigint":
+    case "smallint":
+    case "float":
+    case "double":
+    case "decimal":
       // Numbers are emitted as-is. faker.finance.amount returns a string,
       // which is also fine for PG (NUMERIC accepts string literals).
       if (typeof value === "string") return value;
       return String(value);
 
-    case "UUID":
-    case "CHAR":
-    case "VARCHAR":
-    case "TEXT":
-    case "DATE":
-    case "TIME":
-    case "DATETIME":
-    case "TIMESTAMP": {
+    case "uuid":
+    case "varchar":
+    case "text":
+    case "date":
+    case "datetime":
+    case "timestamp":
+    case "json": {
       const s =
         value instanceof Date ? value.toISOString() : String(value);
       return `'${escapeSqlString(s)}'`;
