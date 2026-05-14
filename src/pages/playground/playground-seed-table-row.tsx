@@ -1,6 +1,6 @@
 import { Link2, Table as TableIcon } from "lucide-react";
 import type { SchemaTable } from "@/lib/sql-engine";
-import { MAX_ROW_COUNT } from "@/lib/fake-data";
+import { MAX_ROW_COUNT } from "@/lib/fake-data/single-table-generator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 
