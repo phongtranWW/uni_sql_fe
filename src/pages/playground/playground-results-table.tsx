@@ -15,7 +15,7 @@ interface Props {
   result: QueryResult;
 }
 
-const MAX_ROWS = 500;
+const MAX_ROWS = 1000;
 const NULL_LABEL = "NULL";
 const PlaygroundResultsTable = ({ result }: Props) => {
   const visibleRows = useMemo(
@@ -25,7 +25,7 @@ const PlaygroundResultsTable = ({ result }: Props) => {
 
   if (result.fields.length === 0) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2.5 text-sm">
+      <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1.5 text-sm">
         <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" />
         <span className="font-medium text-emerald-700 dark:text-emerald-300">
           {result.command || "Success"}
@@ -44,7 +44,7 @@ const PlaygroundResultsTable = ({ result }: Props) => {
 
   return (
     <div className="overflow-hidden rounded-md border">
-      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-3 py-2">
+      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-2 py-1.5">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="font-mono text-xs">
             {result.command || "RESULT"}
@@ -59,14 +59,14 @@ const PlaygroundResultsTable = ({ result }: Props) => {
         </span>
       </div>
 
-      <div className="max-h-80 overflow-auto">
+      <div className="max-h-96 overflow-auto">
         <Table>
           <TableHeader className="sticky top-0 bg-muted/50">
             <TableRow>
               {result.fields.map((field, i) => (
                 <TableHead
                   key={`${field.name}-${i}`}
-                  className="h-8 font-mono text-xs font-medium"
+                  className="h-7 px-2 font-mono text-xs font-medium"
                 >
                   {field.name}
                 </TableHead>
@@ -78,7 +78,7 @@ const PlaygroundResultsTable = ({ result }: Props) => {
               <TableRow>
                 <TableCell
                   colSpan={result.fields.length}
-                  className="h-20 text-center text-xs text-muted-foreground"
+                  className="h-16 text-center text-xs text-muted-foreground"
                 >
                   No rows returned
                 </TableCell>
@@ -89,7 +89,7 @@ const PlaygroundResultsTable = ({ result }: Props) => {
                   {result.fields.map((field, fi) => (
                     <TableCell
                       key={`${field.name}-${fi}`}
-                      className="font-mono text-xs"
+                      className="px-2 py-1 font-mono text-xs"
                     >
                       {formatCell(row[field.name])}
                     </TableCell>

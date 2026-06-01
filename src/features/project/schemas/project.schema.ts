@@ -23,7 +23,7 @@ export const ProjectBaseSchema = z.object({
 
 // ─── State Schema (Redux) ─────────────────────────────────────────────────────
 export const ProjectSchema = ProjectBaseSchema.extend({
-  id: z.string(),
+  id: z.string().catch(() => `temp_${Date.now()}`),
   name: z.string(),
   tables: z.array(TableSchema).default([]),
   refs: z.array(RefSchema).default([]),

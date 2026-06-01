@@ -14,10 +14,6 @@ export const TableBaseSchema = z.object({
   name: z.string().catch(() => `table_${nanoidAlpabet(3)}`),
   fields: z.array(FieldBaseSchema).catch([]),
   alias: z.string().nullable().catch(null),
-});
-
-// ─── State Schema (Redux) ─────────────────────────────────────────────────────
-export const TableSchema = TableBaseSchema.extend({
   headerColor: z
     .string()
     .catch(
@@ -27,8 +23,7 @@ export const TableSchema = TableBaseSchema.extend({
         ],
     ),
   isSelected: z.boolean().catch(false),
-  fields: z.array(FieldSchema).catch([]),
-  position: object({
+  position: z.object({
     x: z.number().catch(() => Math.floor(Math.random() * 100)),
     y: z.number().catch(() => Math.floor(Math.random() * 100)),
   }).catch({
@@ -36,6 +31,9 @@ export const TableSchema = TableBaseSchema.extend({
     y: Math.floor(Math.random() * 100),
   }),
 });
+
+// ─── State Schema (Redux) ─────────────────────────────────────────────────────
+export const TableSchema = TableBaseSchema;
 
 export const TableCreateSchema = TableBaseSchema.extend({
   name: z.string().default(() => `table_${nanoidAlpabet(3)}`),

@@ -25,7 +25,7 @@ export function generateSingleTableInserts(
 
   // Only include columns that are selected (exist in columnConfigs)
   const columnsToInsert = table.columns.filter(
-    col => (!col.isPrimaryKey || !col.autoIncrement) && columnConfigs.has(col.name)
+    col => columnConfigs.has(col.name)
   );
 
   for (let i = 0; i < rowCount; i++) {

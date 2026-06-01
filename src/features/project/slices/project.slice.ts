@@ -225,8 +225,12 @@ const projectSlice = createSlice({
       state.fetchStatus = "succeeded";
       state.saveStatus = "idle";
     },
-    projectImported: (state, action: PayloadAction<Project>) => {
-      state.data = action.payload;
+    projectImported: (state, action: PayloadAction<Omit<Project, 'id'>>) => {
+      if (!state.data) return;
+      state.data = {
+        ...action.payload,
+        id: state.data.id, // Keep existing ID
+      };
       state.fetchStatus = "succeeded";
       state.saveStatus = "idle";
     },

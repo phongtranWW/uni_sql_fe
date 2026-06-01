@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Copy, Sparkles } from "lucide-react";
 import CodeMirror from "@uiw/react-codemirror";
 import { sql, PostgreSQL } from "@codemirror/lang-sql";
@@ -9,7 +9,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -44,9 +43,15 @@ const PlaygroundSeedDialog = ({
 
   const [activeTable, setActiveTable] = useState<string>("");
   const [rowCount, setRowCount] = useState(DEFAULT_ROW_COUNT);
-  const [columnConfigs, setColumnConfigs] = useState<Map<string, ColumnConfig>>(new Map());
-  const [selectedColumns, setSelectedColumns] = useState<Set<string>>(new Set());
-  const [seed, setSeed] = useState<number>(() => Math.floor(Math.random() * 1e9));
+  const [columnConfigs, setColumnConfigs] = useState<Map<string, ColumnConfig>>(
+    new Map(),
+  );
+  const [selectedColumns, setSelectedColumns] = useState<Set<string>>(
+    new Set(),
+  );
+  const [seed, setSeed] = useState<number>(() =>
+    Math.floor(Math.random() * 1e9),
+  );
 
   const [sqlPreview, setSqlPreview] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -63,19 +68,19 @@ const PlaygroundSeedDialog = ({
     setRowCount(DEFAULT_ROW_COUNT);
 
     // Initialize default configs for first table
-    const table = engine.schema.find(t => t.name === firstTable);
+    const table = engine.schema.find((t) => t.name === firstTable);
     if (table) {
       const configs = new Map<string, ColumnConfig>();
       const selected = new Set<string>();
       for (const col of table.columns) {
-        if (!col.isPrimaryKey || !col.autoIncrement) {
-          const defaultFakerId = getDefaultFakerOption(col.dataType);
-          configs.set(col.name, {
-            mode: defaultFakerId === "default" ? "default" : "faker",
-            fakerId: defaultFakerId !== "default" ? defaultFakerId : undefined,
-            defaultValue: defaultFakerId === "default" ? "" : undefined,
-          });
-          // Select all columns by default
+        const defaultFakerId = getDefaultFakerOption(col.dataType);
+        configs.set(col.name, {
+          mode: defaultFakerId === "default" ? "default" : "faker",
+          fakerId: defaultFakerId !== "default" ? defaultFakerId : undefined,
+          defaultValue: defaultFakerId === "default" ? "" : undefined,
+        });
+        // Select all columns by default except identity columns
+        if (!col.isIdentity) {
           selected.add(col.name);
         }
       }
@@ -85,34 +90,38 @@ const PlaygroundSeedDialog = ({
   }, [open, engine.schema]);
 
   // Switch table: reset configs for new table
-  const handleTableChange = useCallback((tableName: string) => {
-    setActiveTable(tableName);
-    const table = engine.schema.find(t => t.name === tableName);
-    if (table) {
-      const configs = new Map<string, ColumnConfig>();
-      const selected = new Set<string>();
-      for (const col of table.columns) {
-        if (!col.isPrimaryKey || !col.autoIncrement) {
+  const handleTableChange = useCallback(
+    (tableName: string) => {
+      setActiveTable(tableName);
+      const table = engine.schema.find((t) => t.name === tableName);
+      if (table) {
+        const configs = new Map<string, ColumnConfig>();
+        const selected = new Set<string>();
+        for (const col of table.columns) {
           const defaultFakerId = getDefaultFakerOption(col.dataType);
           configs.set(col.name, {
             mode: defaultFakerId === "default" ? "default" : "faker",
-            fakerId: defaultFakerId !== "default" ? defaultFakerId : undefined,
+            fakerId:
+              defaultFakerId !== "default" ? defaultFakerId : undefined,
             defaultValue: defaultFakerId === "default" ? "" : undefined,
           });
-          // Select all columns by default
-          selected.add(col.name);
+          // Select all columns by default except identity columns
+          if (!col.isIdentity) {
+            selected.add(col.name);
+          }
         }
+        setColumnConfigs(configs);
+        setSelectedColumns(selected);
       }
-      setColumnConfigs(configs);
-      setSelectedColumns(selected);
-    }
-  }, [engine.schema]);
+    },
+    [engine.schema],
+  );
 
   // Generate SQL preview whenever config changes
   useEffect(() => {
     if (!open || !activeTable) return;
 
-    const table = engine.schema.find(t => t.name === activeTable);
+    const table = engine.schema.find((t) => t.name === activeTable);
     if (!table) return;
 
     let cancelled = false;
@@ -154,27 +163,41 @@ const PlaygroundSeedDialog = ({
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [open, activeTable, rowCount, columnConfigs, selectedColumns, seed, engine.schema]);
+  }, [
+    open,
+    activeTable,
+    rowCount,
+    columnConfigs,
+    selectedColumns,
+    seed,
+    engine.schema,
+  ]);
 
-  const handleColumnConfigChange = useCallback((columnName: string, config: ColumnConfig) => {
-    setColumnConfigs(prev => {
-      const next = new Map(prev);
-      next.set(columnName, config);
-      return next;
-    });
-  }, []);
+  const handleColumnConfigChange = useCallback(
+    (columnName: string, config: ColumnConfig) => {
+      setColumnConfigs((prev) => {
+        const next = new Map(prev);
+        next.set(columnName, config);
+        return next;
+      });
+    },
+    [],
+  );
 
-  const handleColumnSelectionChange = useCallback((columnName: string, selected: boolean) => {
-    setSelectedColumns(prev => {
-      const next = new Set(prev);
-      if (selected) {
-        next.add(columnName);
-      } else {
-        next.delete(columnName);
-      }
-      return next;
-    });
-  }, []);
+  const handleColumnSelectionChange = useCallback(
+    (columnName: string, selected: boolean) => {
+      setSelectedColumns((prev) => {
+        const next = new Set(prev);
+        if (selected) {
+          next.add(columnName);
+        } else {
+          next.delete(columnName);
+        }
+        return next;
+      });
+    },
+    [],
+  );
 
   const handleCopy = async () => {
     if (!sqlPreview) return;
@@ -191,7 +214,9 @@ const PlaygroundSeedDialog = ({
     setIsRunning(true);
     try {
       const r = await engine.runScript(sqlPreview);
-      toast.success(`Inserted ${rowCount} row${rowCount === 1 ? "" : "s"} into ${activeTable} · ${r.durationMs}ms.`);
+      toast.success(
+        `Inserted ${rowCount} row${rowCount === 1 ? "" : "s"} into ${activeTable} · ${r.durationMs}ms.`,
+      );
       onOpenChange(false);
     } catch (err: unknown) {
       const msg =
@@ -206,14 +231,19 @@ const PlaygroundSeedDialog = ({
     }
   };
 
-  const currentTable = engine.schema.find(t => t.name === activeTable);
+  const currentTable = engine.schema.find((t) => t.name === activeTable);
   const noTables = engine.schema.length === 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="flex flex-col gap-3 p-0 overflow-hidden"
-        style={{ width: "90vw", maxWidth: "90vw", height: "90vh", maxHeight: "90vh" }}
+        style={{
+          width: "90vw",
+          maxWidth: "90vw",
+          height: "90vh",
+          maxHeight: "90vh",
+        }}
       >
         <div className="px-4 py-3 border-b shrink-0">
           <DialogTitle className="flex items-center gap-2">
@@ -232,10 +262,14 @@ const PlaygroundSeedDialog = ({
             </p>
           </div>
         ) : (
-          <Tabs value={activeTable} onValueChange={handleTableChange} className="flex flex-1 min-h-0 flex-col">
+          <Tabs
+            value={activeTable}
+            onValueChange={handleTableChange}
+            className="flex flex-1 min-h-0 flex-col"
+          >
             <div className="px-4 shrink-0">
               <TabsList className="w-full justify-start overflow-x-auto">
-                {engine.schema.map(t => (
+                {engine.schema.map((t) => (
                   <TabsTrigger key={t.name} value={t.name} className="text-xs">
                     {t.name}
                   </TabsTrigger>
@@ -243,7 +277,7 @@ const PlaygroundSeedDialog = ({
               </TabsList>
             </div>
 
-            {engine.schema.map(table => (
+            {engine.schema.map((table) => (
               <TabsContent
                 key={table.name}
                 value={table.name}
@@ -253,7 +287,9 @@ const PlaygroundSeedDialog = ({
                   {/* Left: column configuration */}
                   <div className="flex min-h-0 flex-col gap-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Rows to generate:</span>
+                      <span className="text-sm font-medium">
+                        Rows to generate:
+                      </span>
                       <Input
                         type="number"
                         min={1}
@@ -269,25 +305,32 @@ const PlaygroundSeedDialog = ({
 
                     <ScrollArea className="flex-1 rounded-md border border-border">
                       <div className="p-2 space-y-2">
-                        {currentTable?.columns
-                          .filter(col => !col.isPrimaryKey || !col.autoIncrement)
-                          .map(col => {
-                            const defaultFakerId = getDefaultFakerOption(col.dataType);
-                            const defaultConfig: ColumnConfig = defaultFakerId === "default"
+                        {currentTable?.columns.map((col) => {
+                          const defaultFakerId = getDefaultFakerOption(
+                            col.dataType,
+                          );
+                          const defaultConfig: ColumnConfig =
+                            defaultFakerId === "default"
                               ? { mode: "default", defaultValue: "" }
                               : { mode: "faker", fakerId: defaultFakerId };
 
-                            return (
-                              <PlaygroundSeedColumnRow
-                                key={col.name}
-                                column={col}
-                                selected={selectedColumns.has(col.name)}
-                                config={columnConfigs.get(col.name) ?? defaultConfig}
-                                onSelectedChange={(sel) => handleColumnSelectionChange(col.name, sel)}
-                                onConfigChange={(cfg) => handleColumnConfigChange(col.name, cfg)}
-                              />
-                            );
-                          })}
+                          return (
+                            <PlaygroundSeedColumnRow
+                              key={col.name}
+                              column={col}
+                              selected={selectedColumns.has(col.name)}
+                              config={
+                                columnConfigs.get(col.name) ?? defaultConfig
+                              }
+                              onSelectedChange={(sel) =>
+                                handleColumnSelectionChange(col.name, sel)
+                              }
+                              onConfigChange={(cfg) =>
+                                handleColumnConfigChange(col.name, cfg)
+                              }
+                            />
+                          );
+                        })}
                       </div>
                     </ScrollArea>
                   </div>
@@ -306,7 +349,9 @@ const PlaygroundSeedDialog = ({
                           value={sqlPreview}
                           height="100%"
                           extensions={[sql({ dialect: PostgreSQL })]}
-                          theme={resolvedTheme === "dark" ? githubDark : githubLight}
+                          theme={
+                            resolvedTheme === "dark" ? githubDark : githubLight
+                          }
                           key={resolvedTheme}
                           editable={false}
                           basicSetup={{
@@ -348,7 +393,11 @@ const PlaygroundSeedDialog = ({
               onClick={handleRun}
               disabled={!sqlPreview || isRunning || isGenerating}
             >
-              {isRunning ? <Spinner className="size-3.5" /> : <Sparkles className="size-3.5" />}
+              {isRunning ? (
+                <Spinner className="size-3.5" />
+              ) : (
+                <Sparkles className="size-3.5" />
+              )}
               Run insert
             </Button>
           </div>
