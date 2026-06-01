@@ -24,7 +24,6 @@ export const PostgresTypeSchema = z
         return { fieldType: "bigint" };
       case "REAL":
       case "FLOAT4":
-        return { fieldType: "float" };
       case "DOUBLE PRECISION":
       case "FLOAT8":
         return { fieldType: "double" };

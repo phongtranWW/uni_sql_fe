@@ -21,7 +21,6 @@ export const MysqlTypeSchema = z
       case "BIGINT":
         return { fieldType: "bigint" };
       case "FLOAT":
-        return { fieldType: "float" };
       case "DOUBLE":
       case "DOUBLE PRECISION":
       case "REAL":

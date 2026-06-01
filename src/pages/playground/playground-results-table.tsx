@@ -44,7 +44,7 @@ const PlaygroundResultsTable = ({ result }: Props) => {
 
   return (
     <div className="overflow-hidden rounded-md border">
-      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-2 py-1.5">
+      <div className="flex items-center justify-between gap-2 border-b bg-muted/30 px-3 py-2">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="font-mono text-xs">
             {result.command || "RESULT"}
@@ -60,45 +60,47 @@ const PlaygroundResultsTable = ({ result }: Props) => {
       </div>
 
       <div className="max-h-96 overflow-auto">
-        <Table>
-          <TableHeader className="sticky top-0 bg-muted/50">
-            <TableRow>
-              {result.fields.map((field, i) => (
-                <TableHead
-                  key={`${field.name}-${i}`}
-                  className="h-7 px-2 font-mono text-xs font-medium"
-                >
-                  {field.name}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {visibleRows.length === 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-muted/50 z-10">
               <TableRow>
-                <TableCell
-                  colSpan={result.fields.length}
-                  className="h-16 text-center text-xs text-muted-foreground"
-                >
-                  No rows returned
-                </TableCell>
+                {result.fields.map((field, i) => (
+                  <TableHead
+                    key={`${field.name}-${i}`}
+                    className="h-8 px-3 font-mono text-xs font-medium whitespace-nowrap"
+                  >
+                    {field.name}
+                  </TableHead>
+                ))}
               </TableRow>
-            ) : (
-              visibleRows.map((row, ri) => (
-                <TableRow key={ri} className="hover:bg-muted/30">
-                  {result.fields.map((field, fi) => (
-                    <TableCell
-                      key={`${field.name}-${fi}`}
-                      className="px-2 py-1 font-mono text-xs"
-                    >
-                      {formatCell(row[field.name])}
-                    </TableCell>
-                  ))}
+            </TableHeader>
+            <TableBody>
+              {visibleRows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={result.fields.length}
+                    className="h-16 text-center text-xs text-muted-foreground"
+                  >
+                    No rows returned
+                  </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                visibleRows.map((row, ri) => (
+                  <TableRow key={ri} className="hover:bg-muted/30">
+                    {result.fields.map((field, fi) => (
+                      <TableCell
+                        key={`${field.name}-${fi}`}
+                        className="px-3 py-2 font-mono text-xs whitespace-nowrap"
+                      >
+                        {formatCell(row[field.name])}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

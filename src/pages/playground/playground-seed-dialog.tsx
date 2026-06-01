@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Copy, Sparkles } from "lucide-react";
+import { Copy, Minus, Plus, Sparkles } from "lucide-react";
 import CodeMirror from "@uiw/react-codemirror";
 import { sql, PostgreSQL } from "@codemirror/lang-sql";
 import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -267,14 +267,44 @@ const PlaygroundSeedDialog = ({
             onValueChange={handleTableChange}
             className="flex flex-1 min-h-0 flex-col"
           >
-            <div className="px-4 shrink-0">
-              <TabsList className="w-full justify-start overflow-x-auto">
-                {engine.schema.map((t) => (
-                  <TabsTrigger key={t.name} value={t.name} className="text-xs">
-                    {t.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+            {/* Toolbar: tabs + row count on same line */}
+            <div className="flex items-center gap-3 px-4 py-2 border-b shrink-0">
+              <div className="min-w-0 flex-1">
+                <div className="overflow-x-auto overflow-y-hidden">
+                  <TabsList className="w-auto">
+                    {engine.schema.map((t) => (
+                      <TabsTrigger key={t.name} value={t.name} className="text-xs shrink-0">
+                        {t.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-xs font-medium text-muted-foreground">Rows:</span>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="h-7 w-7"
+                  onClick={() => setRowCount(Math.max(1, rowCount - 10))}
+                >
+                  <Minus className="size-3" />
+                </Button>
+                <Badge variant="secondary" className="font-mono text-sm w-12 justify-center">
+                  {rowCount}
+                </Badge>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  className="h-7 w-7"
+                  onClick={() => setRowCount(Math.min(1000, rowCount + 10))}
+                >
+                  <Plus className="size-3" />
+                </Button>
+              </div>
             </div>
 
             {engine.schema.map((table) => (
@@ -283,67 +313,61 @@ const PlaygroundSeedDialog = ({
                 value={table.name}
                 className="flex flex-1 min-h-0 mt-0 px-4 pb-4"
               >
-                <div className="grid min-h-0 flex-1 grid-cols-[400px_1fr] gap-4">
+                <div className="grid min-h-0 flex-1 grid-cols-[420px_1fr] gap-4">
                   {/* Left: column configuration */}
-                  <div className="flex min-h-0 flex-col gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">
-                        Rows to generate:
+                  <div className="flex min-h-0 flex-col gap-2 overflow-hidden">
+                    <div className="flex items-center justify-between px-1 shrink-0">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {selectedColumns.size} of {currentTable?.columns.length ?? 0} columns selected
                       </span>
-                      <Input
-                        type="number"
-                        min={1}
-                        max={1000}
-                        value={rowCount}
-                        onChange={(e) => {
-                          const n = Number.parseInt(e.target.value, 10);
-                          if (!Number.isNaN(n) && n > 0) setRowCount(n);
-                        }}
-                        className="h-8 w-24 text-sm"
-                      />
                     </div>
 
-                    <ScrollArea className="flex-1 rounded-md border border-border">
-                      <div className="p-2 space-y-2">
-                        {currentTable?.columns.map((col) => {
-                          const defaultFakerId = getDefaultFakerOption(
-                            col.dataType,
-                          );
-                          const defaultConfig: ColumnConfig =
-                            defaultFakerId === "default"
-                              ? { mode: "default", defaultValue: "" }
-                              : { mode: "faker", fakerId: defaultFakerId };
+                    <div className="flex-1 min-h-0 rounded-lg border border-border bg-muted/20 overflow-hidden">
+                      <ScrollArea className="h-full" type="always">
+                        <div className="p-3 space-y-2 pr-4">
+                          {currentTable?.columns.map((col) => {
+                            const defaultFakerId = getDefaultFakerOption(
+                              col.dataType,
+                            );
+                            const defaultConfig: ColumnConfig =
+                              defaultFakerId === "default"
+                                ? { mode: "default", defaultValue: "" }
+                                : { mode: "faker", fakerId: defaultFakerId };
 
-                          return (
-                            <PlaygroundSeedColumnRow
-                              key={col.name}
-                              column={col}
-                              selected={selectedColumns.has(col.name)}
-                              config={
-                                columnConfigs.get(col.name) ?? defaultConfig
-                              }
-                              onSelectedChange={(sel) =>
-                                handleColumnSelectionChange(col.name, sel)
-                              }
-                              onConfigChange={(cfg) =>
-                                handleColumnConfigChange(col.name, cfg)
-                              }
-                            />
-                          );
-                        })}
-                      </div>
-                    </ScrollArea>
+                            return (
+                              <PlaygroundSeedColumnRow
+                                key={col.name}
+                                column={col}
+                                selected={selectedColumns.has(col.name)}
+                                config={
+                                  columnConfigs.get(col.name) ?? defaultConfig
+                                }
+                                onSelectedChange={(sel) =>
+                                  handleColumnSelectionChange(col.name, sel)
+                                }
+                                onConfigChange={(cfg) =>
+                                  handleColumnConfigChange(col.name, cfg)
+                                }
+                              />
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </div>
                   </div>
 
                   {/* Right: SQL preview */}
-                  <div className="flex min-h-0 flex-col">
-                    <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-muted/30 px-3 py-2">
-                      <span className="flex items-center gap-2 text-sm font-medium">
-                        Preview SQL
-                        {isGenerating && <Spinner className="size-3" />}
-                      </span>
+                  <div className="flex min-h-0 flex-col gap-2">
+                    <div className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 shrink-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">SQL Preview</span>
+                        {isGenerating && <Spinner className="size-3.5" />}
+                      </div>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {sqlPreview.split('\n').length} lines
+                      </Badge>
                     </div>
-                    <div className="min-h-0 flex-1 overflow-hidden rounded-b-md border border-border">
+                    <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border shadow-sm">
                       {sqlPreview ? (
                         <CodeMirror
                           value={sqlPreview}
@@ -363,9 +387,12 @@ const PlaygroundSeedDialog = ({
                         />
                       ) : (
                         <div className="flex h-full items-center justify-center p-4">
-                          <p className="text-sm italic text-muted-foreground">
-                            Generating…
-                          </p>
+                          <div className="flex flex-col items-center gap-2">
+                            <Spinner className="size-5" />
+                            <p className="text-sm text-muted-foreground">
+                              Generating SQL...
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>

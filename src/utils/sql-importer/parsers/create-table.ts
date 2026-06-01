@@ -91,17 +91,36 @@ function extractRawType(afterName: string): { rawType: string; rest: string } {
 }
 
 /**
- * Extract the DEFAULT value literal from the constraint clause.
+ * Extract and normalize the DEFAULT value literal from the constraint clause.
  * Handles:
- *  - Quoted strings: DEFAULT 'hello' or DEFAULT 'it''s'
+ *  - Quoted strings: DEFAULT 'hello' or DEFAULT 'it''s' → removes quotes
  *  - Bare values:    DEFAULT 42, DEFAULT CURRENT_TIMESTAMP, DEFAULT NOW()
+ *  - NULL values:    DEFAULT NULL → returns null
+ *
+ * Returns null if no DEFAULT clause is found or if DEFAULT NULL is specified.
  */
 function extractDefault(rest: string): string | null {
   // Match DEFAULT followed by a quoted string or a bare token (may include parentheses)
   const match = rest.match(
-    /\bDEFAULT\s+('(?:''|[^'])*'|\S+(?:\([^)]*\))?)/i,
+    /\bDEFAULT\s+('(?:''|[^'])*'|"(?:""|[^"])*"|\S+(?:\([^)]*\))?)/i,
   );
-  return match?.[1] ?? null;
+
+  if (!match?.[1]) return null;
+
+  let value = match[1].trim();
+
+  // Handle NULL explicitly
+  if (value.toUpperCase() === "NULL") return null;
+
+  // Remove surrounding quotes (single or double)
+  if ((value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith('"') && value.endsWith('"'))) {
+    value = value.slice(1, -1);
+    // Unescape doubled quotes (SQL standard: '' → ', "" → ")
+    value = value.replace(/''/g, "'").replace(/""/g, '"');
+  }
+
+  return value || null;
 }
 
 // ─── Public parser ────────────────────────────────────────────────────────────
@@ -162,6 +181,14 @@ export function parseCreateTable(
       });
     }
 
+    const increment =
+      /\bAUTO_INCREMENT\b/.test(upperRest) ||
+      /\bGENERATED\s+ALWAYS\s+AS\s+IDENTITY\b/.test(upperRest);
+
+    // Extract default value, but ignore it if the field is auto-increment
+    // (auto-increment fields should never have default values)
+    const defaultValue = increment ? null : extractDefault(rest);
+
     const raw = {
       name: stripIdentifier(rawName),
       rawType,
@@ -169,10 +196,8 @@ export function parseCreateTable(
       not_null: /\bNOT\s+NULL\b/.test(upperRest),
       // UNIQUE is redundant when PK — backend skips it, but we tolerate it
       unique: /\bUNIQUE\b/.test(upperRest),
-      increment:
-        /\bAUTO_INCREMENT\b/.test(upperRest) ||
-        /\bGENERATED\s+ALWAYS\s+AS\s+IDENTITY\b/.test(upperRest),
-      default: extractDefault(rest),
+      increment,
+      default: defaultValue,
     };
 
     const result = ParsedFieldSchema.safeParse(raw);

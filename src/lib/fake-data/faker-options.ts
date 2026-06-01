@@ -49,11 +49,6 @@ export const FAKER_OPTIONS_BY_TYPE: Partial<Record<string, FakerOption[]>> = {
     { id: "numeric", label: "Numeric value", generate: () => faker.number.float({ min: 0, max: 10000, fractionDigits: 2 }) },
     { id: "price", label: "Price", generate: () => faker.commerce.price({ min: 1, max: 10000, dec: 2 }) },
   ],
-  float: [
-    { id: "real", label: "Real number", generate: () => faker.number.float({ min: 0, max: 1000, fractionDigits: 4 }) },
-    { id: "latitude", label: "Latitude", generate: () => faker.location.latitude() },
-    { id: "longitude", label: "Longitude", generate: () => faker.location.longitude() },
-  ],
   double: [
     { id: "double", label: "Double precision", generate: () => faker.number.float({ min: 0, max: 1000000, fractionDigits: 6 }) },
     { id: "latitude", label: "Latitude", generate: () => faker.location.latitude() },
