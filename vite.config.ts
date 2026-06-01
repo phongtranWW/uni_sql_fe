@@ -11,4 +11,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // pglite ships large WASM/data assets and uses dynamic imports internally;
+  // letting Vite's dep optimiser pre-bundle it caused dev-server hangs in
+  // the past. See https://pglite.dev/docs/bundler-support#vite
+  optimizeDeps: {
+    exclude: ["@electric-sql/pglite"],
+  },
 });

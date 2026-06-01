@@ -1,17 +1,18 @@
 export const FIELD_TYPES = [
-  "INT",
-  "FLOAT",
-  "DOUBLE",
-  "DECIMAL",
-  "CHAR",
-  "VARCHAR",
-  "TEXT",
-  "BOOLEAN",
-  "DATE",
-  "TIME",
-  "DATETIME",
-  "TIMESTAMP",
-  "UUID",
+  "int",
+  "bigint",
+  "smallint",
+  "decimal",
+  "float",
+  "double",
+  "varchar",
+  "text",
+  "boolean",
+  "date",
+  "datetime",
+  "timestamp",
+  "uuid",
+  "json",
 ] as const;
 
 export type FieldType = (typeof FIELD_TYPES)[number];
@@ -24,74 +25,78 @@ export const FIELD_DEFAULT_PATTERNS: Record<
     message: string;
   }
 > = {
-  INT: {
+  int: {
     patterns: [/^-?\d+$/],
     functions: [],
-    message: "Default for INT must be an integer (e.g. 0, -1, 42)",
+    message: "Default for int must be an integer (e.g. 0, -1, 42)",
   },
-  FLOAT: {
+  bigint: {
+    patterns: [/^-?\d+$/],
+    functions: [],
+    message: "Default for bigint must be an integer (e.g. 0, -1, 42)",
+  },
+  smallint: {
+    patterns: [/^-?\d+$/],
+    functions: [],
+    message: "Default for smallint must be an integer (e.g. 0, -1, 42)",
+  },
+  float: {
     patterns: [/^-?\d+(\.\d+)?$/],
     functions: [],
-    message: "Default for FLOAT must be a number (e.g. 0.0, 3.14)",
+    message: "Default for float must be a number (e.g. 0.0, 3.14)",
   },
-  DOUBLE: {
+  double: {
     patterns: [/^-?\d+(\.\d+)?$/],
     functions: [],
-    message: "Default for DOUBLE must be a number (e.g. 0.0, 3.14)",
+    message: "Default for double must be a number (e.g. 0.0, 3.14)",
   },
-  DECIMAL: {
+  decimal: {
     patterns: [/^-?\d+(\.\d+)?$/],
     functions: [],
-    message: "Default for DECIMAL must be a number (e.g. 0.0, 3.14)",
+    message: "Default for decimal must be a number (e.g. 0.0, 3.14)",
   },
-  BOOLEAN: {
+  boolean: {
     patterns: [/^(true|false|0|1)$/i],
     functions: [],
-    message: "Default for BOOLEAN must be true, false, 0, or 1",
+    message: "Default for boolean must be true, false, 0, or 1",
   },
-  DATE: {
+  date: {
     patterns: [/^\d{4}-\d{2}-\d{2}$/],
     functions: ["CURRENT_DATE", "NOW()"],
-    message: "Default for DATE must be YYYY-MM-DD, CURRENT_DATE, or NOW()",
+    message: "Default for date must be YYYY-MM-DD, CURRENT_DATE, or NOW()",
   },
-  TIME: {
-    patterns: [/^\d{2}:\d{2}(:\d{2})?$/],
-    functions: ["CURRENT_TIME", "NOW()"],
-    message:
-      "Default for TIME must be HH:MM or HH:MM:SS, CURRENT_TIME, or NOW()",
-  },
-  DATETIME: {
+  datetime: {
     patterns: [/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/],
     functions: ["CURRENT_TIMESTAMP", "NOW()", "CURRENT_DATE"],
     message:
-      "Default for DATETIME must be YYYY-MM-DD HH:MM:SS, CURRENT_TIMESTAMP, or NOW()",
+      "Default for datetime must be YYYY-MM-DD HH:MM:SS, CURRENT_TIMESTAMP, or NOW()",
   },
-  TIMESTAMP: {
+  timestamp: {
     patterns: [/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/],
     functions: ["CURRENT_TIMESTAMP", "NOW()"],
     message:
-      "Default for TIMESTAMP must be YYYY-MM-DD HH:MM:SS, CURRENT_TIMESTAMP, or NOW()",
+      "Default for timestamp must be YYYY-MM-DD HH:MM:SS, CURRENT_TIMESTAMP, or NOW()",
   },
-  UUID: {
-    functions: [],
+  uuid: {
+    functions: ["gen_random_uuid()", "uuid_generate_v4()"],
     patterns: [
       /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-57][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/,
     ],
-    message: "Default for UUID must be a valid UUID",
+    message: "Default for uuid must be a valid UUID or gen_random_uuid()",
   },
-  CHAR: {
+  varchar: {
     patterns: [/^'(?:''|[^'])*'$/],
     functions: [],
-    message: "Default for CHAR must be a valid SQL string literal",
+    message: "Default for varchar must be a valid SQL string literal",
   },
-  VARCHAR: {
+  text: {
     patterns: [/^'(?:''|[^'])*'$/],
     functions: [],
-    message: "Default for VARCHAR must be a valid SQL string literal",
+    message: "Default for text must be a valid SQL string literal",
   },
-  TEXT: {
+  json: {
     patterns: [/^'(?:''|[^'])*'$/],
     functions: [],
-    message: "Default for TEXT must be a valid SQL string literal",
+    message: "Default for json must be a valid JSON string literal",
   },
 };

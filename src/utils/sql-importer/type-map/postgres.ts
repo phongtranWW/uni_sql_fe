@@ -12,60 +12,53 @@ export const PostgresTypeSchema = z
   .transform((type): TypeMapResult => {
     // Exact matches first
     switch (type) {
+      case "SMALLINT":
+      case "INT2":
+        return { fieldType: "smallint" };
       case "INTEGER":
       case "INT":
       case "INT4":
-      case "SMALLINT":
+        return { fieldType: "int" };
       case "BIGINT":
-        return { fieldType: "INT" };
+      case "INT8":
+        return { fieldType: "bigint" };
       case "REAL":
       case "FLOAT4":
-        return { fieldType: "FLOAT" };
+        return { fieldType: "float" };
       case "DOUBLE PRECISION":
       case "FLOAT8":
-        return { fieldType: "DOUBLE" };
+        return { fieldType: "double" };
       case "NUMERIC":
-        return { fieldType: "DECIMAL" };
+        return { fieldType: "decimal" };
       case "TEXT":
-        return { fieldType: "TEXT" };
+        return { fieldType: "text" };
       case "BOOLEAN":
       case "BOOL":
-        return { fieldType: "BOOLEAN" };
+        return { fieldType: "boolean" };
       case "DATE":
-        return { fieldType: "DATE" };
-      case "TIME":
-      case "TIME WITHOUT TIME ZONE":
-        return { fieldType: "TIME" };
+        return { fieldType: "date" };
       case "TIMESTAMP":
       case "TIMESTAMP WITHOUT TIME ZONE":
-        return { fieldType: "DATETIME" };
+        return { fieldType: "datetime" };
       case "TIMESTAMPTZ":
       case "TIMESTAMP WITH TIME ZONE":
-        return { fieldType: "TIMESTAMP" };
+        return { fieldType: "timestamp" };
       case "UUID":
-        return { fieldType: "UUID" };
+        return { fieldType: "uuid" };
+      case "JSON":
+      case "JSONB":
+        return { fieldType: "json" };
     }
 
-    // Prefix matches (DECIMAL, NUMERIC with precision, VARCHAR, CHAR)
+    // Prefix matches (DECIMAL, NUMERIC with precision, VARCHAR)
     if (type.startsWith("DECIMAL") || type.startsWith("NUMERIC"))
-      return { fieldType: "DECIMAL" };
+      return { fieldType: "decimal" };
     if (type.startsWith("VARCHAR") || type.startsWith("CHARACTER VARYING"))
-      return { fieldType: "VARCHAR" };
-    if (type.startsWith("CHAR") || type.startsWith("CHARACTER"))
-      return { fieldType: "CHAR" };
+      return { fieldType: "varchar" };
 
     // Fallback with warning
-    const fallbackBase = type.startsWith("VARCHAR")
-      ? "VARCHAR"
-      : type.startsWith("CHAR")
-        ? "CHAR"
-        : null;
-
-    if (fallbackBase)
-      return { fieldType: fallbackBase as FieldType };
-
     return {
-      fieldType: "VARCHAR",
-      warning: `Unsupported PostgreSQL type "${type}" — mapped to VARCHAR`,
+      fieldType: "varchar",
+      warning: `Unsupported PostgreSQL type "${type}" — mapped to varchar`,
     };
   });

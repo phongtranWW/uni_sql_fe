@@ -16,12 +16,12 @@ const getMarkers = (operator: RefOperator) => {
         markerStart: "url(#one-marker-start)",
         markerEnd: "url(#one-marker-end)",
       };
-    case ">":
+    case "<":
       return {
         markerStart: "url(#one-marker-start)",
         markerEnd: "url(#many-marker-end)",
       };
-    case "<":
+    case ">":
       return {
         markerStart: "url(#many-marker-start)",
         markerEnd: "url(#one-marker-end)",

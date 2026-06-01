@@ -7,57 +7,54 @@ export const MysqlTypeSchema = z
   .transform((raw) => raw.toUpperCase().replace(/\s+/g, " ").trim())
   .transform((type): TypeMapResult => {
     // BOOLEAN: MySQL backend exports TINYINT(1) for BOOLEAN fields
-    if (type === "TINYINT(1)") return { fieldType: "BOOLEAN" };
+    if (type === "TINYINT(1)") return { fieldType: "boolean" };
 
     // Exact matches
     switch (type) {
-      case "INT":
-      case "INTEGER":
       case "TINYINT":
       case "SMALLINT":
+        return { fieldType: "smallint" };
+      case "INT":
+      case "INTEGER":
       case "MEDIUMINT":
+        return { fieldType: "int" };
       case "BIGINT":
-        return { fieldType: "INT" };
+        return { fieldType: "bigint" };
       case "FLOAT":
-        return { fieldType: "FLOAT" };
+        return { fieldType: "float" };
       case "DOUBLE":
       case "DOUBLE PRECISION":
       case "REAL":
-        return { fieldType: "DOUBLE" };
+        return { fieldType: "double" };
       case "DECIMAL":
       case "NUMERIC":
-        return { fieldType: "DECIMAL" };
+        return { fieldType: "decimal" };
       case "TEXT":
       case "MEDIUMTEXT":
       case "LONGTEXT":
       case "TINYTEXT":
-        return { fieldType: "TEXT" };
+        return { fieldType: "text" };
       case "DATE":
-        return { fieldType: "DATE" };
-      case "TIME":
-        return { fieldType: "TIME" };
+        return { fieldType: "date" };
       case "DATETIME":
-        return { fieldType: "DATETIME" };
+        return { fieldType: "datetime" };
       case "TIMESTAMP":
-        return { fieldType: "TIMESTAMP" };
+        return { fieldType: "timestamp" };
+      case "JSON":
+        return { fieldType: "json" };
     }
 
     // Prefix matches
     if (type.startsWith("DECIMAL") || type.startsWith("NUMERIC"))
-      return { fieldType: "DECIMAL" };
+      return { fieldType: "decimal" };
     if (type.startsWith("INT") || type.startsWith("BIGINT") || type.startsWith("TINYINT"))
-      return { fieldType: "INT" };
+      return { fieldType: "int" };
     if (type.startsWith("VARCHAR"))
-      return { fieldType: "VARCHAR" };
-
-    // CHAR(n) — note: CHAR(36) is used by some tools for UUID, but we cannot
-    // distinguish it from a regular CHAR column without additional context.
-    if (type.startsWith("CHAR"))
-      return { fieldType: "CHAR" };
+      return { fieldType: "varchar" };
 
     // Fallback with warning
     return {
-      fieldType: "VARCHAR",
-      warning: `Unsupported MySQL type "${type}" — mapped to VARCHAR`,
+      fieldType: "varchar",
+      warning: `Unsupported MySQL type "${type}" — mapped to varchar`,
     };
   });

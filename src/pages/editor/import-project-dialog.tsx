@@ -22,9 +22,10 @@ import {
 const ACCEPTED_EXTENSIONS = ["json"];
 const ACCEPTED_ACCEPT = ".json,application/json";
 
-const parseProjectFile = async (file: File): Promise<Project> => {
+const parseProjectFile = async (file: File): Promise<Omit<Project, 'id'>> => {
   const raw = await file.text();
-  return ProjectSchema.parse(JSON.parse(raw));
+  const parsed = ProjectSchema.omit({ id: true }).parse(JSON.parse(raw));
+  return parsed;
 };
 
 interface ImportProjectDialogProps {

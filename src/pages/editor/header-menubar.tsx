@@ -383,6 +383,8 @@ const HeaderMenubar = () => {
         onOpenChange={setShowCodePreview}
         code={exportCode}
         format={exportFormat}
+        projectId={id ?? null}
+        projectName={project?.name ?? null}
       />
       <ImportProjectDialog
         open={showImportDialog}
