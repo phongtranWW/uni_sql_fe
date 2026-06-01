@@ -3,7 +3,6 @@ export const FIELD_TYPES = [
   "bigint",
   "smallint",
   "decimal",
-  "float",
   "double",
   "varchar",
   "text",
@@ -39,11 +38,6 @@ export const FIELD_DEFAULT_PATTERNS: Record<
     patterns: [/^-?\d+$/],
     functions: [],
     message: "Default for smallint must be an integer (e.g. 0, -1, 42)",
-  },
-  float: {
-    patterns: [/^-?\d+(\.\d+)?$/],
-    functions: [],
-    message: "Default for float must be a number (e.g. 0.0, 3.14)",
   },
   double: {
     patterns: [/^-?\d+(\.\d+)?$/],
